@@ -30,7 +30,7 @@
 ## Commandes
 
 ```bash
-python -m pip install -c requirements.lock -e '.[dev]'
+python -m pip install -c requirements.lock -e '.[dev,data]'
 make check
 ```
 

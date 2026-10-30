@@ -2,7 +2,7 @@
 
 ```mermaid
 flowchart LR
-    A[Capture locale du navigateur] --> B[API Python de perception]
+    A[Capture par extension Chrome] --> B[API Python de perception]
     B --> C[Détection puis OCR]
     C --> D[JSON validé]
     D --> E[Contrôleur scripté]
@@ -34,8 +34,9 @@ flowchart LR
 - `/api/v1/capabilities` décrit les briques disponibles.
 - `/api/v1/contracts/perception` expose le schéma de sortie attendu.
 - Les modèles Pydantic et les fixtures permettent de développer les briques séparément.
+- L'importeur en ligne de commande alimente un catalogue et des relevés de prix SQLite.
 
-L'inférence, la persistance et les actions ne sont pas encore câblées. Ne pas brancher des prédictions synthétiques sur un compte réel.
+L'inférence, l'inventaire du club et les actions ne sont pas encore câblés. L'import du catalogue est indépendant de l'API pour le moment.
 
 ## Contrat de perception v0.1
 
@@ -45,4 +46,6 @@ Le JSON sémantiquement valide ne garantit pas une bonne prédiction. La qualit�
 
 ## Déploiement cible
 
-Le client React et le contrôleur local consomment une API Python hébergeant les modèles. Le frontend n'embarque pas leurs poids. Les données SQLite appartiennent au service applicatif ; les originaux privés restent locaux par défaut. Le cloud devra prévoir des limites de taille, délais, authentification et suppression des captures temporaires avant un déploiement partagé.
+L'extension Chrome héberge l'interface React et le contrôleur du navigateur ; elle consomme une API Python hébergeant les modèles. La reconnaissance des éléments et des cartes repose sur les captures et l'OCR. Les modèles et le solveur restent côté Python. Un premier prototype devra vérifier la capture, les coordonnées et les permissions nécessaires aux interactions.
+
+Les données SQLite appartiennent au service applicatif ; les originaux privés restent locaux par défaut. Le cloud devra prévoir des limites de taille, délais, authentification et suppression des captures temporaires avant un déploiement partagé.

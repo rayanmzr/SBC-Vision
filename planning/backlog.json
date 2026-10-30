@@ -79,14 +79,14 @@
       "acceptance": ["Route d'analyse d'image documentée dans OpenAPI.", "Validation des types, dimensions, taille et délais.", "Erreurs distinctes des résultats de détection.", "Client et tests d'intégration avec une image de test partageable."]
     },
     {
-      "id": "SBV-015", "title": "Créer l'application React et le parcours de préparation", "owner": "Samy Allali", "milestone": "baseline", "priority": "P1", "area": "frontend", "depends_on": ["SBV-001"],
-      "goal": "Afficher les données et les décisions du système dans une interface simple.",
-      "acceptance": ["Configuration de l'URL d'API sans modèle embarqué.", "Affichage inventaire, protections, conditions, achats et coût.", "États chargement, erreur, lecture incertaine et aucune solution.", "Fixtures clairement indiquées durant le développement."]
+      "id": "SBV-015", "title": "Créer l'extension Chrome et son interface React", "owner": "Samy Allali", "milestone": "baseline", "priority": "P1", "area": "frontend", "depends_on": ["SBV-001"],
+      "goal": "Afficher les décisions dans une extension Chrome reliée à l’API Python.",
+      "acceptance": ["Manifest V3 et permissions documentés ; URL d’API configurable, sans modèle embarqué.", "Affichage inventaire, protections, conditions, achats et coût.", "États chargement, erreur, lecture incertaine et aucune solution.", "Fixtures clairement indiquées durant le développement."]
     },
     {
       "id": "SBV-016", "title": "Implémenter la capture et le contrôleur scripté", "owner": "Samy Allali", "milestone": "baseline", "priority": "P1", "area": "controller", "depends_on": ["SBV-014"],
       "goal": "Observer, choisir une action à partir du JSON, puis vérifier l'écran suivant.",
-      "acceptance": ["Modes observation et simulation disponibles.", "Coordonnées validées et budget d'étapes borné.", "Nouvelle capture et vérification après action.", "Interruption utilisateur et arrêt sur divergence.", "Aucune soumission de cartes sans récapitulatif et confirmation explicite."]
+      "acceptance": ["Prototype de capture et clic sur une page locale ; permissions et coordonnées vérifiées.", "Modes observation et simulation disponibles.", "Coordonnées validées et budget d'étapes borné.", "Nouvelle capture et vérification après action.", "Interruption utilisateur et arrêt sur divergence.", "Aucune soumission de cartes sans récapitulatif et confirmation explicite."]
     },
     {
       "id": "SBV-017", "title": "Préparer le démonstrateur local de secours", "owner": "Samy Allali", "milestone": "baseline", "priority": "P2", "area": "controller", "depends_on": ["SBV-002", "SBV-015"],
