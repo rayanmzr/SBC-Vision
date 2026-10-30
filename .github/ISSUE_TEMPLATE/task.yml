@@ -1,0 +1,30 @@
+name: Tâche
+description: Travail délimité avec responsable et critères d'acceptation
+title: "[Tâche] "
+labels: ["type:task"]
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexte et objectif
+    validations:
+      required: true
+  - type: dropdown
+    id: owner
+    attributes:
+      label: Responsable principal
+      options: ["Saber Kasri", "Rayan Mazri", "Samy Allali", "Équipe"]
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Critères d'acceptation
+      description: Résultats concrets et vérifiables
+      value: "- [ ] "
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dépendances et documents liés

@@ -1,0 +1,16 @@
+name: Bug
+description: Comportement incorrect et reproductible
+title: "[Bug] "
+labels: ["type:bug"]
+body:
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction, résultat attendu et résultat observé
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environnement, commit et fixture utilisée
+      description: Ne pas joindre de capture privée, cookie ou token.

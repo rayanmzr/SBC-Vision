@@ -1,0 +1,169 @@
+{
+  "$defs": {
+    "ActionKind": {
+      "enum": [
+        "click",
+        "fill",
+        "select",
+        "scroll"
+      ],
+      "title": "ActionKind",
+      "type": "string"
+    },
+    "BoundingBox": {
+      "additionalProperties": false,
+      "description": "Boîte dans la capture : x, y en haut à gauche ; largeur/hauteur en pixels.",
+      "properties": {
+        "x": {
+          "minimum": 0,
+          "title": "X",
+          "type": "integer"
+        },
+        "y": {
+          "minimum": 0,
+          "title": "Y",
+          "type": "integer"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "title": "BoundingBox",
+      "type": "object"
+    },
+    "DetectedElement": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ElementKind"
+        },
+        "bbox": {
+          "$ref": "#/$defs/BoundingBox"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "actions": {
+          "items": {
+            "$ref": "#/$defs/ActionKind"
+          },
+          "title": "Actions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "bbox",
+        "confidence"
+      ],
+      "title": "DetectedElement",
+      "type": "object"
+    },
+    "ElementKind": {
+      "enum": [
+        "button",
+        "input",
+        "link",
+        "menu",
+        "checkbox",
+        "card",
+        "slot",
+        "text"
+      ],
+      "title": "ElementKind",
+      "type": "string"
+    },
+    "ImageSize": {
+      "additionalProperties": false,
+      "properties": {
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ],
+      "title": "ImageSize",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "0.1",
+      "default": "0.1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "capture_id": {
+      "minLength": 1,
+      "title": "Capture Id",
+      "type": "string"
+    },
+    "image": {
+      "$ref": "#/$defs/ImageSize"
+    },
+    "model_name": {
+      "minLength": 1,
+      "title": "Model Name",
+      "type": "string"
+    },
+    "elements": {
+      "items": {
+        "$ref": "#/$defs/DetectedElement"
+      },
+      "title": "Elements",
+      "type": "array"
+    }
+  },
+  "required": [
+    "capture_id",
+    "image",
+    "model_name",
+    "elements"
+  ],
+  "title": "PerceptionResponse",
+  "type": "object"
+}

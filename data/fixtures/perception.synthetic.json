@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1",
+  "capture_id": "synthetic-screen-001",
+  "image": {"width": 1280, "height": 720},
+  "model_name": "synthetic-fixture-no-inference",
+  "elements": [
+    {
+      "id": "search",
+      "kind": "input",
+      "bbox": {"x": 40, "y": 80, "width": 300, "height": 40},
+      "text": "Rechercher",
+      "confidence": 1.0,
+      "actions": ["fill"]
+    },
+    {
+      "id": "confirm",
+      "kind": "button",
+      "bbox": {"x": 1000, "y": 640, "width": 160, "height": 48},
+      "text": "Vérifier",
+      "confidence": 1.0,
+      "actions": ["click"]
+    }
+  ]
+}

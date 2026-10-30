@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation du projet
+    url: https://github.com/rayanmzr/SBC-Vision/blob/main/docs/CONTEXT.md
+    about: Lire le contexte avant de proposer un changement de périmètre.

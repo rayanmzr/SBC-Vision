@@ -1,0 +1,5 @@
+{
+  "Rayan Mazri": {"github": "rayanmzr", "role": "OCR, inventaire, données et solveur"},
+  "Saber Kasri": {"github": "saberkasri", "role": "Dataset, détection et évaluation"},
+  "Samy Allali": {"github": "SamyALlali", "role": "Application, API, contrôleur et déploiement"}
+}
