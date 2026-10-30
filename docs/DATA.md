@@ -24,7 +24,9 @@ Les tests exploratoires effectués avant l'initialisation du dépôt ont validé
 - Le JSON par lots du Squad Builder : 60 IDs connus reçus dans une requête ; postes complets, note, rareté, attributs et prix.
 - Une mesure ponctuelle d'environ 0,5 seconde avec compression gzip. Ce n'est pas un engagement de performance.
 
-**L'importeur reproductible n'est pas encore implémenté dans ce dépôt.** L'index des identifiants est à constituer, puis les cartes peuvent être complétées par lots, stockées localement et actualisées de façon ciblée. Le point d'accès est interne au site, sans contrat public de stabilité ; prévoir cache, reprise, temporisation et erreurs explicites. Ne pas contourner un refus d'accès.
+**L'importeur est disponible** : `python -m sbc_vision.market --pages 2`. Il découvre les identifiants dans les listes, puis complète les cartes par lots via `/siteapi/27/get-squad`. Les paramètres `playerCardIds` sont répétés pour chaque carte demandée. L'index, les données normalisées et les relevés de prix restent dans SQLite. Le point d'accès est interne au site, sans contrat public de stabilité.
+
+L'import réutilise les pages déjà indexées et les cartes collectées depuis moins de 24 heures. Chaque page et chaque lot sont sauvegardés ; la même commande reprend après une interruption. `--refresh` relit les pages et les cartes du périmètre demandé ; `--ids` cible les cartes utiles. Les requêtes sont espacées d'au moins deux secondes. Une erreur HTTP arrête l'import, sans nouvelle tentative automatique ni contournement. Voir le [guide](../src/sbc_vision/market/README.md).
 
 Sources : [catalogue](https://www.futbin.com/27/players), [Squad Builder](https://www.futbin.com/27/squad-builder), [conditions](https://www.futbin.com/tos).
 
@@ -37,6 +39,7 @@ Attribution à conserver : « Données de prix : FUTBIN — https://www.futbin.c
 - Distinguer identifiant du joueur de base, identifiant de version et exemplaire du club.
 - Conserver les quantités et les versions ; ne pas dédupliquer simplement par nom.
 - Un relevé contient source, marché tel que fourni, valeur en crédits et date de collecte. L'âge affiché par la source est distinct de notre heure de lecture.
+- Le JSON normalisé conserve l'identifiant de base FUTBIN ; ce n'est pas un identifiant EA garanti. Le statut `untradeable` vient du catalogue et ne décrit pas l'exemplaire détenu dans le club.
 - Le fournisseur expose différentes séries de prix : les conserver sans supposer qu'elles sont interchangeables.
 - `null` signifie inconnu, jamais gratuit. Une carte sans prix connu ne devient pas un achat à coût nul.
 - Vérifier l'identité et les positions complètes des candidats retenus avant le calcul final.

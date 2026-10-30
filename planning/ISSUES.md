@@ -18,7 +18,7 @@
 | [SBV-012 — Formaliser les règles du premier SBC EA FC 27](https://github.com/rayanmzr/SBC-Vision/issues/12) | Rayan | P0 | Pitch - 13 novembre |
 | [SBV-013 — Implémenter le solveur économique et son vérificateur](https://github.com/rayanmzr/SBC-Vision/issues/13) | Rayan | P1 | Baseline - 21 novembre |
 | [SBV-014 — Brancher la perception et l'OCR dans l'API](https://github.com/rayanmzr/SBC-Vision/issues/14) | Samy | P0 | Baseline - 21 novembre |
-| [SBV-015 — Créer l'application React et le parcours de préparation](https://github.com/rayanmzr/SBC-Vision/issues/15) | Samy | P1 | Baseline - 21 novembre |
+| [SBV-015 — Créer l'extension Chrome et son interface React](https://github.com/rayanmzr/SBC-Vision/issues/15) | Samy | P1 | Baseline - 21 novembre |
 | [SBV-016 — Implémenter la capture et le contrôleur scripté](https://github.com/rayanmzr/SBC-Vision/issues/16) | Samy | P1 | Baseline - 21 novembre |
 | [SBV-017 — Préparer le démonstrateur local de secours](https://github.com/rayanmzr/SBC-Vision/issues/17) | Samy | P2 | Baseline - 21 novembre |
 | [SBV-018 — Déployer l'API Docker dans le cloud](https://github.com/rayanmzr/SBC-Vision/issues/18) | Samy | P1 | Finale - décembre |

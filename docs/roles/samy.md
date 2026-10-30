@@ -8,7 +8,7 @@ Relier les briques dans une application reproductible, avec une API, un contrôl
 
 ## Responsabilités
 
-- Construire le frontend React et l'API FastAPI avec gestion claire des erreurs.
+- Construire l'extension Chrome, son interface React et l'API FastAPI avec gestion claire des erreurs.
 - Implémenter la capture locale et le contrôleur scripté à partir du JSON de perception.
 - Séparer observation, simulation et exécution ; vérifier l'écran après chaque action.
 - Afficher inventaire, protections, contraintes, achats, coût et confirmation finale.
