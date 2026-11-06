@@ -54,3 +54,7 @@ Le rapprochement de lectures structurées propose des versions, sans les valider
 ## Emplacements
 
 `data/fixtures/` contient uniquement des données synthétiques. `data/raw/`, `data/processed/`, `artifacts/` et les bases locales sont ignorés par Git. Les licences, coûts et disponibilités des sources doivent être vérifiés avant diffusion.
+
+## Vérification du 6 novembre
+
+Un appel public au JSON FUTBIN a répondu HTTP 403 depuis l’environnement local. Aucun contournement n’a été tenté. Le cache est conservé et un import de fichier normalisé est disponible pour les exports obtenus par un accès autorisé ; la provenance, les prix inconnus et les dates de collecte sont préservés.

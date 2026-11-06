@@ -27,7 +27,7 @@ Python **3.11 ou 3.12**. Depuis la racine du dépôt :
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -c requirements.lock -e '.[dev,data,solver]'
+python -m pip install -c requirements.lock -e '.[dev,data,solver,ocr]'
 uvicorn sbc_vision.api.main:app --reload
 ```
 
@@ -74,7 +74,7 @@ python -m sbc_vision.sbc_engine solve --demo
 
 Sur le petit défi fictif, la sélection simple coûte 2 600 crédits en valeur économique ; OR-Tools trouve 2 100 crédits, dont 1 300 d'achats et 800 de valeur sacrifiée. Les exemplaires protégés sont exclus et chaque proposition est vérifiée séparément. Le rapport reste dans `data/processed/solution.json`.
 
-Ce premier périmètre couvre les postes, le budget d'achat, une note minimale par carte, la rareté et des quotas de pays/ligue. Le calcul de note d'équipe et le collectif EA FC ne sont pas encore implémentés. Voir le [guide du solveur](src/sbc_vision/sbc_engine/README.md).
+Le moteur reçoit les conditions de chaque capture : aucun nom de SBC n'est codé dans l'algorithme. Il prend en charge les compositions et l'Item Score, des contraintes minimum/maximum/exactes, la note à onze joueurs et un profil de collectif standard. Les lectures ou règles non prises en charge bloquent la proposition. Voir le [guide du moteur](src/sbc_vision/sbc_engine/README.md) pour les limites et les commandes OCR.
 
 ## Docker
 

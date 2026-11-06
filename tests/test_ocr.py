@@ -3,6 +3,7 @@
 import json
 import shutil
 from contextlib import closing
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -10,9 +11,9 @@ from PIL import Image, ImageDraw, ImageFont
 from pydantic import ValidationError
 
 from sbc_vision.sbc_engine.catalogue import open_database, save_cards
-from sbc_vision.sbc_engine.inventory import list_items
+from sbc_vision.sbc_engine.inventory import list_items, seed_demo
 from sbc_vision.sbc_engine.models import OcrInput
-from sbc_vision.sbc_engine.ocr import analyze, read_regions
+from sbc_vision.sbc_engine.ocr import analyze, challenge_from_ocr, read_regions
 
 
 def specification():
@@ -86,3 +87,70 @@ def test_duplicate_fields_cannot_silently_overwrite_one_another():
     data["regions"].append(data["regions"][0])
     with pytest.raises(ValidationError, match="Une seule région"):
         OcrInput.model_validate(data)
+
+
+@pytest.mark.skipif(shutil.which("tesseract") is None, reason="Tesseract doit être installé")
+def test_real_capture_conditions_become_a_dynamic_request(tmp_path, db):
+    image = Image.new("RGB", (1000, 300), "white")
+    draw, font = ImageDraw.Draw(image), ImageFont.load_default(size=36)
+    for text, y in [
+        ("Number of players: 3", 20),
+        ("Player rating: Min 82", 90),
+        ("Rare players: Min 1", 160),
+    ]:
+        draw.text((30, y), text, fill="black", font=font)
+    path = tmp_path / "conditions.png"
+    image.save(path)
+    spec = OcrInput(
+        capture_id="new-sbc",
+        positions=["CAM", "CM", "ST"],
+        regions=[
+            {
+                "element_id": "requirements",
+                "field": "requirements",
+                "bbox": {"x": 0, "y": 0, "width": 1000, "height": 300},
+            }
+        ],
+    )
+    report = analyze(path, spec, db)
+    parsed = challenge_from_ocr(report, db, market="pc", budget=2000)
+    assert parsed["ready"], parsed["issues"]
+    assert parsed["challenge"]["positions"] == ["CAM", "CM", "ST"]
+    assert [c["metric"] for c in parsed["challenge"]["conditions"]] == ["players", "rating", "rare"]
+
+    # Le même rapport OCR est ensuite consommé par la commande du solveur.
+    from sbc_vision.sbc_engine.__main__ import main
+
+    root = Path(__file__).resolve().parents[1]
+    club = json.loads((root / "data/fixtures/club.synthetic.json").read_text())
+    demo = json.loads((root / "data/fixtures/solver.synthetic.json").read_text())
+    seed_demo(db, club, demo["extra_cards"])
+    cards = [json.loads(row["data"]) for row in db.execute("SELECT data FROM cards")]
+    for card in cards:
+        card["observed_at"] = datetime.now(UTC).isoformat()
+    save_cards(db, cards)
+    db_path = db.execute("PRAGMA database_list").fetchone()[2]
+    regions, reading, output = [
+        tmp_path / name for name in ["regions.json", "reading.json", "plan.json"]
+    ]
+    regions.write_text(spec.model_dump_json())
+    assert (
+        main(
+            [
+                "ocr",
+                str(path),
+                str(regions),
+                "--db",
+                db_path,
+                "--market",
+                "pc",
+                "--budget",
+                "2000",
+                "--output",
+                str(reading),
+            ]
+        )
+        == 0
+    )
+    assert main(["solve", "--reading", str(reading), "--db", db_path, "--output", str(output)]) == 0
+    assert json.loads(output.read_text())["solution"]["total_cost"] == 2100

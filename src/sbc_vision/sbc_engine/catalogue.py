@@ -11,8 +11,64 @@ from urllib.parse import parse_qs, urlsplit
 import httpx
 from bs4 import BeautifulSoup
 
+from .models import Candidate
+
 BASE_URL = "https://www.futbin.com"
 ATTRIBUTION = f"Données de prix : FUTBIN — {BASE_URL}/"
+
+
+def nested(data, *path):
+    for key in path:
+        if not isinstance(data, dict):
+            return None
+        data = data.get(key)
+    return data
+
+
+def import_file(db, path):
+    """Lire un export normalisé autorisé, en conservant les dates et les prix inconnus."""
+    payload = json.loads(Path(path).read_text())
+    cards = payload.get("cards") if isinstance(payload, dict) else None
+    if not isinstance(cards, list) or not cards:
+        raise ValueError("Le fichier doit contenir une liste non vide nommée cards.")
+    if len({c["id"] for c in cards}) != len(cards):
+        raise ValueError("Plusieurs lignes portent le même identifiant de version.")
+    for card in cards:
+        if datetime.fromisoformat(card["observed_at"]).tzinfo is None:
+            raise ValueError("Chaque date de collecte doit préciser son fuseau horaire.")
+        for market in ("ps", "pc"):
+            price = card["prices"].get(market)
+            # Le modèle contrôle les types ; les dates ne sont jamais remplacées par aujourd'hui.
+            Candidate(
+                key="check",
+                card_id=card["id"],
+                owned=False,
+                value=price,
+                **{
+                    k: card[k]
+                    for k in (
+                        "base_id",
+                        "name",
+                        "rating",
+                        "positions",
+                        "nation_id",
+                        "league_id",
+                        "is_rare",
+                        "source_url",
+                        "observed_at",
+                    )
+                },
+            )
+        card["prices"] = {m: card["prices"].get(m) for m in ("ps", "pc")}
+    old = {
+        json.loads(r["data"])["source_url"].startswith("urn:sbc-vision:synthetic:")
+        for r in db.execute("SELECT data FROM cards")
+    }
+    new = {c["source_url"].startswith("urn:sbc-vision:synthetic:") for c in cards}
+    if len(old | new) > 1:
+        raise ValueError("Conserver les données fictives et réelles dans des bases distinctes.")
+    save_cards(db, cards)
+    return len(cards)
 
 
 def open_database(path: str | Path) -> sqlite3.Connection:
@@ -43,6 +99,8 @@ def open_database(path: str | Path) -> sqlite3.Connection:
             source_observation TEXT NOT NULL, last_seen_at TEXT NOT NULL
         )
         """)
+    if "item_score" not in {row[1] for row in db.execute("PRAGMA table_info(club_items)")}:
+        db.execute("ALTER TABLE club_items ADD COLUMN item_score INTEGER CHECK(item_score > 0)")
     return db
 
 
@@ -138,6 +196,10 @@ def normalize(raw: dict, observed_at: str) -> dict:
         prices[market] = price if type(price) is int and price > 0 else None
     position = raw["position"]["value"]
     positions = [position] + [item["position"]["value"] for item in raw["possiblePositions"]]
+    # Le score doit être explicite et cohérent, jamais déduit de la note seule.
+    values = [raw.get("itemScore"), nested(raw, "statsCard", "itemScore")]
+    values += [nested(p, "priceBox", "itemScore") for p in (raw.get("price") or {}).values()]
+    scores = {v for v in values if type(v) is int and v > 0}
     return {
         "id": raw["id"]["playerCardId"]["value"],
         "base_id": raw["baseId"]["value"],
@@ -150,6 +212,11 @@ def normalize(raw: dict, observed_at: str) -> dict:
         "nation_id": raw["nationId"]["value"],
         "rare_type": raw["rareType"],
         "is_rare": raw["isRare"],
+        "chemistry_kind": "standard" if raw["rareType"] in (0, 1) else "unsupported",
+        "nation_name": nested(raw, "statsCard", "nationImage", "fixed", "name"),
+        "league_name": nested(raw, "statsCard", "leagueImage", "image", "fixed", "name"),
+        "club_name": nested(raw, "statsCard", "clubImage", "image", "fixed", "name"),
+        "item_score": next(iter(scores)) if len(scores) == 1 else None,
         "card_level": raw["cardLevel"],
         "untradeable": raw["untradeable"],
         "stats": raw["playerStats"],

@@ -33,6 +33,20 @@
       "minLength": 1,
       "title": "Source Observation",
       "type": "string"
+    },
+    "item_score": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "maximum": 1000000000,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Item Score"
     }
   },
   "required": [

@@ -46,13 +46,14 @@ def save_item(db: sqlite3.Connection, item: ClubItem, *, confirmed: bool = False
         if existing:
             # Revoir une carte ne crée pas un doublon et ne retire pas sa protection.
             db.execute(
-                "UPDATE club_items SET source_observation = ?, last_seen_at = ? "
+                "UPDATE club_items SET source_observation = ?, last_seen_at = ?, "
+                "item_score = COALESCE(?, item_score) "
                 "WHERE instance_id = ?",
-                (item.source_observation, now, item.instance_id),
+                (item.source_observation, now, item.item_score, item.instance_id),
             )
         else:
             db.execute(
-                "INSERT INTO club_items VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO club_items VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (
                     item.instance_id,
                     item.card_id,
@@ -60,6 +61,7 @@ def save_item(db: sqlite3.Connection, item: ClubItem, *, confirmed: bool = False
                     item.tradeable,
                     item.source_observation,
                     now,
+                    item.item_score,
                 ),
             )
 
@@ -96,7 +98,7 @@ def load_pool(db, market, *, now=None, max_age_hours=24) -> list[Candidate]:
     cards = {row["id"]: json.loads(row["data"]) for row in db.execute("SELECT id, data FROM cards")}
     pool = []
 
-    def add(card, key, owned, protected=False):
+    def add(card, key, owned, protected=False, score=None):
         observed = datetime.fromisoformat(card["observed_at"])
         if observed.tzinfo is None:
             raise ValueError("La date de collecte doit inclure son fuseau horaire.")
@@ -116,6 +118,11 @@ def load_pool(db, market, *, now=None, max_age_hours=24) -> list[Candidate]:
                 positions=card["positions"],
                 nation_id=card["nation_id"],
                 league_id=card["league_id"],
+                club_id=card.get("club_id"),
+                card_level=card.get("card_level"),
+                item_score=score if score is not None else card.get("item_score"),
+                chemistry_kind=card.get("chemistry_kind", "unsupported"),
+                max_quantity=1 if owned else card.get("market_quantity", 1),
                 is_rare=card["is_rare"],
                 owned=owned,
                 protected=protected,
@@ -126,7 +133,13 @@ def load_pool(db, market, *, now=None, max_age_hours=24) -> list[Candidate]:
         )
 
     for item in list_items(db):
-        add(cards[item["card_id"]], f"club:{item['instance_id']}", True, item["protected"])
+        add(
+            cards[item["card_id"]],
+            f"club:{item['instance_id']}",
+            True,
+            item["protected"],
+            item["item_score"],
+        )
     for card in cards.values():
         # Un statut non échangeable dans le catalogue n'est pas une offre d'achat.
         if not card.get("untradeable", False):

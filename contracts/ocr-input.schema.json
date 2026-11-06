@@ -81,6 +81,31 @@
       "minItems": 1,
       "title": "Regions",
       "type": "array"
+    },
+    "positions": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 11,
+      "title": "Positions",
+      "type": "array"
+    },
+    "attributes": {
+      "additionalProperties": {
+        "additionalProperties": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "type": "object"
+      },
+      "title": "Attributes",
+      "type": "object"
     }
   },
   "required": [

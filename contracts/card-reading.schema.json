@@ -1,6 +1,6 @@
 {
   "additionalProperties": false,
-  "description": "Attributs lus sur une carte ; ce modèle n'effectue pas encore l'OCR.",
+  "description": "Attributs lus sur une carte, à rapprocher des versions du catalogue.",
   "properties": {
     "capture_id": {
       "minLength": 1,
@@ -105,6 +105,20 @@
       ],
       "default": null,
       "title": "Is Rare"
+    },
+    "item_score": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "maximum": 1000000000,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Item Score"
     }
   },
   "required": [

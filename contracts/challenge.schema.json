@@ -1,9 +1,93 @@
 {
+  "$defs": {
+    "Condition": {
+      "additionalProperties": false,
+      "properties": {
+        "metric": {
+          "enum": [
+            "players",
+            "rating",
+            "rated",
+            "rare",
+            "nation",
+            "league",
+            "club",
+            "nations",
+            "leagues",
+            "clubs",
+            "same_nation",
+            "same_league",
+            "same_club",
+            "quality",
+            "item_score",
+            "team_rating",
+            "chemistry"
+          ],
+          "title": "Metric",
+          "type": "string"
+        },
+        "op": {
+          "default": "min",
+          "enum": [
+            "min",
+            "max",
+            "exact"
+          ],
+          "title": "Op",
+          "type": "string"
+        },
+        "value": {
+          "maximum": 1000000000,
+          "minimum": 0,
+          "title": "Value",
+          "type": "integer"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target"
+        },
+        "text": {
+          "default": "",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metric",
+        "value"
+      ],
+      "title": "Condition",
+      "type": "object"
+    }
+  },
   "additionalProperties": false,
   "properties": {
     "rules_version": {
-      "const": "prototype-v1",
+      "enum": [
+        "prototype-v1",
+        "dynamic-v1"
+      ],
       "title": "Rules Version",
+      "type": "string"
+    },
+    "mode": {
+      "default": "squad",
+      "enum": [
+        "squad",
+        "score"
+      ],
+      "title": "Mode",
       "type": "string"
     },
     "positions": {
@@ -11,9 +95,46 @@
         "type": "string"
       },
       "maxItems": 11,
-      "minItems": 1,
       "title": "Positions",
       "type": "array"
+    },
+    "conditions": {
+      "items": {
+        "$ref": "#/$defs/Condition"
+      },
+      "title": "Conditions",
+      "type": "array"
+    },
+    "max_items": {
+      "default": 100,
+      "maximum": 100,
+      "minimum": 1,
+      "title": "Max Items",
+      "type": "integer"
+    },
+    "score_progress": {
+      "default": 0,
+      "maximum": 1000000000,
+      "minimum": 0,
+      "title": "Score Progress",
+      "type": "integer"
+    },
+    "card_level": {
+      "anyOf": [
+        {
+          "enum": [
+            "BRONZE",
+            "SILVER",
+            "GOLD"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Card Level"
     },
     "market": {
       "enum": [
@@ -86,7 +207,6 @@
   },
   "required": [
     "rules_version",
-    "positions",
     "market",
     "budget"
   ],

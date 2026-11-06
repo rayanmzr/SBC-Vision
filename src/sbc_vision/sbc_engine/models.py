@@ -21,17 +21,22 @@ class TextRegion(StrictModel):
 class OcrInput(StrictModel):
     capture_id: str = Field(min_length=1)
     regions: list[TextRegion] = Field(min_length=1)
+    positions: list[str] = Field(default_factory=list, max_length=11)
+    attributes: dict[str, dict[str, int | bool]] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def unique_fields(self) -> Self:
         keys = [(r.element_id, r.field) for r in self.regions]
         if len(keys) != len(set(keys)):
             raise ValueError("Une seule région par champ et par élément.")
+        allowed = {"club_id", "league_id", "nation_id", "rare_type", "is_rare"}
+        if any(set(values) - allowed for values in self.attributes.values()):
+            raise ValueError("Attribut visuel non reconnu.")
         return self
 
 
 class CardReading(StrictModel):
-    """Attributs lus sur une carte ; ce modèle n'effectue pas encore l'OCR."""
+    """Attributs lus sur une carte, à rapprocher des versions du catalogue."""
 
     capture_id: str = Field(min_length=1)
     element_id: str = Field(min_length=1)
@@ -44,6 +49,7 @@ class CardReading(StrictModel):
     nation_id: int | None = Field(default=None, gt=0)
     rare_type: int | None = Field(default=None, ge=0)
     is_rare: bool | None = None
+    item_score: int | None = Field(default=None, gt=0, le=1_000_000_000)
 
 
 class ClubItem(StrictModel):
@@ -55,11 +61,55 @@ class ClubItem(StrictModel):
     # None signifie que le caractère échangeable n'a pas été confirmé.
     tradeable: bool | None = None
     source_observation: str = Field(min_length=1)
+    item_score: int | None = Field(default=None, gt=0, le=1_000_000_000)
+
+
+class Condition(StrictModel):
+    metric: Literal[
+        "players",
+        "rating",
+        "rated",
+        "rare",
+        "nation",
+        "league",
+        "club",
+        "nations",
+        "leagues",
+        "clubs",
+        "same_nation",
+        "same_league",
+        "same_club",
+        "quality",
+        "item_score",
+        "team_rating",
+        "chemistry",
+    ]
+    op: Literal["min", "max", "exact"] = "min"
+    value: int = Field(ge=0, le=1_000_000_000)
+    target: int | str | None = None
+    text: str = ""
+
+    @model_validator(mode="after")
+    def valid_target(self) -> Self:
+        if self.metric in {"rating", "team_rating"} and not 1 <= self.value <= 99:
+            raise ValueError("La note doit être comprise entre 1 et 99.")
+        if self.metric == "chemistry" and self.value > 33:
+            raise ValueError("Le collectif ne peut pas dépasser 33.")
+        if self.metric in {"nation", "league", "club", "rated"} and type(self.target) is not int:
+            raise ValueError("Cette condition doit indiquer un identifiant ou une note cible.")
+        if self.metric == "quality" and self.target not in {"BRONZE", "SILVER", "GOLD"}:
+            raise ValueError("Qualité de carte inconnue.")
+        return self
 
 
 class Challenge(StrictModel):
-    rules_version: Literal["prototype-v1"]
-    positions: list[str] = Field(min_length=1, max_length=11)
+    rules_version: Literal["prototype-v1", "dynamic-v1"]
+    mode: Literal["squad", "score"] = "squad"
+    positions: list[str] = Field(default_factory=list, max_length=11)
+    conditions: list[Condition] = Field(default_factory=list)
+    max_items: int = Field(default=100, ge=1, le=100)
+    score_progress: int = Field(default=0, ge=0, le=1_000_000_000)
+    card_level: Literal["BRONZE", "SILVER", "GOLD"] | None = None
     market: Literal["ps", "pc"]
     budget: int = Field(ge=0, le=1_000_000_000)
     min_card_rating: int = Field(default=1, ge=1, le=99)
@@ -71,6 +121,25 @@ class Challenge(StrictModel):
 
     @model_validator(mode="after")
     def check_requirements(self) -> Self:
+        if self.mode == "squad" and not self.positions:
+            raise ValueError("Les postes du SBC doivent être lus ou fournis.")
+        if self.mode == "score" and (
+            self.positions
+            or not any(
+                c.metric == "item_score" and c.value > 0 and c.op in {"min", "exact"}
+                for c in self.conditions
+            )
+        ):
+            raise ValueError("Un défi à score exige un objectif Item Score, sans formation.")
+        if (
+            any(c.metric in {"team_rating", "chemistry"} for c in self.conditions)
+            and self.mode != "squad"
+        ):
+            raise ValueError("Note d'équipe et collectif sont réservés aux défis de composition.")
+        if any(c.metric == "team_rating" for c in self.conditions) and len(self.positions) != 11:
+            raise ValueError("Le calcul de note est actuellement vérifié pour onze emplacements.")
+        if any(c.metric == "chemistry" and c.op != "min" for c in self.conditions):
+            raise ValueError("Le profil de collectif standard ne valide que des minima.")
         if any(not position for position in self.positions):
             raise ValueError("Chaque poste doit être renseigné.")
         if (self.min_nation and self.nation_id is None) or (
@@ -89,6 +158,11 @@ class Candidate(StrictModel):
     positions: list[str] = Field(min_length=1)
     nation_id: int = Field(gt=0)
     league_id: int = Field(gt=0)
+    club_id: int | None = Field(default=None, gt=0)
+    card_level: Literal["BRONZE", "SILVER", "GOLD"] | None = None
+    item_score: int | None = Field(default=None, gt=0, le=1_000_000_000)
+    chemistry_kind: Literal["standard", "unsupported"] = "unsupported"
+    max_quantity: int = Field(default=1, ge=1, le=100)
     is_rare: bool
     owned: bool
     protected: bool = False
@@ -97,9 +171,15 @@ class Candidate(StrictModel):
     source_url: str = Field(min_length=1)
     observed_at: str = Field(min_length=1)
 
+    @model_validator(mode="after")
+    def one_owned_copy(self) -> Self:
+        if self.owned and self.max_quantity != 1:
+            raise ValueError("Un exemplaire possédé a toujours une quantité de un.")
+        return self
+
 
 class Assignment(StrictModel):
-    slot: int = Field(ge=0, le=10)
+    slot: int = Field(ge=0, le=99)
     candidate_key: str = Field(min_length=1)
 
 
