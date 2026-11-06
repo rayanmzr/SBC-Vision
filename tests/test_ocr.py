@@ -12,7 +12,13 @@ from pydantic import ValidationError
 
 from sbc_vision.sbc_engine.models import OcrInput
 from sbc_vision.sbc_engine.ocr import analyze, challenge_from_ocr, read_regions
-from sbc_vision.sbc_engine.players import list_items, open_database, save_cards, seed_demo
+from sbc_vision.sbc_engine.players import (
+    confirm_readings,
+    list_items,
+    open_database,
+    save_cards,
+    seed_demo,
+)
 
 
 def specification():
@@ -41,7 +47,7 @@ def db(tmp_path):
 
 
 @pytest.mark.skipif(shutil.which("tesseract") is None, reason="Tesseract doit être installé")
-def test_real_ocr_proposes_versions_without_creating_owned_items(tmp_path, db):
+def test_real_ocr_requires_a_chosen_version_before_adding_an_owned_item(tmp_path, db):
     image = Image.new("RGB", (800, 230), "white")
     draw, font = ImageDraw.Draw(image), ImageFont.load_default(size=36)
     for text, y in [("ALEX EXEMPLE", 25), ("83", 95), ("CM", 160)]:
@@ -57,6 +63,11 @@ def test_real_ocr_proposes_versions_without_creating_owned_items(tmp_path, db):
         for word in region["words"]:
             assert 0 <= word["x"] < image.width
             assert 0 <= word["y"] < image.height
+    confirm_readings(
+        db, report, {"card-1": {"instance_id": "ocr-copy", "card_id": 900001}}, confirmed=True
+    )
+    assert list_items(db)[0]["card_id"] == 900001
+    assert list_items(db)[0]["source_observation"] == "synthetic-screen:card-1"
 
 
 @pytest.mark.parametrize("rating, confidence", [("8B", 0.99), ("83", 0.2), ("", 0)])

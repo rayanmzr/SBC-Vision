@@ -31,6 +31,25 @@ L'image est agrandie et passée en niveaux de gris. Un passage Tesseract lit tou
 
 `club list` affiche le club confirmé. `club protect IDENTIFIANT` protège un exemplaire ; `--remove` retire cette protection. `club add FICHIER --confirm` ajoute un exemplaire après vérification. Une nouvelle observation du même exemplaire ne crée pas de doublon et conserve sa protection.
 
+### Enregistrer un lot de lectures
+
+`club sync` relie un rapport OCR aux versions choisies et aux identifiants stables des exemplaires. Par exemple, pour les identifiants fictifs des tests, `choices.json` peut contenir :
+
+```json
+{
+  "card-1": {"instance_id": "copy-1", "card_id": 900001, "protected": true},
+  "card-2": {"instance_id": "copy-2", "card_id": 900001}
+}
+```
+
+```bash
+python -m sbc_vision.sbc_engine club sync data/processed/ocr.json data/processed/choices.json --confirm
+```
+
+Seules les lectures sélectionnées sont enregistrées. Chaque version est rapprochée à nouveau du catalogue ; une lecture incertaine doit être corrigée avant confirmation. Le lot est enregistré ensemble ou annulé entièrement si un exemplaire pose problème. Un rapport incomplet ne supprime aucune carte du club.
+
+`element_id` désigne une région dans une capture ; `instance_id` désigne un exemplaire physique entre les captures. Le contrôleur de Samy doit conserver ce suivi, sans inventer un nouvel exemplaire à chaque écran. L'API pourra appeler directement `players.confirm_readings(db, report, choices, confirmed=True)` après validation des choix. La provenance et l'Item Score viennent de la lecture ; les protections et états échangeables existants sont conservés.
+
 ## Conditions dynamiques
 
 Le solveur reçoit les conditions de la capture courante. Aucun nom ou identifiant de SBC n'est présent dans son algorithme. Une formation est une liste de postes ; une condition est un type, un opérateur (`min`, `max`, `exact`) et une valeur. Les exemples sont uniquement des fixtures de test.

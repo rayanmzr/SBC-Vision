@@ -10,6 +10,7 @@ from pydantic import ValidationError
 from sbc_vision.sbc_engine.__main__ import main
 from sbc_vision.sbc_engine.models import CardReading, ClubItem
 from sbc_vision.sbc_engine.players import (
+    confirm_readings,
     find_candidates,
     list_items,
     open_database,
@@ -37,6 +38,98 @@ def db(tmp_path, fixture):
 def populate(db, fixture):
     for raw in fixture["items"]:
         save_item(db, ClubItem.model_validate(raw), confirmed=True)
+
+
+@pytest.fixture
+def ocr_report(fixture):
+    return {
+        "capture_id": "demo-screen",
+        "cards": [
+            {"element_id": r["element_id"], "reading": r, "issues": [], "candidate_ids": []}
+            for r in fixture["readings"]
+        ],
+    }
+
+
+def test_confirmed_ocr_batch_distinguishes_versions_and_preserves_copies(db, ocr_report):
+    ocr_report["cards"][0]["reading"]["item_score"] = 410
+    choices = {
+        "card-1": {"instance_id": "copy-rare", "card_id": 900002, "protected": True},
+        "card-2": {"instance_id": "copy-normal", "card_id": 900001},
+    }
+    assert confirm_readings(db, ocr_report, choices, confirmed=True) == 2
+    items = {item["instance_id"]: item for item in list_items(db)}
+    assert items["copy-rare"]["card_id"] == 900002
+    assert items["copy-rare"]["item_score"] == 410
+    assert items["copy-rare"]["protected"] is True
+
+    # Une autre capture revoit les mêmes exemplaires, sans effacer leurs informations.
+    ocr_report["capture_id"] = "another-screen"
+    for card in ocr_report["cards"]:
+        card["reading"]["capture_id"] = "another-screen"
+        card["reading"]["item_score"] = None
+    choices["card-1"]["protected"] = False
+    assert confirm_readings(db, ocr_report, choices, confirmed=True) == 2
+    items = {item["instance_id"]: item for item in list_items(db)}
+    assert len(items) == 2
+    assert items["copy-rare"]["protected"] is True
+    assert items["copy-rare"]["item_score"] == 410
+    assert items["copy-rare"]["source_observation"] == "another-screen:card-1"
+
+
+@pytest.mark.parametrize("problem", ["unreadable", "warning", "capture", "element", "version"])
+def test_invalid_ocr_selection_never_enters_inventory(db, ocr_report, problem):
+    card = ocr_report["cards"][0]
+    choice = {"instance_id": "copy-1", "card_id": 900001}
+    if problem == "unreadable":
+        card["reading"] = None
+    elif problem == "warning":
+        card["issues"] = ["Item Score à relire."]
+    elif problem in {"capture", "element"}:
+        card["reading"][f"{problem}_id"] = "wrong"
+    else:
+        choice["card_id"] = 900003
+        card["candidate_ids"] = [900003]  # La liste fournie n'est pas une preuve.
+    with pytest.raises(ValueError):
+        confirm_readings(db, ocr_report, {"card-1": choice}, confirmed=True)
+    assert list_items(db) == []
+
+
+def test_one_physical_copy_cannot_count_twice_in_a_batch(db, ocr_report):
+    choices = {key: {"instance_id": "same-copy", "card_id": 900001} for key in ("card-1", "card-2")}
+    with pytest.raises(ValueError, match="distincts"):
+        confirm_readings(db, ocr_report, choices, confirmed=True)
+    assert list_items(db) == []
+
+
+def test_late_version_conflict_rolls_back_the_entire_batch(db, fixture, ocr_report):
+    populate(db, fixture)
+    before = list_items(db)
+    ocr_report["cards"][1]["reading"].pop("is_rare")
+    choices = {
+        "card-1": {"instance_id": "new-copy", "card_id": 900002},
+        "card-2": {"instance_id": "demo-001", "card_id": 900002},
+    }
+    with pytest.raises(ValueError, match="autre version"):
+        confirm_readings(db, ocr_report, choices, confirmed=True)
+    assert list_items(db) == before
+
+
+def test_sync_cli_requires_confirmation_and_can_import_only_selected_readings(
+    db, ocr_report, tmp_path
+):
+    report, choices = tmp_path / "ocr.json", tmp_path / "choices.json"
+    # Une lecture illisible non sélectionnée ne bloque pas la carte vérifiée.
+    ocr_report["cards"][1]["reading"] = None
+    report.write_text(json.dumps(ocr_report))
+    choices.write_text(json.dumps({"card-1": {"instance_id": "copy-1", "card_id": 900001}}))
+    path = db.execute("PRAGMA database_list").fetchone()[2]
+    args = ["club", "--db", path, "sync", str(report), str(choices)]
+    assert main(args) == 1
+    assert list_items(db) == []
+    assert main(args + ["--confirm"]) == 0
+    assert main(args + ["--confirm"]) == 0
+    assert len(list_items(db)) == 1
 
 
 def test_similar_versions_remain_ambiguous_and_do_not_add_items(db, fixture):

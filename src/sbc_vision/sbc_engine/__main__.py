@@ -15,6 +15,7 @@ from .players import (
     ATTRIBUTION,
     BASE_URL,
     Futbin,
+    confirm_readings,
     import_catalog,
     import_file,
     list_items,
@@ -59,6 +60,14 @@ def run_club(args):
             )
         elif args.action == "protect":
             set_protected(db, args.instance_id, not args.remove)
+        elif args.action == "sync":
+            count = confirm_readings(
+                db,
+                json.loads(args.reading.read_text()),
+                json.loads(args.choices.read_text()),
+                confirmed=args.confirm,
+            )
+            print(f"{count} lectures confirmées enregistrées.")
         items = list_items(db, unprotected_only=getattr(args, "unprotected", False))
         for item in items:
             status = "protégée" if item["protected"] else "non protégée"
@@ -145,6 +154,10 @@ def main(argv=None):
     adding = actions.add_parser("add")
     adding.add_argument("file", type=Path)
     adding.add_argument("--confirm", action="store_true")
+    sync = actions.add_parser("sync", help="Enregistrer les versions choisies d'un rapport OCR.")
+    sync.add_argument("reading", type=Path)
+    sync.add_argument("choices", type=Path)
+    sync.add_argument("--confirm", action="store_true")
     solver = commands.add_parser("solve", parents=[common], help="Proposer une composition.")
     mode = solver.add_mutually_exclusive_group(required=True)
     mode.add_argument("--demo", action="store_true")

@@ -291,36 +291,73 @@ def find_candidates(db: sqlite3.Connection, reading: CardReading) -> list[dict]:
 
 
 def save_item(db: sqlite3.Connection, item: ClubItem, *, confirmed: bool = False):
+    save_items(db, [item], confirmed=confirmed)
+
+
+def save_items(db: sqlite3.Connection, items: list[ClubItem], *, confirmed: bool = False):
     if confirmed is not True:
         raise ValueError("Confirmer la version et l'exemplaire avant l'ajout au club.")
+    if not items or len({item.instance_id for item in items}) != len(items):
+        raise ValueError("Le lot doit contenir des identifiants d'exemplaires distincts.")
     now = datetime.now(UTC).isoformat()
+    # Une erreur sur le dernier exemplaire annule aussi les premières écritures du lot.
     with db:
-        existing = db.execute(
-            "SELECT card_id FROM club_items WHERE instance_id = ?", (item.instance_id,)
-        ).fetchone()
-        if existing and existing["card_id"] != item.card_id:
-            raise ValueError("Cet identifiant d'exemplaire désigne déjà une autre version.")
-        if existing:
-            # Revoir une carte ne crée pas un doublon et ne retire pas sa protection.
-            db.execute(
-                "UPDATE club_items SET source_observation = ?, last_seen_at = ?, "
-                "item_score = COALESCE(?, item_score) "
-                "WHERE instance_id = ?",
-                (item.source_observation, now, item.item_score, item.instance_id),
-            )
-        else:
-            db.execute(
-                "INSERT INTO club_items VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (
-                    item.instance_id,
-                    item.card_id,
-                    item.protected,
-                    item.tradeable,
-                    item.source_observation,
-                    now,
-                    item.item_score,
-                ),
-            )
+        for item in items:
+            existing = db.execute(
+                "SELECT card_id FROM club_items WHERE instance_id = ?", (item.instance_id,)
+            ).fetchone()
+            if existing and existing["card_id"] != item.card_id:
+                raise ValueError("Cet identifiant d'exemplaire désigne déjà une autre version.")
+            if existing:
+                # Revoir une carte ne crée pas un doublon et ne retire pas sa protection.
+                db.execute(
+                    "UPDATE club_items SET source_observation = ?, last_seen_at = ?, "
+                    "item_score = COALESCE(?, item_score) WHERE instance_id = ?",
+                    (item.source_observation, now, item.item_score, item.instance_id),
+                )
+            else:
+                db.execute(
+                    "INSERT INTO club_items VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        item.instance_id,
+                        item.card_id,
+                        item.protected,
+                        item.tradeable,
+                        item.source_observation,
+                        now,
+                        item.item_score,
+                    ),
+                )
+
+
+def confirm_readings(db, report, choices, *, confirmed=False):
+    """Relier les versions choisies aux exemplaires suivis par le contrôleur."""
+    if not isinstance(choices, dict) or not choices:
+        raise ValueError("Choisir au moins un élément du rapport OCR.")
+    readings = {card["element_id"]: card for card in report["cards"]}
+    if len(readings) != len(report["cards"]):
+        raise ValueError("Le rapport contient plusieurs lectures du même élément.")
+    items = []
+    for element_id, choice in choices.items():
+        card = readings[element_id]
+        reading = CardReading.model_validate(card["reading"])
+        if (
+            card.get("issues")
+            or reading.element_id != element_id
+            or reading.capture_id != report["capture_id"]
+        ):
+            raise ValueError(f"Lecture à corriger avant confirmation : {element_id}.")
+        item = ClubItem(
+            **choice,
+            source_observation=f"{reading.capture_id}:{element_id}",
+            item_score=reading.item_score,
+        )
+        # Recalculer les candidats : une ancienne liste JSON ne prouve pas la correspondance.
+        if item.card_id not in {candidate["id"] for candidate in find_candidates(db, reading)}:
+            raise ValueError(f"Version incompatible avec la lecture : {element_id}.")
+        items.append(item)
+    save_items(db, items, confirmed=confirmed)
+    return len(items)
 
 
 def set_protected(db: sqlite3.Connection, instance_id: str, protected: bool):
