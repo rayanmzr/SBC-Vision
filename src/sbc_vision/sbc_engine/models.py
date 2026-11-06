@@ -112,6 +112,8 @@ class Challenge(StrictModel):
     card_level: Literal["BRONZE", "SILVER", "GOLD"] | None = None
     market: Literal["ps", "pc"]
     budget: int = Field(ge=0, le=1_000_000_000)
+    # Préférence utilisateur : valeur sacrifiée ou prix d'achat maximal par carte.
+    max_card_value: int | None = Field(default=None, gt=0, le=1_000_000_000)
 
     @model_validator(mode="after")
     def check_requirements(self) -> Self:

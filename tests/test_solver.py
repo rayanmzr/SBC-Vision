@@ -65,6 +65,7 @@ def test_greedy_failure_does_not_prove_impossibility(setup):
         {"conditions": [Condition(metric="rare", value=2)]},
         {"conditions": [Condition(metric="nation", target=9999, value=1)]},
         {"conditions": [Condition(metric="league", target=9999, value=1)]},
+        {"max_card_value": 899},
     ],
 )
 def test_infeasibility_is_reported_without_a_fake_team(setup, update):
@@ -246,6 +247,7 @@ def test_score_purchases_group_known_quantities_without_multiplying_the_budget(s
         mode="score",
         market="pc",
         budget=1000,
+        max_card_value=100,
         conditions=[Condition(metric="item_score", value=1000)],
     )
     solution = solve(challenge, [card])
@@ -290,3 +292,39 @@ def test_owned_only_solution_does_not_create_a_purchase(setup):
     purchases = shopping_list(challenge, [card], solution)
     assert purchases["items"] == []
     assert purchases["estimated_cost"] == 0
+
+
+@pytest.mark.parametrize("owned", [True, False])
+def test_value_cap_is_enforced_for_both_owned_cards_and_purchases(setup, owned):
+    _, pool, _, _ = setup
+    card = next(c for c in pool if c.key == "club:demo-002").model_copy(update={"owned": owned})
+    challenge = Challenge(positions=["CM"], market="pc", budget=1000, max_card_value=799)
+    result = solve(challenge, [card])
+    assert result.status == "infeasible"
+    assert card.key in result.excluded_keys
+
+    # Un ancien plan valide doit être refusé si la préférence utilisateur devient plus stricte.
+    old_plan = solve(challenge.model_copy(update={"max_card_value": None}), [card])
+    assert "Valeur maximale" in " ".join(validate(challenge, [card], old_plan.assignments))
+    with pytest.raises(ValueError, match="Liste d'achats refusée"):
+        shopping_list(challenge, [card], old_plan)
+    assert solve(challenge.model_copy(update={"max_card_value": 800}), [card]).status == "optimal"
+
+
+@pytest.mark.parametrize("value", [0, -10, True, 1_000_000_001])
+def test_invalid_value_caps_are_rejected(value):
+    with pytest.raises(ValidationError):
+        Challenge(positions=["CM"], market="pc", budget=1000, max_card_value=value)
+
+
+def test_cli_value_cap_is_saved_in_the_plan_and_invalid_limits_are_rejected(tmp_path):
+    output = tmp_path / "limited.json"
+    args = ["solve", "--demo", "--db", str(tmp_path / "club.sqlite3"), "--alternatives", "0"]
+    assert main(args + ["--max-card-value", "1000", "--output", str(output)]) == 0
+    report = json.loads(output.read_text())
+    assert report["challenge"]["max_card_value"] == 1000
+    assert report["solution"]["status"] == "optimal"
+    assert report["solution"]["total_cost"] == 2100
+    assert all(c["value"] <= 1000 for c in report["selected_candidates"])
+    assert main(args + ["--max-card-value", "0", "--output", str(tmp_path / "invalid.json")]) == 1
+    assert not (tmp_path / "invalid.json").exists()

@@ -118,6 +118,12 @@ Références : [formats SBC de FC 27](https://help.ea.com/en/articles/ea-sports-
 
 Le coût économique additionne achats et valeur des cartes du club sacrifiées. Les exemplaires protégés et prix inconnus ou anciens sont exclus. Les séries `ps` et `pc` du fournisseur restent distinctes. Les identités de joueurs sont provisoirement groupées selon `base_id` FUTBIN.
 
+`solve --max-card-value 1000` exclut toutes les cartes estimées à plus de 1 000 crédits, y compris celles du club. Cette préférence utilisateur est indépendante du budget total d'achat et ne modifie pas les protections enregistrées. Elle peut aussi être définie dans le JSON du défi via `max_card_value` ; l'option de commande prend la priorité. Par défaut, aucun plafond par carte n'est ajouté. La résolution et le vérificateur appliquent tous deux cette limite ; si elle empêche de remplir le SBC sur le pool connu, le moteur le signale sans la relever automatiquement.
+
+```bash
+python -m sbc_vision.sbc_engine solve --demo --max-card-value 1000
+```
+
 La proposition est écrite dans `data/processed/solution.json`. `optimal` signifie optimal sur le pool et les règles connus ; `infeasible` signifie sans solution sur ce pool ; `unknown` ne permet pas de conclure. Aucun achat ni placement n'est exécuté par ce dossier.
 
 Deux alternatives sont recherchées par défaut en écartant des versions retenues et en recalculant toute la composition. `--alternatives 0` les désactive ; la limite est de trois recalculs, deux secondes chacun. Le JSON conserve leurs plans et les sources/prix des cartes proposées.

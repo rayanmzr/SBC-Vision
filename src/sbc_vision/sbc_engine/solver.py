@@ -70,6 +70,7 @@ def eligible(challenge, pool):
         for c in pool
         if not c.protected
         and c.value is not None
+        and (challenge.max_card_value is None or c.value <= challenge.max_card_value)
         and (challenge.card_level is None or c.card_level == challenge.card_level)
         and (not need_score or c.item_score is not None)
         and (not need_club or c.club_id is not None)
@@ -99,6 +100,12 @@ def validate(challenge: Challenge, pool: list[Candidate], team: list[Assignment]
     for assignment, card in zip(team, cards, strict=True):
         if card.protected or card.value is None:
             errors.append(f"Carte protégée ou prix inconnu : {card.key}.")
+        if (
+            challenge.max_card_value is not None
+            and card.value is not None
+            and card.value > challenge.max_card_value
+        ):
+            errors.append(f"Valeur maximale par carte dépassée : {card.key}.")
         if challenge.mode == "squad" and challenge.positions[assignment.slot] not in card.positions:
             errors.append(f"Poste incompatible : {card.key}.")
         if challenge.card_level is not None and card.card_level != challenge.card_level:

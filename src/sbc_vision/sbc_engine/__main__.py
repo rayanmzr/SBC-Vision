@@ -89,6 +89,12 @@ def run_solver(args):
         challenge = Challenge.model_validate(reading["challenge"])
     else:
         challenge = Challenge.model_validate_json(args.challenge.read_text())
+    if args.max_card_value is not None:
+        challenge = Challenge.model_validate(
+            {**challenge.model_dump(), "max_card_value": args.max_card_value}
+        )
+    if challenge.max_card_value is not None:
+        print(f"Valeur maximale par carte : {challenge.max_card_value} crédits (club et achats).")
     name = "solver_demo" if args.demo else "futbin_fc27"
     with closing(open_database(args.db or f"data/processed/{name}.sqlite3")) as db:
         if args.demo:
@@ -174,6 +180,9 @@ def main(argv=None):
     solver.add_argument("--seconds", type=float, default=5)
     solver.add_argument("--alternatives", type=int, choices=range(4), default=2)
     solver.add_argument("--max-age", type=float, default=24)
+    solver.add_argument(
+        "--max-card-value", type=int, help="Valeur maximale par carte, club inclus."
+    )
     solver.add_argument("--output", type=Path, default=Path("data/processed/solution.json"))
     ocr = commands.add_parser("ocr", parents=[common], help="Lire les régions d'une capture.")
     ocr.add_argument("image", type=Path)
