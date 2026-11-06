@@ -8,8 +8,8 @@ from decimal import Decimal
 import pytesseract
 from PIL import Image, ImageOps
 
-from .inventory import find_candidates, normalize_name
 from .models import CardReading, Challenge, Condition, OcrInput
+from .players import find_candidates, normalize_name
 
 POSITIONS = {
     "G": "GK",

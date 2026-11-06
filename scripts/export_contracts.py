@@ -4,6 +4,8 @@ import argparse
 import json
 from pathlib import Path
 
+from pydantic import TypeAdapter
+
 from sbc_vision.contracts.perception import PerceptionResponse
 from sbc_vision.sbc_engine.models import CardReading, Challenge, ClubItem, OcrInput, SolverResult
 
@@ -14,17 +16,15 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
-    models = {
-        "ocr-input": OcrInput,
-        "perception": PerceptionResponse,
-        "card-reading": CardReading,
-        "club-item": ClubItem,
-        "challenge": Challenge,
-        "solver-result": SolverResult,
+    schemas = {
+        "perception": PerceptionResponse.model_json_schema(),
+        # Pydantic regroupe les formats SBC et leurs références dans un seul schéma.
+        "sbc": TypeAdapter(
+            CardReading | ClubItem | Challenge | OcrInput | SolverResult
+        ).json_schema(),
     }
-    for name, model in models.items():
+    for name, schema in schemas.items():
         target = ROOT / "contracts" / f"{name}.schema.json"
-        schema = model.model_json_schema()
         if args.check:
             if not target.exists() or json.loads(target.read_text()) != schema:
                 raise SystemExit(f"Contrat périmé : {name}. Exécuter scripts/export_contracts.py")

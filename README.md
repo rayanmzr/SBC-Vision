@@ -6,17 +6,17 @@ Le client prévu est une **extension Chrome avec interface React**, reliée à l
 
 Le modèle transforme une capture en une liste JSON d'éléments et d'actions possibles. Un contrôleur exploite ce résultat pour inventorier le club, préparer une composition et vérifier les écrans. Le solveur cherche à réduire les dépenses et la valeur des cartes sacrifiées, en préservant les cartes protégées.
 
-**Avancement :** API de démarrage, contrats JSON, import FUTBIN, inventaire SQLite et solveur expérimental sur un défi fictif. La détection, l'OCR, les règles SBC réelles et l'extension restent à raccorder.
+**Avancement :** API de démarrage, OCR local, import FUTBIN, inventaire SQLite et solveur dynamique testés sur des données synthétiques. La détection et l'extension restent à développer ; le parcours sur la vraie Web App reste à vérifier.
 
 ## Équipe
 
-| Membre | Compte | Responsabilité principale | Document de travail |
-| --- | --- | --- | --- |
-| Saber Kasri | [@saberkasri](https://github.com/saberkasri) | Données, annotations, détection, entraînement, évaluation | [Vision](docs/roles/saber.md) |
-| Rayan Mazri | [@rayanmzr](https://github.com/rayanmzr) | OCR, inventaire, données FUTBIN, optimisation SBC | [OCR et solveur](docs/roles/rayan.md) |
-| Samy Allali | [@SamyALlali](https://github.com/SamyALlali) | Application, contrôleur, API, Docker, cloud, secours local | [Application et intégration](docs/roles/samy.md) |
+| Membre | Compte | Responsabilité principale |
+| --- | --- | --- |
+| Saber Kasri | [@saberkasri](https://github.com/saberkasri) | Données, annotations, détection, entraînement, évaluation |
+| Rayan Mazri | [@rayanmzr](https://github.com/rayanmzr) | OCR, inventaire, données FUTBIN, optimisation SBC |
+| Samy Allali | [@SamyALlali](https://github.com/SamyALlali) | Extension, contrôleur, API, Docker et cloud |
 
-Chaque membre prend en charge sa partie et participe aux revues des autres.
+La [répartition détaillée](docs/TEAM.md) précise les interfaces et livrables de chacun.
 
 La partie de Rayan est regroupée dans [sbc_engine](src/sbc_vision/sbc_engine/README.md) : catalogue FUTBIN, inventaire, OCR et optimisation. Une seule commande permet de tester les fonctions : `python -m sbc_vision.sbc_engine --help`.
 
@@ -42,37 +42,19 @@ make check
 
 La commande lance le lint, les tests hors ligne et la vérification du schéma JSON.
 
-## Catalogue FUTBIN
+## Moteur SBC
 
 ```bash
-# Premier essai limité à deux pages, puis réutilisation du cache à la relance.
+# Import limité avec cache, si la source est accessible.
 python -m sbc_vision.sbc_engine import --pages 2
-
-# Actualiser seulement une version de carte avant un calcul.
-python -m sbc_vision.sbc_engine import --ids 107 --refresh
-```
-
-Les cartes et l'historique des prix restent dans `data/processed/futbin_fc27.sqlite3`, ignoré par Git. Le [guide du moteur](src/sbc_vision/sbc_engine/README.md) explique les six fichiers et les options. Si FUTBIN refuse l'accès, le cache est conservé et un export normalisé peut être importé.
-
-## Inventaire du club
-
-```bash
-# Démo hors ligne : trois exemplaires fictifs, dont un protégé.
+# Démonstrations hors ligne avec des cartes fictives.
 python -m sbc_vision.sbc_engine club demo
-
-# Consulter seulement les exemplaires non protégés de cette démo.
-python -m sbc_vision.sbc_engine club --db data/processed/club_demo.sqlite3 list --unprotected
-```
-
-L'inventaire distingue les versions et les exemplaires, conserve les protections et recherche les versions candidates d'une lecture OCR. Le [guide du moteur](src/sbc_vision/sbc_engine/README.md) décrit les commandes et les régions attendues. La démo utilise une base distincte du catalogue réel ; aucun club EA n'est encore scanné.
-
-## Solveur expérimental
-
-```bash
 python -m sbc_vision.sbc_engine solve --demo
 ```
 
 Sur le petit défi fictif, la sélection simple coûte 2 600 crédits en valeur économique ; OR-Tools trouve 2 100 crédits, dont 1 300 d'achats et 800 de valeur sacrifiée. Les exemplaires protégés sont exclus et chaque proposition est vérifiée séparément. Le rapport reste dans `data/processed/solution.json`.
+
+Le [guide du moteur](src/sbc_vision/sbc_engine/README.md) explique les cinq fichiers et les commandes. Les bases restent dans `data/processed/`, ignoré par Git. Les démos utilisent des bases distinctes des données réelles. FUTBIN a répondu HTTP 403 le 6 novembre : le cache est conservé et un export normalisé peut être importé.
 
 Le moteur reçoit les conditions de chaque capture : aucun nom de SBC n'est codé dans l'algorithme. Il prend en charge les compositions et l'Item Score, des contraintes minimum/maximum/exactes, la note à onze joueurs et un profil de collectif standard. Les lectures ou règles non prises en charge bloquent la proposition. Voir le [guide du moteur](src/sbc_vision/sbc_engine/README.md) pour les limites et les commandes OCR.
 
@@ -88,12 +70,10 @@ L'API est exposée sur `127.0.0.1:8000`. Les modèles seront intégrés dans les
 
 ```text
 src/sbc_vision/      API, contrats et emplacements des briques Python
-frontend/           Périmètre de l'extension Chrome et de son interface React
-contracts/          Schémas JSON générés et versionnés
+contracts/          Deux schémas générés : perception et formats SBC
 data/fixtures/      Exemples synthétiques, sans compte réel
 data/raw/           Captures locales, ignorées par Git
-notebooks/          Exploration, entraînement et évaluation à produire
-docs/               Cadrage, architecture, données, protocole, décisions, rôles
+docs/               Cadrage, architecture, données, protocole et équipe
 planning/           Backlog, jalons, responsables et suivi GitHub
 scripts/            Export des contrats
 .github/            CI et modèles d'issues / pull requests
@@ -122,12 +102,19 @@ Les résultats ne sont pas encore mesurés. Le [protocole](docs/EVALUATION.md) p
 
 - [GitHub Project](https://github.com/users/rayanmzr/projects/5)
 - [Issues](https://github.com/rayanmzr/SBC-Vision/issues)
-- [Répartition des tâches](planning/ISSUES.md)
+- [Répartition des tâches](docs/TEAM.md)
 - [Feuille de route](planning/ROADMAP.md)
 - [Backlog source](planning/backlog.json)
 - [Note de cadrage](docs/cadrage/note-cadrage.pdf)
 - [Architecture et contrats](docs/ARCHITECTURE.md)
-- [Contribution](CONTRIBUTING.md)
+
+## Travail en équipe
+
+Choisir une issue, déplacer sa carte dans `In Progress`, créer une branche et faire des commits ciblés avec son compte. Ouvrir une PR liée à l'issue, faire relire par un membre puis fusionner après la CI. Une tâche est terminée quand ses critères sont remplis, ses limites documentées et ses changements intégrés.
+
+Documentation et commentaires en français, identifiants Python en anglais. Garder les dépendances nécessaires et le code réutilisable dans `src/`. Lancer `make check` avant un push ; après modification des formats, régénérer les deux schémas avec `python scripts/export_contracts.py`. Les métriques indiquent le split, le matériel et le run MLflow.
+
+Les tokens, cookies, captures privées, inventaires réels et poids lourds restent hors de Git. Pour un signalement sensible, contacter le propriétaire du dépôt par un canal privé. La connexion EA reste dans le navigateur de l'utilisateur et toute soumission exige sa confirmation. Voir les [consignes de données](docs/DATA.md).
 
 ## Données et budget
 

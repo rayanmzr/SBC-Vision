@@ -4,8 +4,7 @@ Ce dossier rassemble l'OCR, les données FUTBIN, l'inventaire et le solveur. Les
 
 | Fichier | Contenu |
 | --- | --- |
-| `catalogue.py` | FUTBIN, SQLite et cache. |
-| `inventory.py` | Exemplaires, protections et rapprochement avec les versions. |
+| `players.py` | Catalogue FUTBIN, prix, cache SQLite et exemplaires du club. |
 | `ocr.py` | Lecture locale des régions d'une capture avec Tesseract. |
 | `models.py` | Formats des données et des contraintes. |
 | `solver.py` | Optimisation OR-Tools, comparaison simple et vérificateur. |
@@ -26,7 +25,7 @@ Les démos utilisent des données fictives dans des bases séparées. Les donné
 
 Installer Tesseract (`brew install tesseract` sur macOS), puis l'option Python `.[ocr]`. `ocr CAPTURE REGIONS_JSON` lit une image locale et écrit `data/processed/ocr.json`. `--lang` choisit une langue installée dans Tesseract, `eng` par défaut. `--min-confidence` règle le seuil (0,75 par défaut).
 
-Le fichier des régions contient `capture_id` et une liste `regions`, avec `element_id`, `field` et `bbox` (`x`, `y`, `width`, `height` en pixels). Le [schéma](../../../contracts/ocr-input.schema.json) définit les champs possibles. Les régions viennent du détecteur de Saber ou d'une annotation de test ; aucun emplacement de carte n'est fixé dans le code.
+Le fichier des régions contient `capture_id` et une liste `regions`, avec `element_id`, `field` et `bbox` (`x`, `y`, `width`, `height` en pixels). Le [schéma SBC](../../../contracts/sbc.schema.json) rassemble les formats dans `$defs` : `OcrInput`, `CardReading`, `ClubItem`, `Challenge` et `SolverResult`. Les régions viennent du détecteur de Saber ou d'une annotation de test ; aucun emplacement de carte n'est fixé dans le code.
 
 L'image est agrandie et passée en niveaux de gris. Un passage Tesseract lit tous les mots, puis leurs coordonnées les rattachent aux régions. Le texte brut et les confiances sont conservés. Les noms et notes incertains restent à relire ; aucune lecture OCR n'ajoute automatiquement un exemplaire au club.
 
@@ -67,6 +66,7 @@ Références : [formats SBC de FC 27](https://help.ea.com/en/articles/ea-sports-
 Le coût économique additionne achats et valeur des cartes du club sacrifiées. Les exemplaires protégés et prix inconnus ou anciens sont exclus. Les séries `ps` et `pc` du fournisseur restent distinctes. Les identités de joueurs sont provisoirement groupées selon `base_id` FUTBIN.
 
 La proposition est écrite dans `data/processed/solution.json`. `optimal` signifie optimal sur le pool et les règles connus ; `infeasible` signifie sans solution sur ce pool ; `unknown` ne permet pas de conclure. Aucun achat ni placement n'est exécuté par ce dossier.
+
 Deux alternatives sont recherchées par défaut en écartant des versions retenues et en recalculant toute la composition. `--alternatives 0` les désactive ; la limite est de trois recalculs, deux secondes chacun. Le JSON conserve leurs plans et les sources/prix des cartes proposées.
 
 ## Accès aux données
@@ -76,8 +76,7 @@ Le 6 novembre, un appel FUTBIN local a répondu HTTP 403. L'import s'arrête et 
 ## Ordre de lecture pour expliquer le code
 
 1. `models.py` vérifie la forme des données.
-2. `catalogue.py` lit et sauvegarde les versions et prix.
-3. `inventory.py` compte les exemplaires et garde les protections.
-4. `ocr.py` lit les pixels et traduit les conditions reconnues.
-5. `solver.py` crée les variables, impose les contraintes, minimise le coût et vérifie le résultat.
-6. `__main__.py` relie les fonctions pour les essais en terminal.
+2. `players.py` sauvegarde les versions et prix, compte les exemplaires et garde les protections.
+3. `ocr.py` lit les pixels et traduit les conditions reconnues.
+4. `solver.py` crée les variables, impose les contraintes, minimise le coût et vérifie le résultat.
+5. `__main__.py` relie les fonctions pour les essais en terminal.

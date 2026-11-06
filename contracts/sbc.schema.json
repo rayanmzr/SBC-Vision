@@ -1,0 +1,588 @@
+{
+  "$defs": {
+    "Assignment": {
+      "additionalProperties": false,
+      "properties": {
+        "slot": {
+          "maximum": 99,
+          "minimum": 0,
+          "title": "Slot",
+          "type": "integer"
+        },
+        "candidate_key": {
+          "minLength": 1,
+          "title": "Candidate Key",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slot",
+        "candidate_key"
+      ],
+      "title": "Assignment",
+      "type": "object"
+    },
+    "BoundingBox": {
+      "additionalProperties": false,
+      "description": "Boîte dans la capture : x, y en haut à gauche ; largeur/hauteur en pixels.",
+      "properties": {
+        "x": {
+          "minimum": 0,
+          "title": "X",
+          "type": "integer"
+        },
+        "y": {
+          "minimum": 0,
+          "title": "Y",
+          "type": "integer"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "title": "BoundingBox",
+      "type": "object"
+    },
+    "CardReading": {
+      "additionalProperties": false,
+      "description": "Attributs lus sur une carte, à rapprocher des versions du catalogue.",
+      "properties": {
+        "capture_id": {
+          "minLength": 1,
+          "title": "Capture Id",
+          "type": "string"
+        },
+        "element_id": {
+          "minLength": 1,
+          "title": "Element Id",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "rating": {
+          "maximum": 99,
+          "minimum": 1,
+          "title": "Rating",
+          "type": "integer"
+        },
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "position": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Position"
+        },
+        "club_id": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Club Id"
+        },
+        "league_id": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "League Id"
+        },
+        "nation_id": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Nation Id"
+        },
+        "rare_type": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rare Type"
+        },
+        "is_rare": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Rare"
+        },
+        "item_score": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1000000000,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Item Score"
+        }
+      },
+      "required": [
+        "capture_id",
+        "element_id",
+        "name",
+        "rating",
+        "confidence"
+      ],
+      "title": "CardReading",
+      "type": "object"
+    },
+    "Challenge": {
+      "additionalProperties": false,
+      "properties": {
+        "rules_version": {
+          "const": "dynamic-v1",
+          "default": "dynamic-v1",
+          "title": "Rules Version",
+          "type": "string"
+        },
+        "mode": {
+          "default": "squad",
+          "enum": [
+            "squad",
+            "score"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "positions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 11,
+          "title": "Positions",
+          "type": "array"
+        },
+        "conditions": {
+          "items": {
+            "$ref": "#/$defs/Condition"
+          },
+          "title": "Conditions",
+          "type": "array"
+        },
+        "max_items": {
+          "default": 100,
+          "maximum": 100,
+          "minimum": 1,
+          "title": "Max Items",
+          "type": "integer"
+        },
+        "score_progress": {
+          "default": 0,
+          "maximum": 1000000000,
+          "minimum": 0,
+          "title": "Score Progress",
+          "type": "integer"
+        },
+        "card_level": {
+          "anyOf": [
+            {
+              "enum": [
+                "BRONZE",
+                "SILVER",
+                "GOLD"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Card Level"
+        },
+        "market": {
+          "enum": [
+            "ps",
+            "pc"
+          ],
+          "title": "Market",
+          "type": "string"
+        },
+        "budget": {
+          "maximum": 1000000000,
+          "minimum": 0,
+          "title": "Budget",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "market",
+        "budget"
+      ],
+      "title": "Challenge",
+      "type": "object"
+    },
+    "ClubItem": {
+      "additionalProperties": false,
+      "description": "Un exemplaire possédé, distinct de la version du catalogue.",
+      "properties": {
+        "instance_id": {
+          "minLength": 1,
+          "title": "Instance Id",
+          "type": "string"
+        },
+        "card_id": {
+          "exclusiveMinimum": 0,
+          "title": "Card Id",
+          "type": "integer"
+        },
+        "protected": {
+          "default": false,
+          "title": "Protected",
+          "type": "boolean"
+        },
+        "tradeable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tradeable"
+        },
+        "source_observation": {
+          "minLength": 1,
+          "title": "Source Observation",
+          "type": "string"
+        },
+        "item_score": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1000000000,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Item Score"
+        }
+      },
+      "required": [
+        "instance_id",
+        "card_id",
+        "source_observation"
+      ],
+      "title": "ClubItem",
+      "type": "object"
+    },
+    "Condition": {
+      "additionalProperties": false,
+      "properties": {
+        "metric": {
+          "enum": [
+            "players",
+            "rating",
+            "rated",
+            "rare",
+            "nation",
+            "league",
+            "club",
+            "nations",
+            "leagues",
+            "clubs",
+            "same_nation",
+            "same_league",
+            "same_club",
+            "quality",
+            "item_score",
+            "team_rating",
+            "chemistry"
+          ],
+          "title": "Metric",
+          "type": "string"
+        },
+        "op": {
+          "default": "min",
+          "enum": [
+            "min",
+            "max",
+            "exact"
+          ],
+          "title": "Op",
+          "type": "string"
+        },
+        "value": {
+          "maximum": 1000000000,
+          "minimum": 0,
+          "title": "Value",
+          "type": "integer"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target"
+        },
+        "text": {
+          "default": "",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metric",
+        "value"
+      ],
+      "title": "Condition",
+      "type": "object"
+    },
+    "OcrInput": {
+      "additionalProperties": false,
+      "properties": {
+        "capture_id": {
+          "minLength": 1,
+          "title": "Capture Id",
+          "type": "string"
+        },
+        "regions": {
+          "items": {
+            "$ref": "#/$defs/TextRegion"
+          },
+          "minItems": 1,
+          "title": "Regions",
+          "type": "array"
+        },
+        "positions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 11,
+          "title": "Positions",
+          "type": "array"
+        },
+        "attributes": {
+          "additionalProperties": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "type": "object"
+          },
+          "title": "Attributes",
+          "type": "object"
+        }
+      },
+      "required": [
+        "capture_id",
+        "regions"
+      ],
+      "title": "OcrInput",
+      "type": "object"
+    },
+    "SolverResult": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "optimal",
+            "feasible",
+            "infeasible",
+            "unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "assignments": {
+          "items": {
+            "$ref": "#/$defs/Assignment"
+          },
+          "title": "Assignments",
+          "type": "array"
+        },
+        "purchase_cost": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Purchase Cost"
+        },
+        "sacrifice_value": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sacrifice Value"
+        },
+        "total_cost": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Total Cost"
+        },
+        "elapsed_seconds": {
+          "default": 0.0,
+          "title": "Elapsed Seconds",
+          "type": "number"
+        },
+        "excluded_keys": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Excluded Keys",
+          "type": "array"
+        },
+        "errors": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Errors",
+          "type": "array"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "SolverResult",
+      "type": "object"
+    },
+    "TextRegion": {
+      "additionalProperties": false,
+      "properties": {
+        "element_id": {
+          "minLength": 1,
+          "title": "Element Id",
+          "type": "string"
+        },
+        "field": {
+          "enum": [
+            "name",
+            "rating",
+            "position",
+            "item_score",
+            "requirements",
+            "slots"
+          ],
+          "title": "Field",
+          "type": "string"
+        },
+        "bbox": {
+          "$ref": "#/$defs/BoundingBox"
+        }
+      },
+      "required": [
+        "element_id",
+        "field",
+        "bbox"
+      ],
+      "title": "TextRegion",
+      "type": "object"
+    }
+  },
+  "anyOf": [
+    {
+      "$ref": "#/$defs/CardReading"
+    },
+    {
+      "$ref": "#/$defs/ClubItem"
+    },
+    {
+      "$ref": "#/$defs/Challenge"
+    },
+    {
+      "$ref": "#/$defs/OcrInput"
+    },
+    {
+      "$ref": "#/$defs/SolverResult"
+    }
+  ]
+}

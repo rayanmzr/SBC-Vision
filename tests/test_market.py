@@ -9,7 +9,7 @@ from unittest.mock import Mock
 import httpx
 import pytest
 
-from sbc_vision.sbc_engine.catalogue import (
+from sbc_vision.sbc_engine.players import (
     BASE_URL,
     Futbin,
     import_catalog,
@@ -130,7 +130,7 @@ def test_large_selection_is_split_into_bounded_batches(db, raw_card):
 
 
 def test_html_deduplication_and_last_page(monkeypatch):
-    monkeypatch.setattr("sbc_vision.sbc_engine.catalogue.time.sleep", lambda _: None)
+    monkeypatch.setattr("sbc_vision.sbc_engine.players.time.sleep", lambda _: None)
     html = """<table><tr class="player-row"><td>
       <a class="player-row-playercard" href="/27/player/900001/joueur-fictif">Carte</a>
       <a class="player-row-playercard" href="/27/player/900001/joueur-fictif">Carte mobile</a>
@@ -143,7 +143,7 @@ def test_html_deduplication_and_last_page(monkeypatch):
 
 @pytest.mark.parametrize("status", [403, 429, 503])
 def test_http_error_stops_without_retry(monkeypatch, status):
-    monkeypatch.setattr("sbc_vision.sbc_engine.catalogue.time.sleep", lambda _: None)
+    monkeypatch.setattr("sbc_vision.sbc_engine.players.time.sleep", lambda _: None)
     handler = Mock(return_value=httpx.Response(status))
     with httpx.Client(base_url=BASE_URL, transport=httpx.MockTransport(handler)) as http:
         with pytest.raises(httpx.HTTPStatusError):
@@ -152,7 +152,7 @@ def test_http_error_stops_without_retry(monkeypatch, status):
 
 
 def test_incomplete_response_cannot_be_saved_as_success(monkeypatch):
-    monkeypatch.setattr("sbc_vision.sbc_engine.catalogue.time.sleep", lambda _: None)
+    monkeypatch.setattr("sbc_vision.sbc_engine.players.time.sleep", lambda _: None)
     with httpx.Client(
         base_url=BASE_URL,
         transport=httpx.MockTransport(lambda _: httpx.Response(200, json={"squadPlayerData": {}})),
@@ -164,8 +164,8 @@ def test_incomplete_response_cannot_be_saved_as_success(monkeypatch):
 def test_requests_are_spaced_out(monkeypatch):
     sleep = Mock()
     ticks = iter([100, 100, 100.5, 102])
-    monkeypatch.setattr("sbc_vision.sbc_engine.catalogue.time.sleep", sleep)
-    monkeypatch.setattr("sbc_vision.sbc_engine.catalogue.time.monotonic", lambda: next(ticks))
+    monkeypatch.setattr("sbc_vision.sbc_engine.players.time.sleep", sleep)
+    monkeypatch.setattr("sbc_vision.sbc_engine.players.time.monotonic", lambda: next(ticks))
     with httpx.Client(
         base_url=BASE_URL, transport=httpx.MockTransport(lambda _: httpx.Response(200))
     ) as http:

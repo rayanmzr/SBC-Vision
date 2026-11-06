@@ -10,10 +10,9 @@ import pytest
 from PIL import Image, ImageDraw, ImageFont
 from pydantic import ValidationError
 
-from sbc_vision.sbc_engine.catalogue import open_database, save_cards
-from sbc_vision.sbc_engine.inventory import list_items, seed_demo
 from sbc_vision.sbc_engine.models import OcrInput
 from sbc_vision.sbc_engine.ocr import analyze, challenge_from_ocr, read_regions
+from sbc_vision.sbc_engine.players import list_items, open_database, save_cards, seed_demo
 
 
 def specification():

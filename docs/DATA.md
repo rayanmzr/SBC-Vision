@@ -49,11 +49,17 @@ Attribution à conserver : « Données de prix : FUTBIN — https://www.futbin.c
 
 La table `club_items` référence la version du catalogue pour chaque exemplaire confirmé. La protection et le statut échangeable appartiennent à l'exemplaire ; ils sont conservés lors d'une nouvelle observation. Les quantités sont comptées à partir des identifiants stables d'exemplaires, jamais à partir du nombre de captures.
 
-Le rapprochement de lectures structurées propose des versions, sans les valider automatiquement. Le vrai OCR, le suivi des exemplaires entre écrans et le scan du compte restent à raccorder. Le [guide](../src/sbc_vision/sbc_engine/README.md) fournit les formats et une démo entièrement fictive dans une base séparée.
+Le rapprochement des lectures OCR propose des versions, sans les valider automatiquement. Le suivi des exemplaires entre écrans et le scan du compte restent à raccorder. Le [guide](../src/sbc_vision/sbc_engine/README.md) fournit les formats et une démo entièrement fictive dans une base séparée.
 
 ## Emplacements
 
-`data/fixtures/` contient uniquement des données synthétiques. `data/raw/`, `data/processed/`, `artifacts/` et les bases locales sont ignorés par Git. Les licences, coûts et disponibilités des sources doivent être vérifiés avant diffusion.
+- `data/fixtures/` : petits exemples synthétiques versionnés pour les tests hors ligne.
+- `data/raw/` : captures originales locales, ignorées par Git.
+- `data/processed/` : recadrages, annotations préparées et bases SQLite locales, ignorés par Git.
+
+`perception.synthetic.json` teste le contrat avec une sortie écrite à la main. `club.synthetic.json` contient trois versions et trois exemplaires inventés, dont deux copies d'une même version avec des protections différentes. `solver.synthetic.json` ajoute trois cartes et un défi à trois postes pour comparer les méthodes. Les noms, prix et confirmations de ces démos sont fictifs ; aucune de ces fixtures ne définit un SBC EA validé.
+
+Les manifestes et guides d'accès sont versionnés ; les captures privées, inventaires réels, cookies et poids lourds restent hors de Git. Les journaux ne doivent pas enregistrer images ni en-têtes d'authentification. Ne pas publier de données sensibles dans une issue. Les licences, coûts et disponibilités des sources doivent être vérifiés avant diffusion.
 
 ## Vérification du 6 novembre
 

@@ -41,6 +41,8 @@ Chaque entraînement enregistre commit Git, version du manifeste, paramètres, s
 
 Les résultats seront ajoutés après les premières mesures, avec les liens vers les runs correspondants.
 
+Les explorations pourront être regroupées dans `notebooks/` : corpus et splits, baseline, entraînement, évaluation et cas synthétique du solveur. Les fonctions réutilisables restent dans `src/` ; retirer les sorties privées des notebooks avant commit.
+
 ## Premier cas de solveur fictif
 
 La démo `python -m sbc_vision.sbc_engine solve --demo` compare les deux méthodes sur trois emplacements et des prix inventés. Elle vérifie un coût économique de 2 600 pour la sélection simple et de 2 100 pour CP-SAT. Une énumération exhaustive du petit pool confirme le résultat dans les tests. Ces valeurs servent à contrôler l'algorithme, pas à annoncer une performance sur les SBC EA FC.

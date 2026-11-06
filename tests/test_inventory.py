@@ -8,14 +8,15 @@ import pytest
 from pydantic import ValidationError
 
 from sbc_vision.sbc_engine.__main__ import main
-from sbc_vision.sbc_engine.catalogue import open_database, save_cards
-from sbc_vision.sbc_engine.inventory import (
+from sbc_vision.sbc_engine.models import CardReading, ClubItem
+from sbc_vision.sbc_engine.players import (
     find_candidates,
     list_items,
+    open_database,
+    save_cards,
     save_item,
     set_protected,
 )
-from sbc_vision.sbc_engine.models import CardReading, ClubItem
 
 FIXTURE = Path(__file__).resolve().parents[1] / "data/fixtures/club.synthetic.json"
 

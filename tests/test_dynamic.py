@@ -7,10 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from sbc_vision.sbc_engine.catalogue import import_file, open_database
-from sbc_vision.sbc_engine.inventory import load_pool, seed_demo
 from sbc_vision.sbc_engine.models import Challenge, ClubItem, Condition
 from sbc_vision.sbc_engine.ocr import challenge_from_ocr, number, parse_requirements
+from sbc_vision.sbc_engine.players import import_file, load_pool, open_database, seed_demo
 from sbc_vision.sbc_engine.solver import alternatives, solve, team_rating, validate
 
 FIXTURES = Path(__file__).resolve().parents[1] / "data/fixtures"
@@ -212,7 +211,7 @@ def test_file_import_keeps_original_dates_and_null_prices(setup, tmp_path):
 
 
 def test_item_score_is_preserved_on_an_owned_copy(setup):
-    from sbc_vision.sbc_engine.inventory import list_items, save_item
+    from sbc_vision.sbc_engine.players import list_items, save_item
 
     db, _ = setup
     save_item(

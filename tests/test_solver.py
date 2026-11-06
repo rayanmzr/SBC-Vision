@@ -12,9 +12,8 @@ from ortools.sat.python import cp_model
 from pydantic import ValidationError
 
 from sbc_vision.sbc_engine.__main__ import main
-from sbc_vision.sbc_engine.catalogue import open_database
-from sbc_vision.sbc_engine.inventory import load_pool, seed_demo
 from sbc_vision.sbc_engine.models import Assignment, Challenge, Condition
+from sbc_vision.sbc_engine.players import load_pool, open_database, seed_demo
 from sbc_vision.sbc_engine.solver import greedy, solve, validate
 
 FIXTURES = Path(__file__).resolve().parents[1] / "data/fixtures"

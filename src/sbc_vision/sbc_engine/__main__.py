@@ -10,9 +10,20 @@ from pathlib import Path
 
 import httpx
 
-from .catalogue import ATTRIBUTION, BASE_URL, Futbin, import_catalog, import_file, open_database
-from .inventory import list_items, load_pool, save_item, seed_demo, set_protected
 from .models import Challenge, ClubItem, OcrInput
+from .players import (
+    ATTRIBUTION,
+    BASE_URL,
+    Futbin,
+    import_catalog,
+    import_file,
+    list_items,
+    load_pool,
+    open_database,
+    save_item,
+    seed_demo,
+    set_protected,
+)
 from .solver import alternatives, greedy, solve
 
 
