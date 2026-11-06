@@ -14,7 +14,7 @@ from pydantic import ValidationError
 from sbc_vision.sbc_engine.__main__ import main
 from sbc_vision.sbc_engine.catalogue import open_database
 from sbc_vision.sbc_engine.inventory import load_pool, seed_demo
-from sbc_vision.sbc_engine.models import Assignment, Challenge
+from sbc_vision.sbc_engine.models import Assignment, Challenge, Condition
 from sbc_vision.sbc_engine.solver import greedy, solve, validate
 
 FIXTURES = Path(__file__).resolve().parents[1] / "data/fixtures"
@@ -61,11 +61,11 @@ def test_greedy_failure_does_not_prove_impossibility(setup):
     "update",
     [
         {"budget": 0},
-        {"min_card_rating": 99},
+        {"conditions": [Condition(metric="rating", value=99)]},
         {"positions": ["GK"]},
-        {"min_rare": 2},
-        {"nation_id": 9999, "min_nation": 1},
-        {"league_id": 9999, "min_league": 1},
+        {"conditions": [Condition(metric="rare", value=2)]},
+        {"conditions": [Condition(metric="nation", target=9999, value=1)]},
+        {"conditions": [Condition(metric="league", target=9999, value=1)]},
     ],
 )
 def test_infeasibility_is_reported_without_a_fake_team(setup, update):
@@ -96,7 +96,7 @@ def test_other_market_price_is_never_used_as_fallback(setup):
 def test_owned_card_is_valued_instead_of_automatically_free(setup):
     _, pool, _, _ = setup
     expensive = next(card for card in pool if card.key == "club:demo-003")
-    challenge = Challenge(rules_version="prototype-v1", positions=["ST"], market="pc", budget=500)
+    challenge = Challenge(positions=["ST"], market="pc", budget=500)
     solution = solve(challenge, [expensive, next(c for c in pool if c.key == "market:900004")])
     assert solution.total_cost == 400
     assert solution.assignments[0].candidate_key == "market:900004"
@@ -106,9 +106,7 @@ def test_same_player_cannot_fill_two_slots_with_copies_or_versions(setup):
     _, pool, _, _ = setup
     a = next(card for card in pool if card.key == "club:demo-002")
     b = a.model_copy(update={"key": "other-version", "card_id": 900099})
-    challenge = Challenge(
-        rules_version="prototype-v1", positions=["CM", "CAM"], market="pc", budget=0
-    )
+    challenge = Challenge(positions=["CM", "CAM"], market="pc", budget=0)
     assert solve(challenge, [a, b]).status == "infeasible"
 
 
@@ -117,7 +115,7 @@ def test_ties_preserve_rare_cards_then_prefer_an_owned_copy(setup):
     normal = next(card for card in pool if card.key == "club:demo-002")
     rare = normal.model_copy(update={"key": "rare", "base_id": 999001, "is_rare": True})
     purchase = normal.model_copy(update={"key": "purchase", "base_id": 999002, "owned": False})
-    challenge = Challenge(rules_version="prototype-v1", positions=["CM"], market="pc", budget=5000)
+    challenge = Challenge(positions=["CM"], market="pc", budget=5000)
     assert solve(challenge, [rare, purchase, normal]).assignments[0].candidate_key == normal.key
 
 
@@ -158,15 +156,18 @@ def test_small_case_matches_exhaustive_enumeration(setup):
             continue
         if any(p not in c.positions for p, c in zip(challenge.positions, team, strict=True)):
             continue
-        if min(c.rating for c in team) < challenge.min_card_rating:
-            continue
         if sum(c.value for c in team if not c.owned) > challenge.budget:
             continue
-        if sum(c.is_rare for c in team) < challenge.min_rare:
-            continue
-        if sum(c.nation_id == challenge.nation_id for c in team) < challenge.min_nation:
-            continue
-        if sum(c.league_id == challenge.league_id for c in team) < challenge.min_league:
+        valid = True
+        for rule in challenge.conditions:
+            if rule.metric == "rating":
+                actual = min(c.rating for c in team)
+            elif rule.metric == "rare":
+                actual = sum(c.is_rare for c in team)
+            else:
+                actual = sum(getattr(c, f"{rule.metric}_id") == rule.target for c in team)
+            valid &= actual >= rule.value
+        if not valid:
             continue
         scores.append(
             (
@@ -207,7 +208,7 @@ def test_unimplemented_fc_rules_are_rejected(extra):
     with pytest.raises(ValidationError):
         Challenge.model_validate(
             {
-                "rules_version": "prototype-v1",
+                "rules_version": "dynamic-v1",
                 "positions": ["CM"],
                 "market": "pc",
                 "budget": 1000,

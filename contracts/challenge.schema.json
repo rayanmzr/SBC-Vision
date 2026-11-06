@@ -74,10 +74,8 @@
   "additionalProperties": false,
   "properties": {
     "rules_version": {
-      "enum": [
-        "prototype-v1",
-        "dynamic-v1"
-      ],
+      "const": "dynamic-v1",
+      "default": "dynamic-v1",
       "title": "Rules Version",
       "type": "string"
     },
@@ -149,64 +147,9 @@
       "minimum": 0,
       "title": "Budget",
       "type": "integer"
-    },
-    "min_card_rating": {
-      "default": 1,
-      "maximum": 99,
-      "minimum": 1,
-      "title": "Min Card Rating",
-      "type": "integer"
-    },
-    "min_rare": {
-      "default": 0,
-      "maximum": 11,
-      "minimum": 0,
-      "title": "Min Rare",
-      "type": "integer"
-    },
-    "nation_id": {
-      "anyOf": [
-        {
-          "exclusiveMinimum": 0,
-          "type": "integer"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Nation Id"
-    },
-    "min_nation": {
-      "default": 0,
-      "maximum": 11,
-      "minimum": 0,
-      "title": "Min Nation",
-      "type": "integer"
-    },
-    "league_id": {
-      "anyOf": [
-        {
-          "exclusiveMinimum": 0,
-          "type": "integer"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "League Id"
-    },
-    "min_league": {
-      "default": 0,
-      "maximum": 11,
-      "minimum": 0,
-      "title": "Min League",
-      "type": "integer"
     }
   },
   "required": [
-    "rules_version",
     "market",
     "budget"
   ],

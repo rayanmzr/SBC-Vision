@@ -103,7 +103,7 @@ class Condition(StrictModel):
 
 
 class Challenge(StrictModel):
-    rules_version: Literal["prototype-v1", "dynamic-v1"]
+    rules_version: Literal["dynamic-v1"] = "dynamic-v1"
     mode: Literal["squad", "score"] = "squad"
     positions: list[str] = Field(default_factory=list, max_length=11)
     conditions: list[Condition] = Field(default_factory=list)
@@ -112,12 +112,6 @@ class Challenge(StrictModel):
     card_level: Literal["BRONZE", "SILVER", "GOLD"] | None = None
     market: Literal["ps", "pc"]
     budget: int = Field(ge=0, le=1_000_000_000)
-    min_card_rating: int = Field(default=1, ge=1, le=99)
-    min_rare: int = Field(default=0, ge=0, le=11)
-    nation_id: int | None = Field(default=None, gt=0)
-    min_nation: int = Field(default=0, ge=0, le=11)
-    league_id: int | None = Field(default=None, gt=0)
-    min_league: int = Field(default=0, ge=0, le=11)
 
     @model_validator(mode="after")
     def check_requirements(self) -> Self:
@@ -142,10 +136,6 @@ class Challenge(StrictModel):
             raise ValueError("Le profil de collectif standard ne valide que des minima.")
         if any(not position for position in self.positions):
             raise ValueError("Chaque poste doit être renseigné.")
-        if (self.min_nation and self.nation_id is None) or (
-            self.min_league and self.league_id is None
-        ):
-            raise ValueError("Indiquer le pays ou la ligue associé au quota.")
         return self
 
 

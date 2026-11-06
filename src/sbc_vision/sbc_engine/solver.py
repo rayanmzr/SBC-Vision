@@ -6,22 +6,9 @@ from fractions import Fraction
 
 from ortools.sat.python import cp_model
 
-from .models import Assignment, Candidate, Challenge, Condition, SolverResult
+from .models import Assignment, Candidate, Challenge, SolverResult
 
 THRESHOLDS = {"club_id": (2, 4, 7), "nation_id": (2, 5, 8), "league_id": (3, 5, 8)}
-
-
-def conditions(challenge):
-    # Compatibilité avec les premiers exemples : tout devient une liste de conditions.
-    rules = list(challenge.conditions)
-    for metric, minimum, target in [
-        ("rare", challenge.min_rare, None),
-        ("nation", challenge.min_nation, challenge.nation_id),
-        ("league", challenge.min_league, challenge.league_id),
-    ]:
-        if minimum:
-            rules.append(Condition(metric=metric, value=minimum, target=target))
-    return rules
 
 
 def compare(actual, op, expected):
@@ -75,7 +62,7 @@ def metric(rule, cards, challenge):
 def eligible(challenge, pool):
     if len({c.key for c in pool}) != len(pool):
         raise ValueError("Les identifiants des candidats doivent être uniques.")
-    rules = conditions(challenge)
+    rules = challenge.conditions
     need_score = any(r.metric == "item_score" for r in rules)
     need_club = any(r.metric in {"club", "clubs", "same_club", "chemistry"} for r in rules)
     return [
@@ -83,7 +70,6 @@ def eligible(challenge, pool):
         for c in pool
         if not c.protected
         and c.value is not None
-        and c.rating >= challenge.min_card_rating
         and (challenge.card_level is None or c.card_level == challenge.card_level)
         and (not need_score or c.item_score is not None)
         and (not need_club or c.club_id is not None)
@@ -115,15 +101,13 @@ def validate(challenge: Challenge, pool: list[Candidate], team: list[Assignment]
             errors.append(f"Carte protégée ou prix inconnu : {card.key}.")
         if challenge.mode == "squad" and challenge.positions[assignment.slot] not in card.positions:
             errors.append(f"Poste incompatible : {card.key}.")
-        if card.rating < challenge.min_card_rating:
-            errors.append(f"Note individuelle insuffisante : {card.key}.")
         if challenge.card_level is not None and card.card_level != challenge.card_level:
             errors.append(f"Qualité incompatible : {card.key}.")
     if any(c.value is None for c in cards):
         return errors
     if sum(c.value for c in cards if not c.owned) > challenge.budget:
         errors.append("Budget d'achat dépassé.")
-    for rule in conditions(challenge):
+    for rule in challenge.conditions:
         if rule.metric == "rating":
             valid = all(compare(c.rating, rule.op, rule.value) for c in cards)
         elif rule.metric == "item_score" and any(c.item_score is None for c in cards):
@@ -270,7 +254,7 @@ def solve(challenge: Challenge, pool: list[Candidate], *, seconds=5.0) -> Solver
         <= challenge.budget
     )
     cache = {}
-    for rule in conditions(challenge):
+    for rule in challenge.conditions:
         if rule.metric == "rating":
             continue  # Les notes individuelles ont déjà filtré les candidats.
         key = rule.metric, rule.target

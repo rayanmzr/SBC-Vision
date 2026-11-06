@@ -2,9 +2,14 @@
   "description": "Défi et prix fictifs. La sélection poste par poste coûte plus cher que l'optimisation globale.",
   "price_reference_at": "2026-10-30T12:00:00+00:00",
   "challenge": {
-    "rules_version": "prototype-v1", "positions": ["CAM", "CM", "ST"], "market": "pc",
-    "budget": 2000, "min_card_rating": 82, "min_rare": 1,
-    "nation_id": 9003, "min_nation": 2, "league_id": 9002, "min_league": 2
+    "rules_version": "dynamic-v1", "positions": ["CAM", "CM", "ST"], "market": "pc",
+    "budget": 2000,
+    "conditions": [
+      {"metric": "rating", "value": 82},
+      {"metric": "rare", "value": 1},
+      {"metric": "nation", "value": 2, "target": 9003},
+      {"metric": "league", "value": 2, "target": 9002}
+    ]
   },
   "extra_cards": [
     {

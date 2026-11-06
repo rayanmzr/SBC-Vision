@@ -52,7 +52,7 @@ python -m sbc_vision.sbc_engine import --pages 2
 python -m sbc_vision.sbc_engine import --ids 107 --refresh
 ```
 
-Les cartes et l'historique des prix restent dans `data/processed/futbin_fc27.sqlite3`, ignoré par Git. Le [guide de l'import](src/sbc_vision/sbc_engine/README.md) explique les trois fichiers et les options.
+Les cartes et l'historique des prix restent dans `data/processed/futbin_fc27.sqlite3`, ignoré par Git. Le [guide du moteur](src/sbc_vision/sbc_engine/README.md) explique les six fichiers et les options. Si FUTBIN refuse l'accès, le cache est conservé et un export normalisé peut être importé.
 
 ## Inventaire du club
 
@@ -64,7 +64,7 @@ python -m sbc_vision.sbc_engine club demo
 python -m sbc_vision.sbc_engine club --db data/processed/club_demo.sqlite3 list --unprotected
 ```
 
-L'inventaire distingue les versions et les exemplaires, conserve les protections et recherche les versions candidates d'une lecture structurée. Le [guide de l'inventaire](src/sbc_vision/sbc_engine/README.md) décrit les commandes et le format attendu par le futur OCR. La démo utilise une base distincte du catalogue réel ; aucun club EA n'est encore scanné.
+L'inventaire distingue les versions et les exemplaires, conserve les protections et recherche les versions candidates d'une lecture OCR. Le [guide du moteur](src/sbc_vision/sbc_engine/README.md) décrit les commandes et les régions attendues. La démo utilise une base distincte du catalogue réel ; aucun club EA n'est encore scanné.
 
 ## Solveur expérimental
 
