@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 from sbc_vision.contracts.perception import PerceptionResponse
-from sbc_vision.sbc_engine.models import CardReading, Challenge, ClubItem, SolverResult
+from sbc_vision.sbc_engine.models import CardReading, Challenge, ClubItem, OcrInput, SolverResult
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -15,6 +15,7 @@ def main() -> None:
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
     models = {
+        "ocr-input": OcrInput,
         "perception": PerceptionResponse,
         "card-reading": CardReading,
         "club-item": ClubItem,

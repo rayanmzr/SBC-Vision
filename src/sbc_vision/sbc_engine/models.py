@@ -4,10 +4,30 @@ from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from sbc_vision.contracts.perception import BoundingBox
+
 
 class StrictModel(BaseModel):
     # Une lecture invalide doit être corrigée plutôt que convertie silencieusement.
     model_config = ConfigDict(extra="forbid", strict=True, str_strip_whitespace=True)
+
+
+class TextRegion(StrictModel):
+    element_id: str = Field(min_length=1)
+    field: Literal["name", "rating", "position", "item_score", "requirements", "slots"]
+    bbox: BoundingBox
+
+
+class OcrInput(StrictModel):
+    capture_id: str = Field(min_length=1)
+    regions: list[TextRegion] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def unique_fields(self) -> Self:
+        keys = [(r.element_id, r.field) for r in self.regions]
+        if len(keys) != len(set(keys)):
+            raise ValueError("Une seule région par champ et par élément.")
+        return self
 
 
 class CardReading(StrictModel):

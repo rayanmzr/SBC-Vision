@@ -12,7 +12,7 @@ import httpx
 
 from .catalogue import ATTRIBUTION, BASE_URL, Futbin, import_catalog, open_database
 from .inventory import list_items, load_pool, save_item, seed_demo, set_protected
-from .models import Challenge, ClubItem
+from .models import Challenge, ClubItem, OcrInput
 from .solver import greedy, solve
 
 
@@ -122,8 +122,24 @@ def main(argv=None):
     solver.add_argument("--seconds", type=float, default=5)
     solver.add_argument("--max-age", type=float, default=24)
     solver.add_argument("--output", type=Path, default=Path("data/processed/solution.json"))
+    ocr = commands.add_parser("ocr", parents=[common], help="Lire les régions d'une capture.")
+    ocr.add_argument("image", type=Path)
+    ocr.add_argument("regions", type=Path)
+    ocr.add_argument("--lang", default="eng")
+    ocr.add_argument("--min-confidence", type=float, default=0.75)
+    ocr.add_argument("--output", type=Path, default=Path("data/processed/ocr.json"))
     args = parser.parse_args(argv)
     try:
+        if args.command == "ocr":
+            from .ocr import analyze
+
+            spec = OcrInput.model_validate_json(args.regions.read_text())
+            with closing(open_database(args.db or "data/processed/futbin_fc27.sqlite3")) as db:
+                report = analyze(args.image, spec, db, lang=args.lang, minimum=args.min_confidence)
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
+            print(f"Lecture à vérifier : {args.output}")
+            return 0
         return {"import": run_import, "club": run_club, "solve": run_solver}[args.command](args)
     except (OSError, ValueError, KeyError, TypeError, sqlite3.Error, httpx.HTTPError) as error:
         print(f"Erreur : {error}")
