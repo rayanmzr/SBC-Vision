@@ -183,8 +183,43 @@ def main(argv=None):
     requirements.add_argument("--budget", type=int, required=True)
     requirements.add_argument("--market", choices=["ps", "pc"], required=True)
     requirements.add_argument("--output", type=Path, default=Path("data/processed/conditions.json"))
+    evaluation = commands.add_parser("evaluate", help="Mesurer l'OCR avec des textes annotés.")
+    inputs = evaluation.add_mutually_exclusive_group(required=True)
+    inputs.add_argument("--demo", action="store_true")
+    inputs.add_argument("--reading", type=Path)
+    evaluation.add_argument("--expected", type=Path)
+    evaluation.add_argument("--lang", default="eng")
+    evaluation.add_argument("--min-confidence", type=float, default=0.75)
+    evaluation.add_argument("--output", type=Path, default=Path("data/processed/ocr_metrics.json"))
     args = parser.parse_args(argv)
     try:
+        if args.command == "evaluate":
+            from .ocr import evaluate, evaluation_demo
+
+            if args.demo:
+                if args.expected:
+                    raise ValueError("La démo génère ses propres annotations.")
+                report, expected = evaluation_demo(args.output.parent, lang=args.lang)
+                print("Image et textes fictifs : ceci ne mesure pas la qualité sur EA FC.")
+            else:
+                if not args.expected:
+                    raise ValueError("Fournir les textes annotés avec --expected.")
+                report, expected = (
+                    json.loads(args.reading.read_text()),
+                    json.loads(args.expected.read_text()),
+                )
+            metrics = evaluate(report, expected, minimum=args.min_confidence)
+            if args.demo:
+                metrics["data_kind"] = "synthetic"
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(json.dumps(metrics, ensure_ascii=False, indent=2) + "\n")
+            values = metrics["summary"]
+            print(
+                f"{values['fields']} champs ; CER {values['cer']:.1%} ; "
+                f"exacts {values['exact_accuracy']:.1%} ; inconnus {values['unknown_rate']:.1%}."
+            )
+            print(f"Mesures locales : {args.output}")
+            return 0
         if args.command == "ocr":
             from .ocr import analyze, challenge_from_ocr
 

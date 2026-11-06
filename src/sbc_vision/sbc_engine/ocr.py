@@ -2,11 +2,13 @@
 
 import json
 import re
+import unicodedata
 from collections import defaultdict
 from decimal import Decimal
+from pathlib import Path
 
 import pytesseract
-from PIL import Image, ImageOps
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 from .models import CardReading, Challenge, Condition, OcrInput
 from .players import find_candidates, normalize_name
@@ -320,3 +322,125 @@ def challenge_from_ocr(report, db, *, market, budget, minimum=0.75):
                 positions.extend(POSITIONS.get(p, p) for p in region["text"].upper().split())
     text = "\n".join(r["text"] for r in regions if r["field"] == "requirements")
     return parse_requirements(text, db, positions=positions, market=market, budget=budget)
+
+
+def edit_distance(expected, actual):
+    # Chaque case compte le minimum d'insertions, suppressions ou substitutions.
+    previous = list(range(len(actual) + 1))
+    for i, left in enumerate(expected, 1):
+        current = [i]
+        for j, right in enumerate(actual, 1):
+            current.append(
+                min(previous[j] + 1, current[j - 1] + 1, previous[j - 1] + (left != right))
+            )
+        previous = current
+    return previous[-1]
+
+
+def evaluate(reports, references, *, minimum=0.75):
+    if not 0 <= minimum <= 1:
+        raise ValueError("Le seuil de confiance doit être compris entre 0 et 1.")
+
+    def index(data):
+        indexed = {}
+        for capture in data if isinstance(data, list) else [data]:
+            for region in capture["regions"]:
+                key = capture["capture_id"], region["element_id"], region["field"]
+                if not all(isinstance(v, str) and v.strip() for v in key) or key in indexed:
+                    raise ValueError("Identifiants absents ou région annotée plusieurs fois.")
+                if not isinstance(region["text"], str):
+                    raise ValueError("Le texte d'une région doit être une chaîne.")
+                indexed[key] = region
+        return indexed
+
+    def clean(text):
+        # Les espaces sont harmonisés ; la casse, les accents et la ponctuation restent évalués.
+        return " ".join(unicodedata.normalize("NFC", text).split())
+
+    def summarize(rows):
+        characters = sum(len(row["expected"]) for row in rows)
+        errors = sum(row["edits"] for row in rows)
+        return {
+            "fields": len(rows),
+            "characters": characters,
+            "edits": errors,
+            "cer": errors / characters,
+            "exact_accuracy": sum(row["exact"] for row in rows) / len(rows),
+            "unknown_rate": sum(row["unknown"] for row in rows) / len(rows),
+        }
+
+    observed, expected = index(reports), index(references)
+    if not expected:
+        raise ValueError("Il faut au moins une région annotée pour mesurer l'OCR.")
+    details, groups = [], defaultdict(list)
+    for key, reference in expected.items():
+        truth = clean(reference["text"])
+        if not truth:
+            raise ValueError("Les régions de référence doivent contenir un texte non vide.")
+        prediction = observed.get(key, {"text": "", "confidence": 0})
+        text, confidence = clean(prediction["text"]), prediction["confidence"]
+        if type(confidence) not in (int, float) or not 0 <= confidence <= 1:
+            raise ValueError("Confiance OCR invalide.")
+        known = bool(text) and confidence >= minimum
+        row = {
+            "capture_id": key[0],
+            "element_id": key[1],
+            "field": key[2],
+            "expected": truth,
+            "predicted": text,
+            "edits": edit_distance(truth, text),
+            "exact": known and text == truth,
+            "unknown": not known,
+        }
+        details.append(row)
+        groups[key[2]].append(row)
+    return {
+        "minimum_confidence": minimum,
+        "summary": summarize(details),
+        "by_field": {field: summarize(rows) for field, rows in groups.items()},
+        "missing_regions": len(expected.keys() - observed.keys()),
+        "unexpected_regions": len(observed.keys() - expected.keys()),
+        "details": details,
+    }
+
+
+def evaluation_demo(folder, *, lang="eng"):
+    """Créer et lire six champs fictifs, sans compte EA ni catalogue externe."""
+    folder = Path(folder)
+    folder.mkdir(parents=True, exist_ok=True)
+    labels = [
+        ("name", "ALEX EXEMPLE"),
+        ("rating", "83"),
+        ("position", "CM"),
+        ("name", "MINA TEST"),
+        ("rating", "84"),
+        ("position", "ST"),
+    ]
+    image = Image.new("RGB", (800, 460), "white")
+    draw, font = ImageDraw.Draw(image), ImageFont.load_default(size=36)
+    regions, references = [], []
+    for i, (field, text) in enumerate(labels):
+        y = 20 + i * 70
+        draw.text((30, y + 8), text, fill="black", font=font)
+        region = {
+            "element_id": f"card-{i // 3 + 1}",
+            "field": field,
+            "bbox": {"x": 10, "y": y, "width": 750, "height": 60},
+        }
+        regions.append(region)
+        references.append({**region, "text": text})
+    path = folder / "ocr_demo.png"
+    image.save(path)
+    spec = OcrInput(capture_id="synthetic-ocr-demo", regions=regions)
+    report = {
+        "capture_id": spec.capture_id,
+        "regions": read_regions(path, spec, lang=lang),
+        "tesseract_version": str(pytesseract.get_tesseract_version()),
+        "lang": lang,
+    }
+    expected = {"capture_id": spec.capture_id, "regions": references}
+    for name, data in [("report", report), ("expected", expected)]:
+        (folder / f"ocr_demo.{name}.json").write_text(
+            json.dumps(data, ensure_ascii=False, indent=2) + "\n"
+        )
+    return report, expected

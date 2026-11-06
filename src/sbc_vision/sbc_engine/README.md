@@ -71,6 +71,40 @@ Leagues: Exact 2
 
 Passer `Leagues: Exact 2` à `Leagues: Exact 1` change la composition avec le même moteur. Des libellés français courants sont reconnus. Un libellé inconnu, une valeur incertaine ou une cible absente du catalogue donne `ready: false` et bloque la résolution. L'OCR des interfaces réelles devra être évalué sur les captures annotées du groupe.
 
+## Mesurer l'OCR
+
+```bash
+python -m sbc_vision.sbc_engine evaluate --demo
+```
+
+Cette commande génère une image de six champs fictifs, passe Tesseract et calcule les mesures. L'image, les lectures et les annotations sont conservées sous `data/processed/ocr_demo.*`, avec le bilan dans `ocr_metrics.json`. Ces fichiers locaux sont ignorés par Git. La démo vérifie le calcul ; la qualité sur les interfaces EA doit être mesurée sur le lot annoté du groupe.
+
+Pour un rapport OCR existant :
+
+```bash
+python -m sbc_vision.sbc_engine evaluate --reading data/processed/ocr.json --expected data/processed/expected.json
+```
+
+Les annotations contiennent les textes attendus avec les mêmes `capture_id`, `element_id` et `field` que les régions évaluées :
+
+```json
+{
+  "capture_id": "screen-1",
+  "regions": [
+    {"element_id": "card-1", "field": "name", "text": "Alex Exemple"},
+    {"element_id": "card-1", "field": "rating", "text": "83"}
+  ]
+}
+```
+
+Pour plusieurs captures, chaque fichier peut contenir un tableau de ces objets. Les références doivent être complètes pour le lot évalué, avec des textes non vides. `--min-confidence` règle le seuil, à fixer sur la validation avant les mesures de test.
+
+- **CER** : nombre minimal d'insertions, suppressions et substitutions, divisé par le nombre total de caractères attendus. Un résultat plus bas est meilleur ; les insertions peuvent le faire dépasser 100 %.
+- **Champs exacts** : texte identique et confiance suffisante, rapportés au total des champs annotés.
+- **Champs inconnus** : régions absentes, textes vides ou confiances sous le seuil.
+
+Les espaces et les formes Unicode équivalentes sont harmonisés ; la casse, les accents et la ponctuation restent évalués. Le CER utilise tous les textes bruts, y compris les lectures incertaines. Le bilan détaille chaque champ, regroupe les scores par type et compte les régions manquantes ou inattendues. La détection et la validité métier sont évaluées séparément.
+
 ## Règles et profils
 
 - Composition : postes, notes individuelles, qualité, rareté, quotas et nombres distincts ou communs de pays/ligues/clubs.

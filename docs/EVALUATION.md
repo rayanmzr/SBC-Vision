@@ -35,6 +35,10 @@ Même jeu de test, même ontologie harmonisée, même protocole et matériel ind
 
 La validité syntaxique du JSON ne mesure pas sa justesse. La preuve d'optimalité du solveur ne vaut que pour les candidats et les prix connus.
 
+`python -m sbc_vision.sbc_engine evaluate --reading RAPPORT --expected ANNOTATIONS` mesure le CER et l'exactitude des textes sur les régions annotées. Le bilan conserve les détails, les scores par champ, les régions absentes et les régions inattendues. Les textes attendus sont annotés manuellement, avec les mêmes identifiants de capture et de région. Le seuil de confiance est fixé sur la validation, sans ajustement sur le test. Le [guide du moteur](../src/sbc_vision/sbc_engine/README.md) précise le format et les conventions.
+
+`evaluate --demo` crée une petite image fictive pour contrôler le calcul. Ses scores ne sont pas des résultats sur EA FC ; les mesures sur le corpus réel restent à effectuer.
+
 ## MLflow et résultats
 
 Chaque entraînement enregistre commit Git, version du manifeste, paramètres, seed, métriques, environnement et artefacts utiles. Conserver un exemple réussi et plusieurs cas d'échec commentés. Pour l'explicabilité, comparer des visualisations de régions sensibles et documenter ce qui influence la détection.
