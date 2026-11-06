@@ -1,0 +1,95 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "rules_version": {
+      "const": "prototype-v1",
+      "title": "Rules Version",
+      "type": "string"
+    },
+    "positions": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 11,
+      "minItems": 1,
+      "title": "Positions",
+      "type": "array"
+    },
+    "market": {
+      "enum": [
+        "ps",
+        "pc"
+      ],
+      "title": "Market",
+      "type": "string"
+    },
+    "budget": {
+      "maximum": 1000000000,
+      "minimum": 0,
+      "title": "Budget",
+      "type": "integer"
+    },
+    "min_card_rating": {
+      "default": 1,
+      "maximum": 99,
+      "minimum": 1,
+      "title": "Min Card Rating",
+      "type": "integer"
+    },
+    "min_rare": {
+      "default": 0,
+      "maximum": 11,
+      "minimum": 0,
+      "title": "Min Rare",
+      "type": "integer"
+    },
+    "nation_id": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Nation Id"
+    },
+    "min_nation": {
+      "default": 0,
+      "maximum": 11,
+      "minimum": 0,
+      "title": "Min Nation",
+      "type": "integer"
+    },
+    "league_id": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "League Id"
+    },
+    "min_league": {
+      "default": 0,
+      "maximum": 11,
+      "minimum": 0,
+      "title": "Min League",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "rules_version",
+    "positions",
+    "market",
+    "budget"
+  ],
+  "title": "Challenge",
+  "type": "object"
+}

@@ -1,7 +1,7 @@
 .PHONY: install check lint format test schema serve
 
 install:
-	python -m pip install -c requirements.lock -e '.[dev,data]'
+	python -m pip install -c requirements.lock -e '.[dev,data,solver]'
 
 check: lint test
 	python scripts/export_contracts.py --check

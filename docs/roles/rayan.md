@@ -2,6 +2,8 @@
 
 Compte : [rayanmzr](https://github.com/rayanmzr).
 
+Code regroupé dans [src/sbc_vision/sbc_engine](../../src/sbc_vision/sbc_engine/README.md), sur la branche `feat/rayan-sbc-engine`. Les étapes vérifiées sont poussées sur cette branche.
+
 ## But
 
 Transformer les lectures visuelles en un inventaire fiable et en une composition qui respecte le SBC, tout en limitant les dépenses et la valeur sacrifiée.

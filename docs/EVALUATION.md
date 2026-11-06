@@ -40,3 +40,7 @@ La validité syntaxique du JSON ne mesure pas sa justesse. La preuve d'optimalit
 Chaque entraînement enregistre commit Git, version du manifeste, paramètres, seed, métriques, environnement et artefacts utiles. Conserver un exemple réussi et plusieurs cas d'échec commentés. Pour l'explicabilité, comparer des visualisations de régions sensibles et documenter ce qui influence la détection.
 
 Les résultats seront ajoutés après les premières mesures, avec les liens vers les runs correspondants.
+
+## Premier cas de solveur fictif
+
+La démo `python -m sbc_vision.sbc_engine solve --demo` compare les deux méthodes sur trois emplacements et des prix inventés. Elle vérifie un coût économique de 2 600 pour la sélection simple et de 2 100 pour CP-SAT. Une énumération exhaustive du petit pool confirme le résultat dans les tests. Ces valeurs servent à contrôler l'algorithme, pas à annoncer une performance sur les SBC EA FC.

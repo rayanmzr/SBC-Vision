@@ -1,0 +1,32 @@
+{
+  "description": "Défi et prix fictifs. La sélection poste par poste coûte plus cher que l'optimisation globale.",
+  "price_reference_at": "2026-10-30T12:00:00+00:00",
+  "challenge": {
+    "rules_version": "prototype-v1", "positions": ["CAM", "CM", "ST"], "market": "pc",
+    "budget": 2000, "min_card_rating": 82, "min_rare": 1,
+    "nation_id": 9003, "min_nation": 2, "league_id": 9002, "min_league": 2
+  },
+  "extra_cards": [
+    {
+      "id": 900004, "base_id": 900004, "name": "Léa Fictive", "rating": 83,
+      "position": "ST", "positions": ["ST"], "club_id": 9008,
+      "nation_id": 9003, "league_id": 9002, "is_rare": true, "rare_type": 1,
+      "card_level": "GOLD", "prices": {"ps": 350, "pc": 400},
+      "source_url": "urn:sbc-vision:synthetic:900004", "observed_at": "2026-10-30T12:00:00+00:00"
+    },
+    {
+      "id": 900005, "base_id": 900005, "name": "Nora Exemple", "rating": 82,
+      "position": "CM", "positions": ["CM"], "club_id": 9009,
+      "nation_id": 9003, "league_id": 9007, "is_rare": false, "rare_type": 0,
+      "card_level": "GOLD", "prices": {"ps": 1300, "pc": 1400},
+      "source_url": "urn:sbc-vision:synthetic:900005", "observed_at": "2026-10-30T12:00:00+00:00"
+    },
+    {
+      "id": 900006, "base_id": 900006, "name": "Eli Test", "rating": 82,
+      "position": "CAM", "positions": ["CAM"], "club_id": 9010,
+      "nation_id": 9003, "league_id": 9002, "is_rare": false, "rare_type": 0,
+      "card_level": "GOLD", "prices": {"ps": 850, "pc": 900},
+      "source_url": "urn:sbc-vision:synthetic:900006", "observed_at": "2026-10-30T12:00:00+00:00"
+    }
+  ]
+}

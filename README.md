@@ -6,7 +6,7 @@ Le client prévu est une **extension Chrome avec interface React**, reliée à l
 
 Le modèle transforme une capture en une liste JSON d'éléments et d'actions possibles. Un contrôleur exploite ce résultat pour inventorier le club, préparer une composition et vérifier les écrans. Le solveur cherche à réduire les dépenses et la valeur des cartes sacrifiées, en préservant les cartes protégées.
 
-**Avancement :** API de démarrage, contrat JSON, CI et import FUTBIN vers SQLite. La détection, l'OCR, le solveur et l'extension sont les prochaines étapes.
+**Avancement :** API de démarrage, contrats JSON, import FUTBIN, inventaire SQLite et solveur expérimental sur un défi fictif. La détection, l'OCR, les règles SBC réelles et l'extension restent à raccorder.
 
 ## Équipe
 
@@ -18,6 +18,8 @@ Le modèle transforme une capture en une liste JSON d'éléments et d'actions po
 
 Chaque membre prend en charge sa partie et participe aux revues des autres.
 
+La partie de Rayan est regroupée dans [sbc_engine](src/sbc_vision/sbc_engine/README.md) : catalogue FUTBIN, inventaire, OCR et optimisation. Une seule commande permet de tester les fonctions : `python -m sbc_vision.sbc_engine --help`.
+
 ## Démarrage local
 
 Python **3.11 ou 3.12**. Depuis la racine du dépôt :
@@ -25,7 +27,7 @@ Python **3.11 ou 3.12**. Depuis la racine du dépôt :
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -c requirements.lock -e '.[dev,data]'
+python -m pip install -c requirements.lock -e '.[dev,data,solver]'
 uvicorn sbc_vision.api.main:app --reload
 ```
 
@@ -44,13 +46,35 @@ La commande lance le lint, les tests hors ligne et la vérification du schéma J
 
 ```bash
 # Premier essai limité à deux pages, puis réutilisation du cache à la relance.
-python -m sbc_vision.market --pages 2
+python -m sbc_vision.sbc_engine import --pages 2
 
 # Actualiser seulement une version de carte avant un calcul.
-python -m sbc_vision.market --ids 107 --refresh
+python -m sbc_vision.sbc_engine import --ids 107 --refresh
 ```
 
-Les cartes et l'historique des prix restent dans `data/processed/futbin_fc27.sqlite3`, ignoré par Git. Le [guide de l'import](src/sbc_vision/market/README.md) explique les trois fichiers et les options.
+Les cartes et l'historique des prix restent dans `data/processed/futbin_fc27.sqlite3`, ignoré par Git. Le [guide de l'import](src/sbc_vision/sbc_engine/README.md) explique les trois fichiers et les options.
+
+## Inventaire du club
+
+```bash
+# Démo hors ligne : trois exemplaires fictifs, dont un protégé.
+python -m sbc_vision.sbc_engine club demo
+
+# Consulter seulement les exemplaires non protégés de cette démo.
+python -m sbc_vision.sbc_engine club --db data/processed/club_demo.sqlite3 list --unprotected
+```
+
+L'inventaire distingue les versions et les exemplaires, conserve les protections et recherche les versions candidates d'une lecture structurée. Le [guide de l'inventaire](src/sbc_vision/sbc_engine/README.md) décrit les commandes et le format attendu par le futur OCR. La démo utilise une base distincte du catalogue réel ; aucun club EA n'est encore scanné.
+
+## Solveur expérimental
+
+```bash
+python -m sbc_vision.sbc_engine solve --demo
+```
+
+Sur le petit défi fictif, la sélection simple coûte 2 600 crédits en valeur économique ; OR-Tools trouve 2 100 crédits, dont 1 300 d'achats et 800 de valeur sacrifiée. Les exemplaires protégés sont exclus et chaque proposition est vérifiée séparément. Le rapport reste dans `data/processed/solution.json`.
+
+Ce premier périmètre couvre les postes, le budget d'achat, une note minimale par carte, la rareté et des quotas de pays/ligue. Le calcul de note d'équipe et le collectif EA FC ne sont pas encore implémentés. Voir le [guide du solveur](src/sbc_vision/sbc_engine/README.md).
 
 ## Docker
 

@@ -24,9 +24,9 @@ Les tests exploratoires effectués avant l'initialisation du dépôt ont validé
 - Le JSON par lots du Squad Builder : 60 IDs connus reçus dans une requête ; postes complets, note, rareté, attributs et prix.
 - Une mesure ponctuelle d'environ 0,5 seconde avec compression gzip. Ce n'est pas un engagement de performance.
 
-**L'importeur est disponible** : `python -m sbc_vision.market --pages 2`. Il découvre les identifiants dans les listes, puis complète les cartes par lots via `/siteapi/27/get-squad`. Les paramètres `playerCardIds` sont répétés pour chaque carte demandée. L'index, les données normalisées et les relevés de prix restent dans SQLite. Le point d'accès est interne au site, sans contrat public de stabilité.
+**L'importeur est disponible** : `python -m sbc_vision.sbc_engine import --pages 2`. Il découvre les identifiants dans les listes, puis complète les cartes par lots via `/siteapi/27/get-squad`. Les paramètres `playerCardIds` sont répétés pour chaque carte demandée. L'index, les données normalisées et les relevés de prix restent dans SQLite. Le point d'accès est interne au site, sans contrat public de stabilité.
 
-L'import réutilise les pages déjà indexées et les cartes collectées depuis moins de 24 heures. Chaque page et chaque lot sont sauvegardés ; la même commande reprend après une interruption. `--refresh` relit les pages et les cartes du périmètre demandé ; `--ids` cible les cartes utiles. Les requêtes sont espacées d'au moins deux secondes. Une erreur HTTP arrête l'import, sans nouvelle tentative automatique ni contournement. Voir le [guide](../src/sbc_vision/market/README.md).
+L'import réutilise les pages déjà indexées et les cartes collectées depuis moins de 24 heures. Chaque page et chaque lot sont sauvegardés ; la même commande reprend après une interruption. `--refresh` relit les pages et les cartes du périmètre demandé ; `--ids` cible les cartes utiles. Les requêtes sont espacées d'au moins deux secondes. Une erreur HTTP arrête l'import, sans nouvelle tentative automatique ni contournement. Voir le [guide](../src/sbc_vision/sbc_engine/README.md).
 
 Sources : [catalogue](https://www.futbin.com/27/players), [Squad Builder](https://www.futbin.com/27/squad-builder), [conditions](https://www.futbin.com/tos).
 
@@ -44,6 +44,12 @@ Attribution à conserver : « Données de prix : FUTBIN — https://www.futbin.c
 - `null` signifie inconnu, jamais gratuit. Une carte sans prix connu ne devient pas un achat à coût nul.
 - Vérifier l'identité et les positions complètes des candidats retenus avant le calcul final.
 - Une estimation n'est pas une offre d'achat garantie.
+
+## Inventaire local
+
+La table `club_items` référence la version du catalogue pour chaque exemplaire confirmé. La protection et le statut échangeable appartiennent à l'exemplaire ; ils sont conservés lors d'une nouvelle observation. Les quantités sont comptées à partir des identifiants stables d'exemplaires, jamais à partir du nombre de captures.
+
+Le rapprochement de lectures structurées propose des versions, sans les valider automatiquement. Le vrai OCR, le suivi des exemplaires entre écrans et le scan du compte restent à raccorder. Le [guide](../src/sbc_vision/sbc_engine/README.md) fournit les formats et une démo entièrement fictive dans une base séparée.
 
 ## Emplacements
 
