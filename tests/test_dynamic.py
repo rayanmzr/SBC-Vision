@@ -238,6 +238,7 @@ def test_alternatives_are_recomputed_and_validate_the_whole_team(setup):
         assert validate(challenge, pool, team) == []
         selected = {a.candidate_key for a in team}
         assert not any(c.card_id == option["excluded_card_id"] and c.key in selected for c in pool)
+        assert option["shopping_list"]["estimated_cost"] == option["solution"]["purchase_cost"]
 
 
 def test_quality_applies_to_every_selected_card_and_max_score_is_not_a_goal(setup):

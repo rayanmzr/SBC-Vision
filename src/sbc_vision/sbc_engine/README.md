@@ -122,6 +122,10 @@ La proposition est écrite dans `data/processed/solution.json`. `optimal` signif
 
 Deux alternatives sont recherchées par défaut en écartant des versions retenues et en recalculant toute la composition. `--alternatives 0` les désactive ; la limite est de trois recalculs, deux secondes chacun. Le JSON conserve leurs plans et les sources/prix des cartes proposées.
 
+Le champ `shopping_list` donne les achats de la composition et de chaque alternative : version exacte, quantité, postes possibles, IDs de pays/ligue/club, qualité, rareté et provenance du prix. Les exemplaires déjà possédés restent dans la composition. Le coût estimé et le budget restant sont indiqués séparément.
+
+Le prix plafond par carte est le prix unitaire utilisé pour le calcul. La marge du budget n'est pas affectée à plusieurs achats en même temps. Une offre plus chère impose un nouveau calcul ; les prix relevés ne garantissent pas une offre disponible. La composition est revérifiée avant de produire cette liste, qui reste une recommandation. Samy pourra appeler `solver.shopping_list(challenge, pool, solution)` ; aucune transaction n'est exécutée.
+
 ## Accès aux données
 
 Le 6 novembre, un appel FUTBIN local a répondu HTTP 403. L'import s'arrête et garde le cache. `import --file FICHIER --db BASE` lit un export normalisé obtenu par un accès autorisé : une liste `cards` avec les champs du catalogue, ses sources, ses dates et ses prix `ps`/`pc` éventuellement nuls. Les dates ne sont pas rajeunies et les données fictives restent dans des bases séparées.

@@ -352,6 +352,53 @@ def greedy(challenge: Challenge, pool: list[Candidate]) -> SolverResult:
     return result(challenge, pool, team, "feasible", time.monotonic() - start)
 
 
+def shopping_list(challenge, pool, solution):
+    if solution.status not in {"optimal", "feasible"}:
+        return None
+    if errors := validate(challenge, pool, solution.assignments):
+        raise ValueError("Liste d'achats refusée : " + "; ".join(errors))
+    by_key = {card.key: card for card in pool}
+    quantities = Counter(a.candidate_key for a in solution.assignments)
+    items = []
+    for key, quantity in quantities.items():
+        card = by_key[key]
+        if card.owned:
+            continue
+        items.append(
+            {
+                **card.model_dump(
+                    include={
+                        "card_id",
+                        "name",
+                        "rating",
+                        "positions",
+                        "nation_id",
+                        "league_id",
+                        "club_id",
+                        "card_level",
+                        "is_rare",
+                        "source_url",
+                        "observed_at",
+                    }
+                ),
+                "candidate_key": key,
+                "quantity": quantity,
+                "quoted_unit_price": card.value,
+                "max_unit_price": card.value,
+                "estimated_total": card.value * quantity,
+                "slots": [a.slot for a in solution.assignments if a.candidate_key == key],
+            }
+        )
+    # Chaque plafond reprend le prix retenu : la marge du budget n'est pas allouée plusieurs fois.
+    cost = sum(item["estimated_total"] for item in items)
+    return {
+        "market": challenge.market,
+        "items": items,
+        "estimated_cost": cost,
+        "remaining_budget": challenge.budget - cost,
+    }
+
+
 def alternatives(challenge, pool, solution, *, limit=2):
     """Recalculer toute l'équipe en écartant une version, au plus trois fois."""
     if not 0 <= limit <= 3:
@@ -364,5 +411,11 @@ def alternatives(challenge, pool, solution, *, limit=2):
         signature = tuple(a.candidate_key for a in outcome.assignments)
         if outcome.status in {"optimal", "feasible"} and signature not in seen:
             seen.add(signature)
-            proposals.append({"excluded_card_id": card_id, "solution": outcome.model_dump()})
+            proposals.append(
+                {
+                    "excluded_card_id": card_id,
+                    "solution": outcome.model_dump(),
+                    "shopping_list": shopping_list(challenge, pool, outcome),
+                }
+            )
     return proposals

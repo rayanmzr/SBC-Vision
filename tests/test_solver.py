@@ -14,7 +14,7 @@ from pydantic import ValidationError
 from sbc_vision.sbc_engine.__main__ import main
 from sbc_vision.sbc_engine.models import Assignment, Challenge, Condition
 from sbc_vision.sbc_engine.players import load_pool, open_database, seed_demo
-from sbc_vision.sbc_engine.solver import greedy, solve, validate
+from sbc_vision.sbc_engine.solver import greedy, shopping_list, solve, validate
 
 FIXTURES = Path(__file__).resolve().parents[1] / "data/fixtures"
 
@@ -225,7 +225,68 @@ def test_cli_produces_a_verifiable_local_report(tmp_path):
     report = json.loads(output.read_text())
     assert report["solution"]["status"] == "optimal"
     assert report["solution"]["total_cost"] == 2100
+    purchases = report["shopping_list"]
+    assert purchases["estimated_cost"] == 1300
+    assert purchases["remaining_budget"] == 700
+    assert {item["card_id"] for item in purchases["items"]} == {900004, 900006}
+    assert all(item["quoted_unit_price"] == item["max_unit_price"] for item in purchases["items"])
+    assert sum(item["max_unit_price"] * item["quantity"] for item in purchases["items"]) <= 2000
     assert all(
         c["source_url"].startswith("urn:sbc-vision:synthetic:")
         for c in report["selected_candidates"]
     )
+
+
+def test_score_purchases_group_known_quantities_without_multiplying_the_budget(setup):
+    _, pool, _, _ = setup
+    card = next(c for c in pool if c.key == "market:900006").model_copy(
+        update={"item_score": 400, "value": 100, "max_quantity": 3}
+    )
+    challenge = Challenge(
+        mode="score",
+        market="pc",
+        budget=1000,
+        conditions=[Condition(metric="item_score", value=1000)],
+    )
+    solution = solve(challenge, [card])
+    purchases = shopping_list(challenge, [card], solution)
+    assert purchases["estimated_cost"] == 300
+    assert purchases["remaining_budget"] == 700
+    assert len(purchases["items"]) == 1
+    assert purchases["items"][0]["quantity"] == 3
+    assert purchases["items"][0]["max_unit_price"] == 100
+    assert purchases["items"][0]["slots"] == [0, 1, 2]
+
+
+@pytest.mark.parametrize("problem", ["unknown_price", "protected", "position", "budget"])
+def test_purchase_list_rechecks_the_team_when_prices_or_conditions_change(setup, problem):
+    challenge, pool, _, _ = setup
+    solution = solve(challenge, pool)
+    if problem == "budget":
+        challenge = challenge.model_copy(update={"budget": 0})
+    else:
+        update = {
+            "unknown_price": {"value": None},
+            "protected": {"protected": True},
+            "position": {"positions": ["GK"]},
+        }[problem]
+        pool = [c.model_copy(update=update) if c.key == "market:900006" else c for c in pool]
+    with pytest.raises(ValueError, match="Liste d'achats refusée"):
+        shopping_list(challenge, pool, solution)
+
+
+@pytest.mark.parametrize("status", ["unknown", "infeasible"])
+def test_no_purchase_list_is_suggested_without_a_valid_solution(setup, status):
+    challenge, pool, _, _ = setup
+    solution = solve(challenge, pool).model_copy(update={"status": status})
+    assert shopping_list(challenge, pool, solution) is None
+
+
+def test_owned_only_solution_does_not_create_a_purchase(setup):
+    _, pool, _, _ = setup
+    card = next(c for c in pool if c.key == "club:demo-002")
+    challenge = Challenge(positions=["CM"], market="pc", budget=0)
+    solution = solve(challenge, [card])
+    purchases = shopping_list(challenge, [card], solution)
+    assert purchases["items"] == []
+    assert purchases["estimated_cost"] == 0

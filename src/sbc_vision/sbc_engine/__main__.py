@@ -25,7 +25,7 @@ from .players import (
     seed_demo,
     set_protected,
 )
-from .solver import alternatives, greedy, solve
+from .solver import alternatives, greedy, shopping_list, solve
 
 
 def run_import(args):
@@ -98,6 +98,7 @@ def run_solver(args):
         pool = load_pool(db, challenge.market, now=now, max_age_hours=args.max_age)
     baseline, outcome = greedy(challenge, pool), solve(challenge, pool, seconds=args.seconds)
     options = alternatives(challenge, pool, outcome, limit=args.alternatives)
+    purchases = shopping_list(challenge, pool, outcome)
     print(f"Sélection simple : {baseline.status}, coût économique {baseline.total_cost}.")
     print(f"OR-Tools : {outcome.status}, coût économique {outcome.total_cost}.")
     by_key = {card.key: card for card in pool}
@@ -114,6 +115,12 @@ def run_solver(args):
             f"{origin}, valeur {card.value} ({card.key})."
         )
     print(f"Achats : {outcome.purchase_cost} ; valeur sacrifiée : {outcome.sacrifice_value}.")
+    if purchases:
+        for item in purchases["items"]:
+            print(
+                f"À acheter : {item['quantity']} × {item['name']}, version {item['card_id']}, "
+                f"plafond {item['max_unit_price']} crédits par carte."
+            )
     chosen = {a.candidate_key for a in baseline.assignments + outcome.assignments}
     chosen.update(
         a["candidate_key"] for option in options for a in option["solution"]["assignments"]
@@ -123,6 +130,7 @@ def run_solver(args):
         "price_reference_at": now.isoformat(),
         "baseline": baseline.model_dump(),
         "solution": outcome.model_dump(),
+        "shopping_list": purchases,
         "alternatives": options,
         "selected_candidates": [c.model_dump() for c in pool if c.key in chosen],
     }
