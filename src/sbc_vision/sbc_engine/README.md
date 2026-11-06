@@ -21,6 +21,18 @@ python -m sbc_vision.sbc_engine solve --demo
 
 Les démos utilisent des données fictives dans des bases séparées. Les données réelles restent dans `data/processed/futbin_fc27.sqlite3`, ignoré par Git.
 
+## Tester le parcours complet
+
+```bash
+python -m sbc_vision.sbc_engine demo
+```
+
+La commande dessine une capture fictive, lit les cartes, la formation et les conditions avec Tesseract, confirme les versions prévues dans les fixtures et alimente l'inventaire avant la résolution. Les régions sont annotées et les confirmations sont simulées. La détection de Saber et le contrôleur de Samy restent à raccorder pour le parcours réel.
+
+Les fichiers restent dans `data/processed/pipeline_demo/` : image, annotations, lecture OCR, choix simulés, mesures, base du club et proposition. `--directory` change ce dossier ; `--max-card-value` règle le plafond par carte, fixé à 1 000 dans cette démo. La date des prix fictifs reste celle de la fixture. Une base contenant des données réelles est refusée.
+
+Le résultat attendu est trois exemplaires et une composition à 2 100 crédits, dont 1 300 d'achats. Relancer conserve les identifiants et protections, sans ajouter de copies. Une condition ou une lecture obligatoire incertaine bloque le parcours et retire la proposition d'un précédent essai dans ce dossier de démonstration. Les détails restent dans `reading.json`.
+
 ## Lire une capture
 
 Installer Tesseract (`brew install tesseract` sur macOS), puis l'option Python `.[ocr]`. `ocr CAPTURE REGIONS_JSON` lit une image locale et écrit `data/processed/ocr.json`. `--lang` choisit une langue installée dans Tesseract, `eng` par défaut. `--min-confidence` règle le seuil (0,75 par défaut).

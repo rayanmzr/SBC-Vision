@@ -5,6 +5,7 @@ import shutil
 from contextlib import closing
 from datetime import UTC, datetime
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
 from PIL import Image, ImageDraw, ImageFont
@@ -265,3 +266,81 @@ def test_evaluation_cli_creates_a_reproducible_synthetic_demo(tmp_path):
     )
     assert json.loads(replay.read_text())["summary"] == metrics["summary"]
     assert main(["evaluate", "--reading", str(tmp_path / "ocr_demo.report.json")]) == 1
+
+
+@pytest.mark.skipif(shutil.which("tesseract") is None, reason="Tesseract doit être installé")
+def test_complete_demo_reads_once_and_repeated_captures_keep_the_same_inventory(
+    tmp_path, monkeypatch
+):
+    from sbc_vision.sbc_engine.__main__ import main
+
+    reader = Mock(wraps=read_regions)
+    monkeypatch.setattr("sbc_vision.sbc_engine.ocr.read_regions", reader)
+    args = ["demo", "--directory", str(tmp_path)]
+    assert main(args) == 0
+    assert reader.call_count == 1
+    report = json.loads((tmp_path / "reading.json").read_text())
+    solution = json.loads((tmp_path / "solution.json").read_text())
+    assert report["ready"]
+    assert report["challenge"]["positions"] == ["CAM", "CM", "ST"]
+    assert {r["metric"] for r in report["challenge"]["conditions"]} == {
+        "players",
+        "rating",
+        "rare",
+        "nation",
+        "league",
+    }
+    assert solution["solution"]["total_cost"] == 2100
+    assert solution["challenge"]["max_card_value"] == 1000
+    assert solution["shopping_list"]["estimated_cost"] == 1300
+    assert main(args) == 0
+    assert reader.call_count == 2
+    with closing(open_database(tmp_path / "club.sqlite3")) as db:
+        items = list_items(db)
+    assert len(items) == 3
+    assert next(i for i in items if i["instance_id"] == "demo-001")["protected"] is True
+    assert all(i["source_observation"].startswith("synthetic-ocr-demo:") for i in items)
+
+
+@pytest.mark.skipif(shutil.which("tesseract") is None, reason="Tesseract doit être installé")
+@pytest.mark.parametrize("problem, status", [("condition", 2), ("card", 1)])
+def test_complete_demo_stops_on_bad_ocr_and_removes_the_previous_proposal(
+    tmp_path, monkeypatch, problem, status
+):
+    from sbc_vision.sbc_engine.__main__ import main
+
+    def damaged(*args, **kwargs):
+        regions = read_regions(*args, **kwargs)
+        for region in regions:
+            if problem == "condition" and region["element_id"] == "condition-0":
+                region["confidence"] = 0.1
+            if problem == "card" and (region["element_id"], region["field"]) == (
+                "card-1",
+                "rating",
+            ):
+                region["text"] = "8B"
+        return regions
+
+    monkeypatch.setattr("sbc_vision.sbc_engine.ocr.read_regions", damaged)
+    (tmp_path / "solution.json").write_text('{"old_proposal": true}')
+    assert main(["demo", "--directory", str(tmp_path)]) == status
+    assert not (tmp_path / "solution.json").exists()
+    assert (tmp_path / "reading.json").exists()
+    with closing(open_database(tmp_path / "club.sqlite3")) as db:
+        assert list_items(db) == []
+
+
+def test_complete_demo_refuses_a_real_catalogue_before_overwriting_outputs(tmp_path):
+    from sbc_vision.sbc_engine.__main__ import main
+
+    fixture = json.loads(
+        (Path(__file__).resolve().parents[1] / "data/fixtures/club.synthetic.json").read_text()
+    )
+    card = {**fixture["catalogue"][0], "source_url": "https://www.futbin.com/27/player/1"}
+    with closing(open_database(tmp_path / "club.sqlite3")) as db:
+        save_cards(db, [card])
+    old = '{"private_proposal": true}'
+    (tmp_path / "solution.json").write_text(old)
+    assert main(["demo", "--directory", str(tmp_path)]) == 1
+    assert (tmp_path / "solution.json").read_text() == old
+    assert not (tmp_path / "ocr_demo.png").exists()

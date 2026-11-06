@@ -52,6 +52,8 @@ python -m sbc_vision.sbc_engine club demo
 python -m sbc_vision.sbc_engine solve --demo
 ```
 
+`python -m sbc_vision.sbc_engine demo` essaie le parcours image → OCR → inventaire → conditions → solveur dans un dossier local distinct, avec régions annotées et confirmations simulées. Le [guide](src/sbc_vision/sbc_engine/README.md) décrit les fichiers produits et les limites.
+
 Sur le petit défi fictif, la sélection simple coûte 2 600 crédits en valeur économique ; OR-Tools trouve 2 100 crédits, dont 1 300 d'achats et 800 de valeur sacrifiée. Les exemplaires protégés sont exclus et chaque proposition est vérifiée séparément. Le rapport reste dans `data/processed/solution.json`.
 
 Le [guide du moteur](src/sbc_vision/sbc_engine/README.md) explique les cinq fichiers et les commandes. Les bases restent dans `data/processed/`, ignoré par Git. Les démos utilisent des bases distinctes des données réelles. FUTBIN a répondu HTTP 403 le 6 novembre : le cache est conservé et un export normalisé peut être importé.

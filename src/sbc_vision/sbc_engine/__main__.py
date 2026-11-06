@@ -76,8 +76,8 @@ def run_club(args):
     return 0
 
 
-def run_solver(args):
-    now = datetime.now(UTC)
+def run_solver(args, *, now=None):
+    now = now or datetime.now(UTC)
     if args.demo:
         demo = json.loads(Path("data/fixtures/solver.synthetic.json").read_text())
         challenge = Challenge.model_validate(demo["challenge"])
@@ -146,11 +146,72 @@ def run_solver(args):
     return 0 if outcome.status in {"optimal", "feasible"} else 2
 
 
+def run_demo(args):
+    from .ocr import analyze, challenge_from_ocr, evaluate, evaluation_demo
+
+    folder = args.directory
+    club = json.loads(Path("data/fixtures/club.synthetic.json").read_text())
+    demo = json.loads(Path("data/fixtures/solver.synthetic.json").read_text())
+    cards = {card["id"]: card for card in club["catalogue"]}
+    args.db, args.reading, args.output = [
+        folder / name for name in ("club.sqlite3", "reading.json", "solution.json")
+    ]
+    print("Parcours fictif : régions annotées et confirmations simulées, sans connexion à EA.")
+    with closing(open_database(args.db)) as db:
+        # Seul le catalogue est préparé ; les exemplaires passent ensuite par l'OCR.
+        seed_demo(db, {**club, "items": []}, demo["extra_cards"])
+        args.output.unlink(missing_ok=True)  # Retirer la proposition d'un précédent essai.
+        labels, choices = [], {}
+        for i, item in enumerate(club["items"], 1):
+            element_id, card = f"card-{i}", cards[item["card_id"]]
+            for field in ("name", "rating", "position"):
+                labels.append((element_id, field, str(card[field]).upper()))
+            choices[element_id] = {
+                k: item[k] for k in ("instance_id", "card_id", "protected", "tradeable")
+            }
+        labels.append(("formation", "slots", " ".join(demo["challenge"]["positions"])))
+        labels.extend(
+            (f"condition-{i}", "requirements", line)
+            for i, line in enumerate(demo["requirements_text"].splitlines())
+        )
+        raw, expected = evaluation_demo(folder, labels=labels)
+        spec = OcrInput(
+            capture_id=raw["capture_id"],
+            regions=[
+                {k: region[k] for k in ("element_id", "field", "bbox")}
+                for region in expected["regions"]
+            ],
+        )
+        report = analyze(folder / "ocr_demo.png", spec, db, regions=raw["regions"])
+        report.update(
+            challenge_from_ocr(
+                report, db, market=demo["challenge"]["market"], budget=demo["challenge"]["budget"]
+            )
+        )
+        for name, data in [
+            ("reading.json", report),
+            ("choices.json", choices),
+            ("metrics.json", evaluate(report, expected)),
+        ]:
+            (folder / name).write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n")
+        if not report["ready"]:
+            print("Conditions à relire : " + "; ".join(report["issues"]))
+            return 2
+        confirm_readings(db, report, choices, confirmed=True)
+        print(f"OCR → inventaire : {len(list_items(db))} exemplaires, protections conservées.")
+    # La démo conserve la date de ses prix fictifs, sans rajeunir des relevés réels.
+    return run_solver(args, now=datetime.fromisoformat(demo["price_reference_at"]))
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="OCR, catalogue, club et optimisation SBC.")
     commands = parser.add_subparsers(dest="command", required=True)
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--db", type=Path)
+    demo = commands.add_parser("demo", help="Tester image, inventaire et solveur ensemble.")
+    demo.add_argument("--directory", type=Path, default=Path("data/processed/pipeline_demo"))
+    demo.add_argument("--max-card-value", type=int, default=1000)
+    demo.set_defaults(demo=False, seconds=5, alternatives=2, max_age=24)
     market = commands.add_parser("import", parents=[common], help="Importer FUTBIN.")
     market.add_argument("--pages", type=int, default=2)
     market.add_argument("--ids", type=int, nargs="+")
@@ -274,7 +335,9 @@ def main(argv=None):
             for issue in report["issues"]:
                 print(issue)
             return 0 if report["ready"] else 2
-        return {"import": run_import, "club": run_club, "solve": run_solver}[args.command](args)
+        return {"import": run_import, "club": run_club, "solve": run_solver, "demo": run_demo}[
+            args.command
+        ](args)
     except (OSError, ValueError, KeyError, TypeError, sqlite3.Error, httpx.HTTPError) as error:
         print(f"Erreur : {error}")
         return 1

@@ -38,6 +38,7 @@ flowchart LR
 - L'inventaire local référence les versions du catalogue et conserve chaque exemplaire, sa protection, son état échangeable connu ou inconnu et sa dernière observation. Une démo distincte utilise un club fictif.
 - Un lot de lectures OCR et de versions choisies peut être confirmé dans cet inventaire ; l'écriture est atomique et conserve les exemplaires déjà connus.
 - Le solveur lit SQLite, cherche une composition avec CP-SAT et vérifie séparément les affectations, sur un pool connu de cartes et prix.
+- La commande `demo` relie ces fonctions sur une image fictive annotée et un catalogue synthétique ; les exemplaires passent par la lecture OCR et les conditions sont interprétées depuis les textes lus.
 
 L'inférence, le scan du club et les actions ne sont pas encore câblés. L'import du catalogue, l'inventaire et le solveur sont indépendants de l'API pour le moment. Les routes de capacités ne les déclarent donc pas encore comme disponibles via HTTP.
 

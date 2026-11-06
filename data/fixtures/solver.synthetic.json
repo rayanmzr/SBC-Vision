@@ -1,6 +1,7 @@
 {
   "description": "Défi et prix fictifs. La sélection poste par poste coûte plus cher que l'optimisation globale.",
   "price_reference_at": "2026-10-30T12:00:00+00:00",
+  "requirements_text": "Number of players: 3\nPlayer rating: Min 82\nRare players: Min 1\nNation #9003: Min 2\nLeague #9002: Min 2",
   "challenge": {
     "rules_version": "dynamic-v1", "positions": ["CAM", "CM", "ST"], "market": "pc",
     "budget": 2000,

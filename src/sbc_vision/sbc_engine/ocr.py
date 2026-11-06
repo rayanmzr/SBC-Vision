@@ -77,10 +77,11 @@ def read_regions(path, spec: OcrInput, *, lang="eng") -> list[dict]:
     return results
 
 
-def analyze(path, spec: OcrInput, db, *, lang="eng", minimum=0.75) -> dict:
+def analyze(path, spec: OcrInput, db, *, lang="eng", minimum=0.75, regions=None) -> dict:
     if not 0 <= minimum <= 1:
         raise ValueError("Le seuil de confiance doit être compris entre 0 et 1.")
-    regions = read_regions(path, spec, lang=lang)
+    # Un passage OCR existant peut être réutilisé, sans relire l'image.
+    regions = read_regions(path, spec, lang=lang) if regions is None else regions
     grouped = defaultdict(dict)
     for region in regions:
         if region["field"] in {"name", "rating", "position", "item_score"}:
@@ -404,26 +405,27 @@ def evaluate(reports, references, *, minimum=0.75):
     }
 
 
-def evaluation_demo(folder, *, lang="eng"):
-    """Créer et lire six champs fictifs, sans compte EA ni catalogue externe."""
+def evaluation_demo(folder, *, lang="eng", labels=None):
+    """Créer et lire des champs fictifs, sans compte EA ni catalogue externe."""
     folder = Path(folder)
     folder.mkdir(parents=True, exist_ok=True)
-    labels = [
-        ("name", "ALEX EXEMPLE"),
-        ("rating", "83"),
-        ("position", "CM"),
-        ("name", "MINA TEST"),
-        ("rating", "84"),
-        ("position", "ST"),
-    ]
-    image = Image.new("RGB", (800, 460), "white")
+    if labels is None:
+        labels = [
+            ("card-1", "name", "ALEX EXEMPLE"),
+            ("card-1", "rating", "83"),
+            ("card-1", "position", "CM"),
+            ("card-2", "name", "MINA TEST"),
+            ("card-2", "rating", "84"),
+            ("card-2", "position", "ST"),
+        ]
+    image = Image.new("RGB", (800, len(labels) * 70 + 40), "white")
     draw, font = ImageDraw.Draw(image), ImageFont.load_default(size=36)
     regions, references = [], []
-    for i, (field, text) in enumerate(labels):
+    for i, (element_id, field, text) in enumerate(labels):
         y = 20 + i * 70
         draw.text((30, y + 8), text, fill="black", font=font)
         region = {
-            "element_id": f"card-{i // 3 + 1}",
+            "element_id": element_id,
             "field": field,
             "bbox": {"x": 10, "y": y, "width": 750, "height": 60},
         }
