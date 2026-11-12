@@ -25,6 +25,7 @@ from .players import (
     save_item,
     seed_demo,
     set_protected,
+    sync_scan,
 )
 from .solver import alternatives, greedy, shopping_list, solve, verification
 
@@ -79,9 +80,42 @@ def run_import(args):
 
 
 def run_club(args):
-    name = "club_demo" if args.action == "demo" else "futbin_fc27"
+    demo = args.action == "demo" or getattr(args, "demo", False)
+    name = "club_demo" if demo else "futbin_fc27"
+    if args.action == "scan":
+        if bool(args.file) == args.demo:
+            raise ValueError("Choisir un fichier de captures ou --demo.")
+        if args.demo:
+            name = "club_scan_demo"
     with closing(open_database(args.db or f"data/processed/{name}.sqlite3")) as db:
-        if args.action == "demo":
+        if args.action == "scan":
+            if args.demo:
+                fixture = json.loads(Path("data/fixtures/club.synthetic.json").read_text())
+                seed_demo(db, {**fixture, "items": []}, [])
+                captures = fixture["scan"]
+                print("Démo fictive : rapports, choix et suivi des exemplaires simulés.")
+            else:
+                captures = json.loads(args.file.read_text())
+                for capture in captures:
+                    if isinstance(capture["report"], str):
+                        path = args.file.parent / capture["report"]
+                        capture["report"] = json.loads(path.read_text())
+            result = sync_scan(db, captures, confirmed=args.confirm or args.demo)
+            scan_name = "club_scan_demo" if args.demo else "club_scan"
+            output = args.output or Path(f"data/processed/{scan_name}.json")
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
+            print(
+                f"{result['captures']} captures, {result['observations']} observations : "
+                f"{result['items']} exemplaires distincts ; "
+                f"observations répétées : {result['reobserved']}."
+            )
+            print(
+                f"Enregistrés : {result['saved']} ; lectures en attente : {len(result['pending'])}."
+            )
+            print(f"Bilan local : {output}")
+            return 0
+        elif args.action == "demo":
             seed_demo(db, json.loads(Path("data/fixtures/club.synthetic.json").read_text()), [])
             print("Club de démonstration entièrement fictif.")
         elif args.action == "add":
@@ -302,6 +336,11 @@ def main(argv=None):
     sync.add_argument("reading", type=Path)
     sync.add_argument("choices", type=Path)
     sync.add_argument("--confirm", action="store_true")
+    scan = actions.add_parser("scan", help="Réunir les observations de plusieurs captures.")
+    scan.add_argument("file", type=Path, nargs="?")
+    scan.add_argument("--demo", action="store_true")
+    scan.add_argument("--confirm", action="store_true")
+    scan.add_argument("--output", type=Path)
     solver = commands.add_parser("solve", parents=[common], help="Proposer une composition.")
     mode = solver.add_mutually_exclusive_group(required=True)
     mode.add_argument("--demo", action="store_true")

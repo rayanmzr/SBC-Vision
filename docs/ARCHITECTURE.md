@@ -38,6 +38,7 @@ flowchart LR
 - Un rapport OCR peut déclencher une recherche ciblée des versions manquantes par nom ; les statistiques visibles affinent les candidats, sans créer d'exemplaires ni choisir une version automatiquement.
 - L'inventaire local référence les versions du catalogue et conserve chaque exemplaire, sa protection, son état échangeable connu ou inconnu et sa dernière observation. Une démo distincte utilise un club fictif.
 - Un lot de lectures OCR et de versions choisies peut être confirmé dans cet inventaire ; l'écriture est atomique et conserve les exemplaires déjà connus.
+- `sync_scan` réunit plusieurs rapports et leurs choix : aperçu sans écriture, fusion par exemplaire suivi, protections conservées et lectures non sélectionnées en attente. Le suivi et la fin du parcours restent fournis par le contrôleur.
 - Le solveur lit SQLite, cherche une composition avec CP-SAT et vérifie séparément les affectations, sur un pool connu de cartes et prix.
 - La proposition et ses alternatives incluent les valeurs recalculées de chaque condition dans `verification`, avec les limites demandées ; elles restent à confronter à l'état réel de la Web App.
 - La commande `demo` relie ces fonctions sur une image fictive annotée et un catalogue synthétique ; les exemplaires passent par la lecture OCR et les conditions sont interprétées depuis les textes lus.

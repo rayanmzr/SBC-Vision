@@ -2,6 +2,7 @@
 
 import json
 import sqlite3
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -17,6 +18,7 @@ from sbc_vision.sbc_engine.players import (
     save_cards,
     save_item,
     set_protected,
+    sync_scan,
 )
 
 FIXTURE = Path(__file__).resolve().parents[1] / "data/fixtures/club.synthetic.json"
@@ -321,3 +323,158 @@ def test_demo_refuses_to_mix_with_real_catalogue(tmp_path, fixture):
         assert db.execute("SELECT COUNT(*) FROM cards").fetchone()[0] == 1
         assert list_items(db) == []
     db.close()
+
+
+def test_scan_preview_counts_overlap_and_real_copies_without_writing(db, fixture):
+    captures = deepcopy(fixture["scan"])
+    before = deepcopy(captures)
+    result = sync_scan(db, captures)
+    assert result == {
+        "captures": 2,
+        "observations": 4,
+        "selected": 4,
+        "items": 3,
+        "reobserved": 1,
+        "new": 3,
+        "saved": 0,
+        "pending": [],
+    }
+    assert list_items(db) == []
+    assert captures == before
+
+
+@pytest.mark.parametrize("preexisting", [False, True])
+def test_scan_reuses_physical_ids_and_preserves_protection_score_and_tradeability(
+    db, fixture, preexisting
+):
+    if preexisting:
+        populate(db, fixture)
+    captures = deepcopy(fixture["scan"])
+    captures[0]["choices"]["card-1"]["protected"] = True
+    captures[0]["report"]["cards"][1]["reading"]["item_score"] = 410
+    captures[1]["choices"]["card-1"]["tradeable"] = None
+    assert sync_scan(db, captures, confirmed=True)["saved"] == 3
+    items = {item["instance_id"]: item for item in list_items(db)}
+    assert len(items) == 3
+    assert items["demo-001"]["card_id"] == items["demo-002"]["card_id"] == 900001
+    assert items["demo-002"]["protected"] is True
+    assert items["demo-002"]["tradeable"] is False
+    assert items["demo-002"]["item_score"] == 410
+    assert items["demo-002"]["source_observation"] == "demo-page-2:card-1"
+    # Une nouvelle exécution ne duplique rien et ne retire pas les protections en base.
+    captures[0]["choices"]["card-1"]["protected"] = False
+    result = sync_scan(db, captures, confirmed=True)
+    assert result["new"] == 0
+    assert len(list_items(db)) == 3
+    assert next(i for i in list_items(db) if i["instance_id"] == "demo-002")["protected"] is True
+
+
+@pytest.mark.parametrize(
+    "problem", ["version", "capture", "reading", "same-copy", "tradeable", "item_score"]
+)
+def test_bad_late_scan_observation_prevents_all_writes(db, fixture, problem):
+    save_item(db, ClubItem.model_validate(fixture["items"][0]), confirmed=True)
+    before = list_items(db)
+    captures = deepcopy(fixture["scan"])
+    second = captures[1]
+    if problem == "version":
+        second["choices"]["card-1"]["card_id"] = 900002
+    elif problem == "capture":
+        second["report"]["capture_id"] = captures[0]["report"]["capture_id"]
+    elif problem == "reading":
+        second["report"]["cards"][1]["reading"] = None
+    elif problem == "same-copy":
+        second["choices"]["card-2"]["instance_id"] = "demo-002"
+    elif problem == "tradeable":
+        second["choices"]["card-1"]["tradeable"] = True
+    else:
+        captures[0]["report"]["cards"][1]["reading"]["item_score"] = 410
+        second["report"]["cards"][0]["reading"]["item_score"] = 420
+    with pytest.raises(ValueError):
+        sync_scan(db, captures, confirmed=True)
+    assert list_items(db) == before
+
+
+def test_partial_scan_keeps_unseen_items_and_reports_unselected_readings(db, fixture):
+    populate(db, fixture)
+    before = next(i for i in list_items(db) if i["instance_id"] == "demo-003")
+    captures = deepcopy(fixture["scan"])
+    del captures[1]["choices"]["card-2"]
+    captures[1]["report"]["cards"][1]["reading"] = None
+    captures[1]["report"]["cards"][1]["issues"] = ["Note illisible"]
+    result = sync_scan(db, captures, confirmed=True)
+    assert result["items"] == result["saved"] == 2
+    assert result["pending"] == [{"capture_id": "demo-page-2", "element_id": "card-2"}]
+    assert len(list_items(db)) == 3
+    assert next(i for i in list_items(db) if i["instance_id"] == "demo-003") == before
+
+
+def test_scan_with_no_confirmed_choices_does_not_invent_items(db, fixture):
+    captures = deepcopy(fixture["scan"])
+    for capture in captures:
+        capture["choices"] = {}
+    result = sync_scan(db, captures, confirmed=True)
+    assert result["saved"] == result["items"] == result["selected"] == 0
+    assert len(result["pending"]) == 4
+    assert list_items(db) == []
+
+
+def test_scan_preview_rejects_a_conflict_with_the_existing_inventory(db, fixture):
+    item = {**fixture["items"][0], "card_id": 900002}
+    save_item(db, ClubItem.model_validate(item), confirmed=True)
+    before = list_items(db)
+    with pytest.raises(ValueError, match="plusieurs versions"):
+        sync_scan(db, deepcopy(fixture["scan"]))
+    assert list_items(db) == before
+
+
+def test_scan_cli_resolves_report_paths_and_requires_confirmation_for_writes(db, fixture, tmp_path):
+    captures = deepcopy(fixture["scan"])
+    for n, capture in enumerate(captures):
+        path = tmp_path / f"page-{n}.json"
+        path.write_text(json.dumps(capture["report"]))
+        capture["report"] = path.name
+    manifest, output = tmp_path / "scan.json", tmp_path / "summary.json"
+    manifest.write_text(json.dumps(captures))
+    database = db.execute("PRAGMA database_list").fetchone()[2]
+    args = ["club", "--db", database, "scan", str(manifest), "--output", str(output)]
+    assert main(args) == 0
+    assert json.loads(output.read_text())["saved"] == 0
+    assert list_items(db) == []
+    assert main([*args, "--confirm"]) == 0
+    assert json.loads(output.read_text())["saved"] == 3
+    assert len(list_items(db)) == 3
+
+
+def test_scan_demo_uses_simulated_tracking_and_can_be_repeated(tmp_path, capsys):
+    database, output = tmp_path / "demo.sqlite3", tmp_path / "summary.json"
+    args = ["club", "--db", str(database), "scan", "--demo", "--output", str(output)]
+    assert main(args) == 0
+    assert main(args) == 0
+    assert json.loads(output.read_text())["new"] == 0
+    assert "suivi des exemplaires simulés" in capsys.readouterr().out
+    with open_database(database) as db:
+        items = list_items(db)
+        assert len(items) == 3 and sum(i["protected"] for i in items) == 1
+    db.close()
+
+
+def test_scan_demo_refuses_a_real_database_before_touching_its_output(db, fixture, tmp_path):
+    save_cards(
+        db, [{**fixture["catalogue"][0], "source_url": "https://www.futbin.com/27/player/1"}]
+    )
+    output = tmp_path / "summary.json"
+    output.write_text('{"previous": true}')
+    database = db.execute("PRAGMA database_list").fetchone()[2]
+    assert main(["club", "--db", database, "scan", "--demo", "--output", str(output)]) == 1
+    assert output.read_text() == '{"previous": true}'
+    assert list_items(db) == []
+
+
+@pytest.mark.parametrize("captures", [[], {}])
+def test_empty_scan_cannot_erase_the_existing_inventory(db, fixture, captures):
+    populate(db, fixture)
+    before = list_items(db)
+    with pytest.raises(ValueError):
+        sync_scan(db, captures, confirmed=True)
+    assert list_items(db) == before

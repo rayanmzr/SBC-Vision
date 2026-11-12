@@ -431,8 +431,15 @@ def save_items(db: sqlite3.Connection, items: list[ClubItem], *, confirmed: bool
                 # Revoir une carte ne crée pas un doublon et ne retire pas sa protection.
                 db.execute(
                     "UPDATE club_items SET source_observation = ?, last_seen_at = ?, "
-                    "item_score = COALESCE(?, item_score) WHERE instance_id = ?",
-                    (item.source_observation, now, item.item_score, item.instance_id),
+                    "item_score = COALESCE(?, item_score), protected = MAX(protected, ?) "
+                    "WHERE instance_id = ?",
+                    (
+                        item.source_observation,
+                        now,
+                        item.item_score,
+                        item.protected,
+                        item.instance_id,
+                    ),
                 )
             else:
                 db.execute(
@@ -449,10 +456,10 @@ def save_items(db: sqlite3.Connection, items: list[ClubItem], *, confirmed: bool
                 )
 
 
-def confirm_readings(db, report, choices, *, confirmed=False):
-    """Relier les versions choisies aux exemplaires suivis par le contrôleur."""
-    if not isinstance(choices, dict) or not choices:
-        raise ValueError("Choisir au moins un élément du rapport OCR.")
+def _selected_items(db, report, choices):
+    """Vérifier les choix avant toute écriture, pour un écran ou plusieurs."""
+    if not isinstance(choices, dict):
+        raise ValueError("Les choix doivent relier les éléments aux exemplaires.")
     readings = {card["element_id"]: card for card in report["cards"]}
     if len(readings) != len(report["cards"]):
         raise ValueError("Le rapport contient plusieurs lectures du même élément.")
@@ -475,8 +482,71 @@ def confirm_readings(db, report, choices, *, confirmed=False):
         if item.card_id not in {candidate["id"] for candidate in find_candidates(db, reading)}:
             raise ValueError(f"Version incompatible avec la lecture : {element_id}.")
         items.append(item)
+    if len({i.instance_id for i in items}) != len(items):
+        raise ValueError("Un écran doit contenir des identifiants d'exemplaires distincts.")
+    return items
+
+
+def confirm_readings(db, report, choices, *, confirmed=False):
+    """Relier les versions choisies aux exemplaires suivis par le contrôleur."""
+    items = _selected_items(db, report, choices)
     save_items(db, items, confirmed=confirmed)
     return len(items)
+
+
+def sync_scan(db, captures, *, confirmed=False):
+    """Fusionner des observations suivies, sans déduire les exemplaires de leur nom."""
+    if not isinstance(captures, list) or not captures or type(confirmed) is not bool:
+        raise ValueError("Fournir des captures et une confirmation booléenne.")
+    known = dict(db.execute("SELECT instance_id, card_id FROM club_items"))
+    items, screens, pending = {}, set(), []
+    observations = selected = 0
+    for capture in captures:
+        report, choices = capture["report"], capture["choices"]
+        capture_id = report["capture_id"]
+        if capture_id in screens:
+            raise ValueError("Chaque capture doit avoir un identifiant distinct.")
+        screens.add(capture_id)
+        observations += len(report["cards"])
+        for item in _selected_items(db, report, choices):
+            old = items.get(item.instance_id)
+            if known.get(item.instance_id, item.card_id) != item.card_id or (
+                old and old.card_id != item.card_id
+            ):
+                raise ValueError("Un même exemplaire désigne plusieurs versions.")
+            if old:
+                for field in ("tradeable", "item_score"):
+                    before, after = getattr(old, field), getattr(item, field)
+                    if before is not None and after is not None and before != after:
+                        raise ValueError(f"Observations contradictoires : {field}.")
+                # Une nouvelle vue conserve la protection et les informations déjà connues.
+                item = item.model_copy(
+                    update={
+                        "protected": old.protected or item.protected,
+                        "tradeable": old.tradeable if item.tradeable is None else item.tradeable,
+                        "item_score": item.item_score or old.item_score,
+                    }
+                )
+            items[item.instance_id] = item
+            selected += 1
+        pending.extend(
+            {"capture_id": capture_id, "element_id": card["element_id"]}
+            for card in report["cards"]
+            if card["element_id"] not in choices
+        )
+    # Tout le lot est vérifié avant d'enregistrer une seule transaction.
+    if confirmed and items:
+        save_items(db, list(items.values()), confirmed=True)
+    return {
+        "captures": len(screens),
+        "observations": observations,
+        "selected": selected,
+        "items": len(items),
+        "reobserved": selected - len(items),
+        "new": len(items.keys() - known.keys()),
+        "saved": len(items) if confirmed else 0,
+        "pending": pending,
+    }
 
 
 def set_protected(db: sqlite3.Connection, instance_id: str, protected: bool):

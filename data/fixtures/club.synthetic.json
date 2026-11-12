@@ -34,5 +34,97 @@
   "readings": [
     {"capture_id": "demo-screen", "element_id": "card-1", "name": "Alex Exemple", "rating": 83, "confidence": 0.98, "position": "CM"},
     {"capture_id": "demo-screen", "element_id": "card-2", "name": "Alex Exemple", "rating": 83, "confidence": 0.98, "position": "CM", "is_rare": false}
+  ],
+  "scan": [
+    {
+      "report": {
+        "capture_id": "demo-page-1",
+        "cards": [
+          {
+            "element_id": "card-0",
+            "issues": [],
+            "reading": {
+              "capture_id": "demo-page-1",
+              "element_id": "card-0",
+              "name": "Alex Exemple",
+              "rating": 83,
+              "position": "CM",
+              "confidence": 1.0
+            }
+          },
+          {
+            "element_id": "card-1",
+            "issues": [],
+            "reading": {
+              "capture_id": "demo-page-1",
+              "element_id": "card-1",
+              "name": "Alex Exemple",
+              "rating": 83,
+              "position": "CM",
+              "confidence": 1.0
+            }
+          }
+        ]
+      },
+      "choices": {
+        "card-0": {
+          "instance_id": "demo-001",
+          "card_id": 900001,
+          "protected": true,
+          "tradeable": false
+        },
+        "card-1": {
+          "instance_id": "demo-002",
+          "card_id": 900001,
+          "protected": false,
+          "tradeable": false
+        }
+      }
+    },
+    {
+      "report": {
+        "capture_id": "demo-page-2",
+        "cards": [
+          {
+            "element_id": "card-1",
+            "issues": [],
+            "reading": {
+              "capture_id": "demo-page-2",
+              "element_id": "card-1",
+              "name": "Alex Exemple",
+              "rating": 83,
+              "position": "CM",
+              "confidence": 1.0
+            }
+          },
+          {
+            "element_id": "card-2",
+            "issues": [],
+            "reading": {
+              "capture_id": "demo-page-2",
+              "element_id": "card-2",
+              "name": "Mina Test",
+              "rating": 84,
+              "position": "ST",
+              "confidence": 1.0
+            }
+          }
+        ]
+      },
+      "choices": {
+        "card-1": {
+          "instance_id": "demo-002",
+          "card_id": 900001,
+          "protected": false,
+          "tradeable": false
+        },
+        "card-2": {
+          "instance_id": "demo-003",
+          "card_id": 900003,
+          "protected": false,
+          "tradeable": null
+        }
+      }
+    }
   ]
 }

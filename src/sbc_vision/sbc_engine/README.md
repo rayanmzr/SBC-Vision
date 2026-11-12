@@ -88,6 +88,34 @@ Le rapprochement accepte le nom complet et les noms courts fournis par FUTBIN (`
 
 `element_id` désigne une région dans une capture ; `instance_id` désigne un exemplaire physique entre les captures. Le contrôleur de Samy doit conserver ce suivi, sans inventer un nouvel exemplaire à chaque écran. L'API pourra appeler directement `players.confirm_readings(db, report, choices, confirmed=True)` après validation des choix. La provenance et l'Item Score viennent de la lecture ; les protections et états échangeables existants sont conservés.
 
+### Réunir plusieurs captures
+
+```bash
+python -m sbc_vision.sbc_engine club scan --demo
+```
+
+Cette démo assemble deux rapports fictifs avec des choix et un suivi simulés : quatre observations donnent trois exemplaires, dont deux copies de la même version. L'exemplaire revu sur les deux écrans ne compte qu'une fois. La base et le bilan sont séparés sous `data/processed/club_scan_demo.*` ; relancer conserve trois exemplaires. La démo ne capture ni ne parcourt la Web App.
+
+Pour les rapports collectés, un fichier de scan contient une liste d'entrées avec `report` (rapport OCR intégré ou chemin relatif au fichier de scan) et `choices` (même format que `club sync`). Exemple de structure avec des identifiants fictifs :
+
+```json
+[
+  {"report": "page-1.json", "choices": {"card-1": {"instance_id": "copy-1", "card_id": 900001}}},
+  {"report": "page-2.json", "choices": {"card-2": {"instance_id": "copy-1", "card_id": 900001}}}
+]
+```
+
+```bash
+python -m sbc_vision.sbc_engine club scan data/processed/scan.json
+python -m sbc_vision.sbc_engine club scan data/processed/scan.json --confirm
+```
+
+La première commande prépare un bilan sans modifier les exemplaires ; `--confirm` enregistre le lot dans l'inventaire local. Cette confirmation concerne les données du club, jamais une soumission de SBC. Le bilan distingue observations, exemplaires retenus, nouvelles identités, observations répétées, écritures et lectures `pending`. `--output` change son chemin.
+
+Les versions sont revérifiées depuis chaque lecture. Un identifiant répété entre captures fusionne les vues ; deux identifiants distincts conservent deux copies, même avec le même nom et la même version. Une contradiction de version, de score ou d'état échangeable dans le lot bloque toute écriture. Les protections se cumulent ; seule la commande `club protect --remove` peut les retirer. Les cartes absentes d'un lot partiel restent en base.
+
+Samy pourra appeler `players.sync_scan(db, captures, confirmed=False)` pour préparer le bilan puis `confirmed=True` après validation des choix. Le contrôleur doit fournir des identifiants stables et vérifier la fin de navigation ; ce bilan ne prouve pas que tout le club a été parcouru. Les lectures sans choix restent en attente et ne créent aucun exemplaire.
+
 ## Conditions dynamiques
 
 Le solveur reçoit les conditions de la capture courante. Aucun nom ou identifiant de SBC n'est présent dans son algorithme. Une formation est une liste de postes ; une condition est un type, un opérateur (`min`, `max`, `exact`) et une valeur. Les exemples sont uniquement des fixtures de test.
