@@ -399,13 +399,17 @@ def test_lookup_rejects_a_synthetic_database_before_any_request(db, raw_card):
     source.cards.assert_not_called()
 
 
-def test_lookup_cli_writes_a_report_without_confirming_inventory(tmp_path, monkeypatch, raw_card):
+@pytest.mark.parametrize("count", [1, 2])
+def test_lookup_cli_writes_a_report_without_confirming_inventory(
+    tmp_path, monkeypatch, raw_card, capsys, count
+):
     from sbc_vision.sbc_engine.__main__ import main
 
     raw_card["playerName"] = "Fictif"
     source = Mock()
-    source.page.return_value = ([900001], 1)
-    source.cards.return_value = [card(raw_card)]
+    ids = list(range(900001, 900001 + count))
+    source.page.return_value = (ids, 1)
+    source.cards.return_value = [card(raw_card, i) for i in ids]
     monkeypatch.setattr("sbc_vision.sbc_engine.__main__.Futbin", lambda *_: source)
     reading, output = tmp_path / "reading.json", tmp_path / "matches.json"
     reading.write_text(json.dumps(reading_report()))
@@ -423,4 +427,5 @@ def test_lookup_cli_writes_a_report_without_confirming_inventory(tmp_path, monke
         )
         == 0
     )
-    assert json.loads(output.read_text())["cards"][0]["candidate_ids"] == [900001]
+    assert json.loads(output.read_text())["cards"][0]["candidate_ids"] == ids
+    assert ("Version ambiguë" in capsys.readouterr().out) is (count == 2)

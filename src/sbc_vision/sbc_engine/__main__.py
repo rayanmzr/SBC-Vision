@@ -57,6 +57,11 @@ def run_import(args):
                 args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
                 matched = sum(bool(c["candidate_ids"]) for c in report["cards"])
                 print(f"{matched}/{len(report['cards'])} lectures avec candidats ; à confirmer.")
+                for card in report["cards"]:
+                    if len(card["candidate_ids"]) > 1:
+                        print(
+                            f"Version ambiguë : {card['reading']['name']} — {card['candidate_ids']}"
+                        )
                 print(f"Rapprochements locaux : {args.output}")
             else:
                 import_catalog(

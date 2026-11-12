@@ -68,24 +68,39 @@ def read_regions(path, spec: OcrInput, *, lang="eng") -> list[dict]:
                 selected.append(word)
                 lines[word["line"]].append(word["text"])
         method = "global"
-        if (
-            region.field in {"name", "rating", "position", "stats", "item_score", "requirements"}
-            and min((w["confidence"] for w in selected), default=0) < 0.75
-        ):
+        rating_bad = region.field == "rating" and not re.fullmatch(
+            r"[1-9]\d?", " ".join(w["text"] for w in selected)
+        )
+        if region.field in {
+            "name",
+            "rating",
+            "position",
+            "stats",
+            "item_score",
+            "requirements",
+        } and (rating_bad or min((w["confidence"] for w in selected), default=0) < 0.75):
+            # Les petits chiffres demandent plus de pixels et une marge sur les fonds décorés.
+            scale, margin = (6, 5) if region.field == "rating" else (3, 0)
             crop = prepared.crop(
                 (box.x * 2, box.y * 2, (box.x + box.width) * 2, (box.y + box.height) * 2)
-            ).resize((box.width * 3, box.height * 3), Image.Resampling.LANCZOS)
+            ).resize((box.width * scale, box.height * scale), Image.Resampling.LANCZOS)
+            crop = ImageOps.expand(crop, border=margin * scale, fill=0)
             retry = ocr_words(
                 crop,
                 lang=lang,
-                scale=3,
+                scale=scale,
                 psm=6 if region.field in {"requirements", "stats"} else 7,
-                x=box.x,
-                y=box.y,
+                x=box.x - margin,
+                y=box.y - margin,
             )
             # Une seconde lecture ne devient jamais fiable simplement parce qu'elle est différente.
-            if min((w["confidence"] for w in retry), default=0) > min(
-                (w["confidence"] for w in selected), default=0
+            retry_valid = region.field != "rating" or re.fullmatch(
+                r"[1-9]\d?", " ".join(w["text"] for w in retry)
+            )
+            if retry_valid and (
+                rating_bad
+                or min((w["confidence"] for w in retry), default=0)
+                > min((w["confidence"] for w in selected), default=0)
             ):
                 selected, lines, method = retry, defaultdict(list), "region"
                 for word in retry:

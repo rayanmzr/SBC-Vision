@@ -51,6 +51,8 @@ Le fichier des régions contient `capture_id` et une liste `regions`, avec `elem
 
 L'image est agrandie et passée en niveaux de gris. Un premier passage Tesseract lit tous les mots, puis leurs coordonnées les rattachent aux régions. Un champ de carte ou de condition sous 0,75 de confiance est relu isolément, à plus grande échelle : mode ligne pour une carte, mode bloc pour une condition pouvant occuper plusieurs lignes. Le rapport indique `method: global` ou `region`. La confiance n'est pas augmentée artificiellement et les coordonnées reviennent dans la capture originale. Le texte brut et les confiances sont conservés. Les noms et notes incertains restent à relire ; aucune lecture OCR n'ajoute automatiquement un exemplaire au club.
 
+Les petites notes sont relues à six fois leur taille avec une marge de cinq pixels pour les fonds décorés. Une note mal formée est relue même si Tesseract lui donne une forte confiance ; la nouvelle lecture doit toujours respecter le format 1–99 et le seuil choisi. Les coordonnées compensent la marge ajoutée. L'import affiche aussi les versions ambiguës quand plusieurs cartes restent compatibles.
+
 Une région facultative `field: "stats"` peut contenir les six intitulés anglais puis les six nombres de la carte : `PAC SHO PAS DRI DEF PHY`, ou `DIV HAN KIC REF SPD POS` pour un gardien. Ils complètent `CardReading.stats` et filtrent les versions ayant le même nom et la même note. Une statistique absente du catalogue ne prouve pas une correspondance ; un bloc présent mais incertain ou mal formé bloque la confirmation. Aucun emplacement n'est fixé dans le code.
 
 Pour chercher les cartes manquantes directement depuis un rapport OCR :

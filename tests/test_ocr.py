@@ -171,6 +171,55 @@ def test_isolated_retry_restores_original_coordinates_without_faking_confidence(
     assert result[0]["confidence"] == 0.55
 
 
+@pytest.mark.parametrize(
+    "first, first_conf, second, second_conf, accepted",
+    [
+        ("83", 0.4, "83", 0.91, True),
+        ("8B", 0.99, "83", 0.74, False),
+        ("83", 0.7, "8B", 0.99, False),
+        ("8B", 0.9, "8B", 0.99, False),
+        ("83", 0.4, "83", 0.7, False),
+    ],
+)
+def test_small_rating_retry_keeps_the_threshold_format_and_padding_coordinates(
+    tmp_path, monkeypatch, db, first, first_conf, second, second_conf, accepted
+):
+    path = tmp_path / "synthetic.png"
+    Image.new("RGB", (800, 230), "white").save(path)
+    name = {
+        "text": "Alex Exemple",
+        "confidence": 0.99,
+        "x": 30,
+        "y": 25,
+        "width": 100,
+        "height": 30,
+        "line": (1, 1, 1),
+    }
+    rating = {
+        "text": first,
+        "confidence": first_conf,
+        "x": 30,
+        "y": 95,
+        "width": 50,
+        "height": 30,
+        "line": (2, 1, 1),
+    }
+    reader = Mock(
+        side_effect=[[name, rating], [{**rating, "text": second, "confidence": second_conf}]]
+    )
+    monkeypatch.setattr("sbc_vision.sbc_engine.ocr.ocr_words", reader)
+    spec = OcrInput(capture_id="retry", regions=specification().regions[:2])
+    regions = read_regions(path, spec)
+    assert reader.call_count == 2
+    assert reader.call_args.kwargs == {"lang": "eng", "scale": 6, "psm": 7, "x": 5, "y": 75}
+    assert reader.call_args.args[0].size == (4560, 450)
+    report = analyze(path, spec, db, regions=regions)
+    assert bool(report["cards"][0]["candidate_ids"]) is accepted
+    assert list_items(db) == []
+    if regions[1]["method"] == "region":
+        assert regions[1]["confidence"] == second_conf
+
+
 def test_item_score_accepts_the_visible_label_without_guessing_the_number(db, monkeypatch):
     regions = [
         {"element_id": "card-1", "field": "name", "text": "Alex Exemple", "confidence": 0.99},
