@@ -226,6 +226,43 @@ def result(challenge, pool, team, status, elapsed):
     )
 
 
+def recheck(report, pool):
+    """Comparer une proposition enregistrée aux cartes et prix actuellement connus."""
+    challenge = Challenge.model_validate(report["challenge"])
+    solution = SolverResult.model_validate(report["solution"])
+    previous = [Candidate.model_validate(c) for c in report["selected_candidates"]]
+    errors = []
+    if solution.status not in {"optimal", "feasible"}:
+        errors.append("Aucune composition faisable à revérifier.")
+    else:
+        original = result(challenge, previous, solution.assignments, "feasible", 0)
+        errors.extend(original.errors)
+        if any(
+            getattr(original, k) != getattr(solution, k)
+            for k in ("total_cost", "purchase_cost", "sacrifice_value")
+        ):
+            errors.append("Les coûts enregistrés ne correspondent pas aux cartes proposées.")
+        errors.extend(validate(challenge, pool, solution.assignments))
+        before, current = {c.key: c for c in previous}, {c.key: c for c in pool}
+        for key in {a.candidate_key for a in solution.assignments}:
+            if key not in before or key not in current:
+                continue  # Le vérificateur signale déjà les exemplaires ou versions disparus.
+            old, new = before[key], current[key]
+            if old.value != new.value:
+                errors.append(f"Prix modifié : {key}, {old.value} → {new.value} crédits.")
+            # Un relevé plus récent au même prix ne modifie pas la composition.
+            ignored = {"observed_at", "value", "protected"}
+            if old.model_dump(exclude=ignored) != new.model_dump(exclude=ignored):
+                errors.append(f"Carte ou quantité modifiée : {key}.")
+    return {
+        "valid": not errors,
+        "needs_recalculation": bool(errors),
+        "errors": list(dict.fromkeys(errors)),
+        "verification": None if errors else verification(challenge, pool, solution),
+        "shopping_list": None if errors else shopping_list(challenge, pool, solution),
+    }
+
+
 def expression(rule, cards, used, model, challenge, ratings):
     name = rule.metric
     if name == "players":

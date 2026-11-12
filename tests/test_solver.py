@@ -23,6 +23,7 @@ from sbc_vision.sbc_engine.players import (
 from sbc_vision.sbc_engine.solver import (
     condition_checks,
     greedy,
+    recheck,
     shopping_list,
     solve,
     validate,
@@ -42,6 +43,125 @@ def setup(tmp_path):
         seed_demo(db, club, demo["extra_cards"])
         pool = load_pool(db, challenge.market, now=now)
         yield challenge, pool, db, now
+
+
+@pytest.fixture
+def proposal(setup):
+    challenge, pool, _, now = setup
+    return {
+        "challenge": challenge.model_dump(),
+        "solution": solve(challenge, pool).model_dump(),
+        "selected_candidates": [c.model_dump() for c in pool],
+        "price_reference_at": now.isoformat(),
+    }
+
+
+def test_saved_proposal_is_checked_without_requiring_identical_quote_timestamps(setup, proposal):
+    challenge, _, db, now = setup
+    card = json.loads(db.execute("SELECT data FROM cards WHERE id=900006").fetchone()[0])
+    refreshed = now + timedelta(minutes=1)
+    save_cards(db, [{**card, "observed_at": refreshed.isoformat()}])
+    current = load_pool(db, challenge.market, now=refreshed)
+    checked = recheck(proposal, current)
+    assert checked["valid"] is True and checked["needs_recalculation"] is False
+    assert checked["errors"] == [] and checked["verification"]["valid"] is True
+    assert checked["shopping_list"]["estimated_cost"] == 1300
+
+
+@pytest.mark.parametrize(
+    "change", ["protected", "price", "missing", "position", "version", "unknown", "quantity"]
+)
+def test_changed_selected_cards_require_a_new_proposal(setup, proposal, change):
+    _, pool, _, _ = setup
+    key = "club:demo-002" if change in {"protected", "missing"} else "market:900006"
+    updates = {
+        "protected": {"protected": True},
+        "price": {"value": 950},
+        "position": {"positions": ["GK"]},
+        "version": {"card_id": 900099},
+        "unknown": {"value": None},
+        "quantity": {"max_quantity": 2},
+    }
+    current = [
+        c.model_copy(update=updates.get(change, {})) if c.key == key else c
+        for c in pool
+        if change != "missing" or c.key != key
+    ]
+    checked = recheck(proposal, current)
+    assert checked["valid"] is False and checked["needs_recalculation"] is True
+    assert checked["errors"]
+    assert checked["verification"] is None and checked["shopping_list"] is None
+
+
+@pytest.mark.parametrize("field", ["total_cost", "purchase_cost", "sacrifice_value"])
+def test_modified_report_costs_are_not_accepted(setup, proposal, field):
+    proposal["solution"][field] = 0
+    checked = recheck(proposal, setup[1])
+    assert checked["valid"] is False
+    assert any("coûts enregistrés" in e for e in checked["errors"])
+
+
+def test_a_report_without_a_feasible_team_cannot_be_reused(setup, proposal):
+    proposal["solution"].update(status="unknown", assignments=[])
+    checked = recheck(proposal, setup[1])
+    assert checked["valid"] is False and checked["shopping_list"] is None
+
+
+@pytest.mark.parametrize("change", [None, "protected", "price", "missing", "stale"])
+def test_check_cli_reads_the_current_database_and_keeps_the_saved_proposal(
+    setup, proposal, tmp_path, change
+):
+    _, _, db, _ = setup
+    path, output = tmp_path / "proposal.json", tmp_path / "check.json"
+    path.write_text(json.dumps(proposal))
+    original = path.read_text()
+    if change == "protected":
+        db.execute("UPDATE club_items SET protected=1 WHERE instance_id='demo-002'")
+        db.commit()
+    elif change == "missing":
+        db.execute("DELETE FROM club_items WHERE instance_id='demo-002'")
+        db.commit()
+    elif change in {"price", "stale"}:
+        card = json.loads(db.execute("SELECT data FROM cards WHERE id=900006").fetchone()[0])
+        if change == "price":
+            card["prices"]["pc"] = 950
+        else:
+            card["observed_at"] = "2000-01-01T00:00:00+00:00"
+        save_cards(db, [card])
+    args = [
+        "check",
+        str(path),
+        "--demo",
+        "--db",
+        db.execute("PRAGMA database_list").fetchone()[2],
+        "--output",
+        str(output),
+    ]
+    assert main(args) == (0 if change is None else 2)
+    checked = json.loads(output.read_text())
+    assert checked["valid"] is (change is None)
+    assert checked["needs_recalculation"] is (change is not None)
+    assert checked["demo"] is True
+    assert path.read_text() == original
+
+
+def test_check_demo_cannot_use_a_real_database_at_the_fictional_date(setup, proposal, tmp_path):
+    _, _, db, _ = setup
+    card = json.loads(db.execute("SELECT data FROM cards LIMIT 1").fetchone()[0])
+    save_cards(db, [{**card, "source_url": "https://www.futbin.com/27/player/1"}])
+    path, output = tmp_path / "proposal.json", tmp_path / "check.json"
+    path.write_text(json.dumps(proposal))
+    args = [
+        "check",
+        str(path),
+        "--demo",
+        "--db",
+        db.execute("PRAGMA database_list").fetchone()[2],
+        "--output",
+        str(output),
+    ]
+    assert main(args) == 1
+    assert not output.exists()
 
 
 def test_global_optimization_saves_value_and_keeps_protected_copy(setup):

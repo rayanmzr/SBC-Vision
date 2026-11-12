@@ -27,7 +27,7 @@ from .players import (
     set_protected,
     sync_scan,
 )
-from .solver import alternatives, greedy, shopping_list, solve, verification
+from .solver import alternatives, greedy, recheck, shopping_list, solve, verification
 
 
 def run_import(args):
@@ -245,6 +245,43 @@ def run_solver(args, *, now=None):
     return 0 if outcome.status in {"optimal", "feasible"} else 2
 
 
+def run_check(args):
+    report = json.loads(args.file.read_text())
+    name = "solver_scan_demo" if args.demo else "futbin_fc27"
+    path = args.db or Path(f"data/processed/{name}.sqlite3")
+    if not path.is_file():
+        raise ValueError("Base du club introuvable : préciser --db ou lancer le scan d'abord.")
+    now = datetime.now(UTC)
+    with closing(open_database(path)) as db:
+        if args.demo:
+            sources = [
+                json.loads(r["data"])["source_url"] for r in db.execute("SELECT data FROM cards")
+            ]
+            if not sources or any(not s.startswith("urn:sbc-vision:synthetic:") for s in sources):
+                raise ValueError("La date fictive est réservée à une base de démonstration.")
+            now = datetime.fromisoformat(report["price_reference_at"])
+            print("Vérification fictive : date de référence de la démo, sans accès à EA.")
+        pool = load_pool(db, report["challenge"]["market"], now=now, max_age_hours=args.max_age)
+    checked = {
+        **recheck(report, pool),
+        "checked_at": datetime.now(UTC).isoformat(),
+        "price_reference_at": now.isoformat(),
+        "demo": args.demo,
+    }
+    output = args.output or Path("data/processed/proposal_check.json")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(checked, ensure_ascii=False, indent=2) + "\n")
+    print(
+        "Proposition encore conforme aux données locales."
+        if checked["valid"]
+        else "Proposition à recalculer :"
+    )
+    for error in checked["errors"]:
+        print(f"  - {error}")
+    print(f"Contrôle local : {output}")
+    return 0 if checked["valid"] else 2
+
+
 def run_demo(args):
     from .ocr import analyze, challenge_from_ocr, evaluate, evaluation_demo
 
@@ -372,6 +409,13 @@ def main(argv=None):
         "--max-card-value", type=int, help="Valeur maximale par carte, club inclus."
     )
     solver.add_argument("--output", type=Path)
+    check = commands.add_parser(
+        "check", parents=[common], help="Revérifier une proposition locale."
+    )
+    check.add_argument("file", type=Path)
+    check.add_argument("--demo", action="store_true")
+    check.add_argument("--max-age", type=float, default=24)
+    check.add_argument("--output", type=Path)
     ocr = commands.add_parser("ocr", parents=[common], help="Lire les régions d'une capture.")
     ocr.add_argument("image", type=Path)
     ocr.add_argument("regions", type=Path)
@@ -462,9 +506,13 @@ def main(argv=None):
             for issue in report["issues"]:
                 print(issue)
             return 0 if report["ready"] else 2
-        return {"import": run_import, "club": run_club, "solve": run_solver, "demo": run_demo}[
-            args.command
-        ](args)
+        return {
+            "import": run_import,
+            "club": run_club,
+            "solve": run_solver,
+            "check": run_check,
+            "demo": run_demo,
+        }[args.command](args)
     except (OSError, ValueError, KeyError, TypeError, sqlite3.Error, httpx.HTTPError) as error:
         print(f"Erreur : {error}")
         return 1

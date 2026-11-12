@@ -217,6 +217,18 @@ Le champ `verification` du rapport détaille chaque condition : libellé, opéra
 
 La commande affiche ces contrôles après les achats. Par exemple : cinq joueurs d'un même pays pour un minimum de cinq, trois d'une ligue pour un maximum de trois et collectif standard de 17 pour un minimum de 16. `valid: true` signifie conforme à nos règles et données connues, sans validation par EA. Pour l'API, `solver.verification(challenge, pool, solution)` fournit le même détail ; le pool doit être rechargé pour prendre en compte prix et protections actuels.
 
+Pour revérifier une proposition enregistrée avec l'état actuel de SQLite :
+
+```bash
+python -m sbc_vision.sbc_engine check data/processed/scan_solution_demo.json --demo
+```
+
+`--demo` utilise la base `solver_scan_demo.sqlite3` et la date fictive du rapport ; une base contenant des données réelles est refusée. Pour le cas réel, utiliser `check data/processed/solution.json --db BASE_DU_CLUB` sans `--demo`. La date courante s'applique aux prix, avec `--max-age 24` par défaut. La commande ne télécharge aucun prix, ne change aucun exemplaire et ne remplace pas la proposition.
+
+Un prix modifié, inconnu ou trop ancien, une carte protégée, un exemplaire disparu, une version ou une quantité modifiée imposent un recalcul. Les coûts enregistrés sont aussi comparés aux cartes d'origine. Un relevé plus récent au même prix est accepté si la composition reste conforme. Le bilan `proposal_check.json` contient `valid`, `needs_recalculation`, les erreurs et la date du contrôle ; `verification` et `shopping_list` sont nulles si le plan est refusé. `--output` change ce chemin. Le code de sortie est 0 pour un contrôle valide, 2 pour une proposition à recalculer, 1 pour une entrée ou une base invalide.
+
+Le contrôle conserve les conditions du rapport ; il ne relit pas le SBC à l'écran et ne démontre pas une nouvelle optimalité après changement du catalogue. Pour l'API, recharger le pool avec `players.load_pool`, puis appeler `solver.recheck(report, pool)`. Les prix relevés ne garantissent pas la disponibilité d'une offre et le contrôle ne vaut pas confirmation d'un SBC.
+
 ## Accès aux données
 
 Le 6 novembre, un appel FUTBIN local a répondu HTTP 403. Le 12 novembre, l'actualisation d'une version puis de deux pages a fonctionné : 60 versions actualisées, 62 en base locale. Le catalogue complet reste à importer et l'accès peut changer. En cas de refus, l'import s'arrête et garde le cache. `import --file FICHIER --db BASE` lit un export normalisé obtenu par un accès autorisé : une liste `cards` avec les champs du catalogue, ses sources, ses dates et ses prix `ps`/`pc` éventuellement nuls. Les dates ne sont pas rajeunies et les données fictives restent dans des bases séparées.
