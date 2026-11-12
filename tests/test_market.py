@@ -13,6 +13,7 @@ from sbc_vision.sbc_engine.players import (
     BASE_URL,
     Futbin,
     import_catalog,
+    import_file,
     normalize,
     open_database,
     save_cards,
@@ -61,6 +62,26 @@ def test_unknown_price_never_uses_another_market(raw_card, price):
     result = card(raw_card)
     assert result["prices"] == {"ps": 800, "pc": None}
     assert result["positions"] == ["CM", "CAM"]
+
+
+def test_catalogue_preserves_short_names_and_supports_old_responses(raw_card):
+    assert card(raw_card)["aliases"] == []
+    raw_card["playerName"] = " Fictif "
+    raw_card["statsCard"]["cardname"] = "Fictif"
+    result = card(raw_card)
+    assert result["name"] == "Joueur fictif"
+    assert result["aliases"] == ["Fictif"]
+
+
+@pytest.mark.parametrize("aliases", ["Fictif", None, [""], [42]])
+def test_invalid_name_aliases_in_an_export_do_not_enter_the_catalogue(
+    db, raw_card, tmp_path, aliases
+):
+    path = tmp_path / "catalogue.json"
+    path.write_text(json.dumps({"cards": [{**card(raw_card), "aliases": aliases}]}))
+    with pytest.raises(ValueError, match="alias"):
+        import_file(db, path)
+    assert db.execute("SELECT COUNT(*) FROM cards").fetchone()[0] == 0
 
 
 def test_versions_and_price_history_are_preserved(db, raw_card):

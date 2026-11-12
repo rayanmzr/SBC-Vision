@@ -70,6 +70,8 @@ python -m sbc_vision.sbc_engine club sync data/processed/ocr.json data/processed
 
 Seules les lectures sélectionnées sont enregistrées. Chaque version est rapprochée à nouveau du catalogue ; une lecture incertaine doit être corrigée avant confirmation. Le lot est enregistré ensemble ou annulé entièrement si un exemplaire pose problème. Un rapport incomplet ne supprime aucune carte du club.
 
+Le rapprochement accepte le nom complet et les noms courts fournis par FUTBIN (`playerName` et `statsCard.cardname`), conservés dans `aliases`. Accents et ponctuation sont harmonisés, mais aucun nom approchant n'est deviné. La note doit correspondre ; le poste et les attributs connus restent des filtres supplémentaires. Toutes les versions compatibles restent proposées à confirmation. Les anciens exports sans `aliases` fonctionnent avec le nom complet. Pour enrichir une carte déjà en cache, utiliser `import --ids IDENTIFIANT --refresh`. Une évolution absente du catalogue reste sans version identifiée.
+
 `element_id` désigne une région dans une capture ; `instance_id` désigne un exemplaire physique entre les captures. Le contrôleur de Samy doit conserver ce suivi, sans inventer un nouvel exemplaire à chaque écran. L'API pourra appeler directement `players.confirm_readings(db, report, choices, confirmed=True)` après validation des choix. La provenance et l'Item Score viennent de la lecture ; les protections et états échangeables existants sont conservés.
 
 ## Conditions dynamiques

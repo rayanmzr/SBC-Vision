@@ -139,6 +139,45 @@ def test_similar_versions_remain_ambiguous_and_do_not_add_items(db, fixture):
     assert list_items(db) == []
 
 
+def test_short_name_keeps_all_versions_until_explicit_confirmation(db, fixture, ocr_report):
+    # Plusieurs joueurs et versions partagent un nom court : aucun choix automatique.
+    for card in fixture["catalogue"][:2]:
+        card.update(name="Alex Exemple Complet", aliases=["Exemple"])
+    fixture["catalogue"][2].update(
+        name="Mina Exemple", rating=83, positions=["CM"], aliases=["Exemple"]
+    )
+    save_cards(db, fixture["catalogue"])
+    raw = ocr_report["cards"][0]["reading"]
+    raw["name"] = "ÉXEMPLE@)"
+    reading = CardReading.model_validate(raw)
+    assert [c["id"] for c in find_candidates(db, reading)] == [900001, 900002, 900003]
+    choice = {"card-1": {"instance_id": "short-name-copy", "card_id": 900002}}
+    with pytest.raises(ValueError, match="Confirmer"):
+        confirm_readings(db, ocr_report, choice)
+    assert list_items(db) == []
+    assert confirm_readings(db, ocr_report, choice, confirmed=True) == 1
+    assert list_items(db)[0]["card_id"] == 900002
+
+
+@pytest.mark.parametrize(
+    "update",
+    [
+        {"name": "Exempl"},
+        {"name": "Alex"},
+        {"name": "@)"},
+        {"rating": 90},
+        {"position": "GK"},
+        {"club_id": 9999},
+    ],
+)
+def test_alias_never_relaxes_the_other_identity_checks(db, fixture, update):
+    for card in fixture["catalogue"][:2]:
+        card["aliases"] = ["Exemple"]
+    save_cards(db, fixture["catalogue"])
+    reading = CardReading.model_validate({**fixture["readings"][0], "name": "Exemple", **update})
+    assert find_candidates(db, reading) == []
+
+
 def test_nonrare_filter_is_not_ignored_when_false(db, fixture):
     reading = CardReading.model_validate(fixture["readings"][1])
     assert [card["id"] for card in find_candidates(db, reading)] == [900001]

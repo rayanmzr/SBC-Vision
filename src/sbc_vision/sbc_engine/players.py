@@ -37,6 +37,11 @@ def import_file(db, path):
     for card in cards:
         if datetime.fromisoformat(card["observed_at"]).tzinfo is None:
             raise ValueError("Chaque date de collecte doit préciser son fuseau horaire.")
+        aliases = card.get("aliases", [])
+        if not isinstance(aliases, list) or any(
+            not isinstance(name, str) or not name.strip() for name in aliases
+        ):
+            raise ValueError("Les alias doivent être une liste de noms non vides.")
         for market in ("ps", "pc"):
             price = card["prices"].get(market)
             # Le modèle contrôle les types ; les dates ne sont jamais remplacées par aujourd'hui.
@@ -222,6 +227,14 @@ def normalize(raw: dict, observed_at: str) -> dict:
         "id": raw["id"]["playerCardId"]["value"],
         "base_id": raw["baseId"]["value"],
         "name": raw["statsCard"]["title"],
+        # Le nom imprimé sur la carte peut être plus court que le nom complet.
+        "aliases": sorted(
+            {
+                name.strip()
+                for name in (raw.get("playerName"), nested(raw, "statsCard", "cardname"))
+                if isinstance(name, str) and name.strip()
+            }
+        ),
         "rating": raw["playerRating"],
         "position": position,
         "positions": list(dict.fromkeys(positions)),
@@ -300,6 +313,9 @@ def normalize_name(name: str) -> str:
 
 
 def find_candidates(db: sqlite3.Connection, reading: CardReading) -> list[dict]:
+    name = normalize_name(reading.name)
+    if not name:
+        return []
     filters = {
         key: getattr(reading, key)
         for key in ("club_id", "league_id", "nation_id", "rare_type", "is_rare")
@@ -307,7 +323,8 @@ def find_candidates(db: sqlite3.Connection, reading: CardReading) -> list[dict]:
     candidates = []
     for row in db.execute("SELECT data FROM cards WHERE rating = ? ORDER BY id", (reading.rating,)):
         card = json.loads(row["data"])
-        if normalize_name(card["name"]) != normalize_name(reading.name):
+        # Accepter seulement les noms fournis par le catalogue, sans deviner un nom proche.
+        if name not in {normalize_name(n) for n in [card["name"], *card.get("aliases", [])]}:
             continue
         if reading.position and reading.position not in card["positions"]:
             continue
