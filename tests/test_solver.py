@@ -13,7 +13,13 @@ from pydantic import ValidationError
 
 from sbc_vision.sbc_engine.__main__ import main
 from sbc_vision.sbc_engine.models import Assignment, Challenge, Condition
-from sbc_vision.sbc_engine.players import load_pool, open_database, save_cards, seed_demo
+from sbc_vision.sbc_engine.players import (
+    list_items,
+    load_pool,
+    open_database,
+    save_cards,
+    seed_demo,
+)
 from sbc_vision.sbc_engine.solver import (
     condition_checks,
     greedy,
@@ -54,6 +60,82 @@ def test_global_optimization_saves_value_and_keeps_protected_copy(setup):
     assert "club:demo-001" in solution.excluded_keys
     assert "market:900002" in solution.excluded_keys
     assert validate(challenge, pool, solution.assignments) == []
+
+
+def test_scan_to_solver_reuses_copies_and_obeys_a_new_protection(tmp_path):
+    database, output = tmp_path / "scan.sqlite3", tmp_path / "solution.json"
+    args = [
+        "solve",
+        "--demo",
+        "--scan",
+        "--db",
+        str(database),
+        "--output",
+        str(output),
+        "--max-card-value",
+        "1000",
+        "--budget",
+        "2500",
+        "--alternatives",
+        "0",
+    ]
+    for repetition in range(2):
+        assert main(args) == 0
+        report = json.loads(output.read_text())
+        assert report["scan"]["items"] == 3
+        assert report["scan"]["reobserved"] == 1
+        assert report["scan"]["new"] == (3 if repetition == 0 else 0)
+        assert report["solution"]["total_cost"] == 2100
+        assert report["solution"]["purchase_cost"] == 1300
+        assert report["solution"]["sacrifice_value"] == 800
+        assert {c["key"] for c in report["selected_candidates"] if c["owned"]} == {"club:demo-002"}
+        assert {i["card_id"] for i in report["shopping_list"]["items"]} == {900004, 900006}
+        assert report["verification"]["valid"] is True
+    # Protéger la copie utilisable impose un achat, sans retirer les protections au rescan.
+    assert main(["club", "--db", str(database), "protect", "demo-002"]) == 0
+    assert main(args) == 0
+    report = json.loads(output.read_text())
+    assert report["solution"]["purchase_cost"] == 2100
+    assert report["solution"]["sacrifice_value"] == 0
+    assert all(not c["owned"] for c in report["selected_candidates"])
+    with closing(open_database(database)) as db:
+        items = list_items(db)
+        assert len(items) == 3 and sum(i["protected"] for i in items) == 2
+
+
+def test_scan_solver_demo_refuses_a_real_database_without_overwriting_outputs(tmp_path):
+    database, output = tmp_path / "real.sqlite3", tmp_path / "solution.json"
+    fixture = json.loads((FIXTURES / "club.synthetic.json").read_text())
+    with closing(open_database(database)) as db:
+        save_cards(
+            db, [{**fixture["catalogue"][0], "source_url": "https://www.futbin.com/27/player/1"}]
+        )
+    output.write_text('{"previous": true}')
+    assert main(["solve", "--demo", "--scan", "--db", str(database), "--output", str(output)]) == 1
+    assert output.read_text() == '{"previous": true}'
+    with closing(open_database(database)) as db:
+        assert list_items(db) == []
+        assert db.execute("SELECT COUNT(*) FROM cards").fetchone()[0] == 1
+
+
+def test_scan_option_never_confirms_a_real_inventory_implicitly(tmp_path):
+    database, output = tmp_path / "club.sqlite3", tmp_path / "solution.json"
+    assert (
+        main(
+            [
+                "solve",
+                "--scan",
+                "--challenge",
+                "missing.json",
+                "--db",
+                str(database),
+                "--output",
+                str(output),
+            ]
+        )
+        == 1
+    )
+    assert not database.exists() and not output.exists()
 
 
 def test_greedy_failure_does_not_prove_impossibility(setup):

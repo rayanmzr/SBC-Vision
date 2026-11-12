@@ -141,6 +141,12 @@ def run_club(args):
 
 
 def run_solver(args, *, now=None):
+    scan = getattr(args, "scan", False)
+    if scan and not args.demo:
+        raise ValueError("--scan accompagne --demo ; un scan réel passe d'abord par club scan.")
+    args.output = args.output or Path(
+        "data/processed/scan_solution_demo.json" if scan else "data/processed/solution.json"
+    )
     now = now or datetime.now(UTC)
     if args.demo:
         demo = json.loads(Path("data/fixtures/solver.synthetic.json").read_text())
@@ -163,12 +169,21 @@ def run_solver(args, *, now=None):
     print(f"Budget d'achat : {challenge.budget} crédits.")
     if challenge.max_card_value is not None:
         print(f"Valeur maximale par carte : {challenge.max_card_value} crédits (club et achats).")
-    name = "solver_demo" if args.demo else "futbin_fc27"
+    name = "solver_scan_demo" if scan else "solver_demo" if args.demo else "futbin_fc27"
+    inventory = None
     with closing(open_database(args.db or f"data/processed/{name}.sqlite3")) as db:
         if args.demo:
             club = json.loads(Path("data/fixtures/club.synthetic.json").read_text())
-            seed_demo(db, club, demo["extra_cards"])
+            seed_demo(db, {**club, "items": []} if scan else club, demo["extra_cards"])
             print("Défi et cartes fictifs : contrôle du fonctionnement du solveur.")
+            if scan:
+                # Les exemplaires viennent du scan, sans ajout direct depuis le catalogue.
+                args.output.unlink(missing_ok=True)
+                inventory = sync_scan(db, club["scan"], confirmed=True)
+                print(
+                    f"Scan fictif → solveur : {inventory['observations']} observations, "
+                    f"{inventory['items']} exemplaires distincts, protections conservées."
+                )
         pool = load_pool(db, challenge.market, now=now, max_age_hours=args.max_age)
     baseline, outcome = greedy(challenge, pool), solve(challenge, pool, seconds=args.seconds)
     options = alternatives(challenge, pool, outcome, limit=args.alternatives)
@@ -222,6 +237,8 @@ def run_solver(args, *, now=None):
         "alternatives": options,
         "selected_candidates": [c.model_dump() for c in pool if c.key in chosen],
     }
+    if inventory is not None:
+        report["scan"] = inventory
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     print(f"Proposition locale : {args.output}")
@@ -346,6 +363,7 @@ def main(argv=None):
     mode.add_argument("--demo", action="store_true")
     mode.add_argument("--challenge", type=Path)
     mode.add_argument("--reading", type=Path, help="Rapport OCR ou conditions déjà vérifiées.")
+    solver.add_argument("--scan", action="store_true", help="Relier le scan fictif à --demo.")
     solver.add_argument("--seconds", type=float, default=5)
     solver.add_argument("--alternatives", type=int, choices=range(4), default=2)
     solver.add_argument("--max-age", type=float, default=24)
@@ -353,7 +371,7 @@ def main(argv=None):
     solver.add_argument(
         "--max-card-value", type=int, help="Valeur maximale par carte, club inclus."
     )
-    solver.add_argument("--output", type=Path, default=Path("data/processed/solution.json"))
+    solver.add_argument("--output", type=Path)
     ocr = commands.add_parser("ocr", parents=[common], help="Lire les régions d'une capture.")
     ocr.add_argument("image", type=Path)
     ocr.add_argument("regions", type=Path)

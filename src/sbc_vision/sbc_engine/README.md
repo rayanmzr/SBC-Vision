@@ -96,6 +96,16 @@ python -m sbc_vision.sbc_engine club scan --demo
 
 Cette démo assemble deux rapports fictifs avec des choix et un suivi simulés : quatre observations donnent trois exemplaires, dont deux copies de la même version. L'exemplaire revu sur les deux écrans ne compte qu'une fois. La base et le bilan sont séparés sous `data/processed/club_scan_demo.*` ; relancer conserve trois exemplaires. La démo ne capture ni ne parcourt la Web App.
 
+Pour relier ces observations au solveur :
+
+```bash
+python -m sbc_vision.sbc_engine solve --demo --scan --max-card-value 1000
+```
+
+Le catalogue fictif est préparé, puis seuls les exemplaires confirmés par le scan simulé alimentent le club. Le solveur trouve 2 100 crédits : 800 de valeur sacrifiée pour un exemplaire utilisable du club et 1 300 d'achats pour les deux cartes manquantes. La copie protégée est exclue. La base est `data/processed/solver_scan_demo.sqlite3` ; la proposition `scan_solution_demo.json` conserve aussi le bilan `scan`. Une relance ne duplique aucun exemplaire. Les prix gardent la date fictive de référence.
+
+Pour un scan réel déjà confirmé, utiliser `solve --reading RAPPORT_DU_SBC --db BASE_DU_CLUB` : les conditions restent celles du SBC courant, et le solveur charge les exemplaires, protections et prix de cette base. `--scan` est réservé à `--demo` et ne confirme jamais un inventaire réel. Le parcours de l'interface reste à raccorder au contrôleur.
+
 Pour les rapports collectés, un fichier de scan contient une liste d'entrées avec `report` (rapport OCR intégré ou chemin relatif au fichier de scan) et `choices` (même format que `club sync`). Exemple de structure avec des identifiants fictifs :
 
 ```json
