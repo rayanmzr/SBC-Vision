@@ -322,3 +322,82 @@ def test_eleven_players_must_meet_all_constraints_together(setup):
     ]:
         harder = challenge.model_copy(update={"conditions": [*challenge.conditions, impossible]})
         assert solve(harder, cards).status == "infeasible"
+
+
+def test_seven_visible_conditions_are_read_and_enforced_on_a_synthetic_pool(setup):
+    from collections import Counter
+
+    from sbc_vision.sbc_engine.solver import chemistry
+
+    db, pool = setup
+    positions = ["ST", "ST", "LM", "CM", "CM", "RM", "LB", "CB", "CB", "RB", "GK"]
+    # Libellés vus à l'écran ; les joueurs et leurs identifiants restent entièrement fictifs.
+    texts = [
+        "Players from the same\nCountries/Regions: Min. 5",
+        "Players from the same League: Max\n3",
+        "Leagues in Squad: Min. 4",
+        "Silver: Min. 5 Players",
+        "Player Quality: Min. Bronze",
+        "Total Chemistry: Min. 16",
+        "Number of Players in the Squad: 11",
+    ]
+    report = {
+        "positions": positions,
+        "regions": [{"field": "requirements", "text": text, "confidence": 0.95} for text in texts],
+    }
+    parsed = challenge_from_ocr(report, db, market="pc", budget=2000)
+    assert parsed["ready"], parsed["issues"]
+    challenge = Challenge.model_validate(parsed["challenge"])
+    assert [(r.metric, r.op, r.value, r.target) for r in challenge.conditions] == [
+        ("same_nation", "min", 5, None),
+        ("same_league", "max", 3, None),
+        ("leagues", "min", 4, None),
+        ("quality", "min", 5, "SILVER"),
+        ("chemistry", "min", 16, None),
+        ("players", "exact", 11, None),
+    ]
+    assert challenge.card_level == "BRONZE" and challenge.card_level_op == "min"
+    cards = [
+        pool[0].model_copy(
+            update={
+                "key": f"seven:{i}",
+                "base_id": 980000 + i,
+                "card_id": 980000 + i,
+                "protected": False,
+                "positions": [position],
+                "owned": False,
+                "value": 100,
+                "card_level": "SILVER" if i < 5 else "BRONZE",
+                "rating": 70 if i < 5 else 60,
+                "nation_id": 9001 if i < 5 else (9002 if i < 8 else 9003),
+                "league_id": 9010 + i // 3,
+                "club_id": 9020 + i,
+                "chemistry_kind": "standard",
+            }
+        )
+        for i, position in enumerate(positions)
+    ]
+    result = solve(challenge, cards)
+    assert result.status == "optimal" and result.purchase_cost == 1100
+    assert validate(challenge, cards, result.assignments) == []
+    assert sorted(Counter(c.nation_id for c in cards).values()) == [3, 3, 5]
+    assert sorted(Counter(c.league_id for c in cards).values()) == [2, 3, 3, 3]
+    assert sum(c.card_level == "SILVER" for c in cards) == 5
+    assert chemistry(cards) == 25
+    # Une carte or ne compte pas comme une carte argent dans le quota demandé.
+    wrong_silver = [cards[0].model_copy(update={"card_level": "GOLD", "rating": 80}), *cards[1:]]
+    wrong_nation = [cards[0].model_copy(update={"nation_id": 9002}), *cards[1:]]
+    wrong_league = [
+        *cards[:3],
+        cards[3].model_copy(update={"league_id": cards[0].league_id}),
+        *cards[4:],
+    ]
+    for invalid in (wrong_silver, wrong_nation, wrong_league):
+        assert solve(challenge, invalid).status == "infeasible"
+
+
+def test_wrapped_numeric_value_does_not_insert_an_extra_colon(setup):
+    db, _ = setup
+    report = parsed("Players from the same League: Max\n3", db, ["CM"])
+    assert report["ready"], report["issues"]
+    assert report["challenge"]["conditions"][0]["metric"] == "same_league"

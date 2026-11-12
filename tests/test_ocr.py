@@ -146,6 +146,43 @@ def test_item_score_accepts_the_visible_label_without_guessing_the_number(db, mo
     assert invalid["cards"][0]["issues"]
 
 
+def test_uncertain_requirement_is_read_as_a_block_and_keeps_its_confidence(tmp_path, monkeypatch):
+    path = tmp_path / "requirements.png"
+    Image.new("RGB", (400, 100), "white").save(path)
+    words = [
+        {
+            "text": "Silver: Min. 5 Players",
+            "confidence": 0.69,
+            "x": 20,
+            "y": 20,
+            "width": 200,
+            "height": 30,
+            "line": (1, 1, 1),
+        },
+    ]
+    reader = Mock(side_effect=[words, [{**words[0], "confidence": 0.74}]])
+    monkeypatch.setattr("sbc_vision.sbc_engine.ocr.ocr_words", reader)
+    spec = OcrInput(
+        capture_id="retry",
+        regions=[
+            {
+                "element_id": "condition",
+                "field": "requirements",
+                "bbox": {"x": 10, "y": 10, "width": 300, "height": 60},
+            }
+        ],
+    )
+    result = read_regions(path, spec)
+    assert reader.call_count == 2
+    assert reader.call_args.kwargs["psm"] == 6
+    assert result[0]["method"] == "region"
+    assert result[0]["confidence"] == 0.74
+    with closing(open_database(tmp_path / "unused.sqlite3")) as db:
+        assert not challenge_from_ocr(
+            {"regions": result, "positions": ["CM"]}, db, market="pc", budget=2000
+        )["ready"]
+
+
 def test_duplicate_fields_cannot_silently_overwrite_one_another():
     data = specification().model_dump()
     data["regions"].append(data["regions"][0])

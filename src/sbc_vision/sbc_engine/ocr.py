@@ -69,13 +69,20 @@ def read_regions(path, spec: OcrInput, *, lang="eng") -> list[dict]:
                 lines[word["line"]].append(word["text"])
         method = "global"
         if (
-            region.field in {"name", "rating", "position", "item_score"}
+            region.field in {"name", "rating", "position", "item_score", "requirements"}
             and min((w["confidence"] for w in selected), default=0) < 0.75
         ):
             crop = prepared.crop(
                 (box.x * 2, box.y * 2, (box.x + box.width) * 2, (box.y + box.height) * 2)
             ).resize((box.width * 3, box.height * 3), Image.Resampling.LANCZOS)
-            retry = ocr_words(crop, lang=lang, scale=3, psm=7, x=box.x, y=box.y)
+            retry = ocr_words(
+                crop,
+                lang=lang,
+                scale=3,
+                psm=6 if region.field == "requirements" else 7,
+                x=box.x,
+                y=box.y,
+            )
             # Une seconde lecture ne devient jamais fiable simplement parce qu'elle est différente.
             if min((w["confidence"] for w in retry), default=0) > min(
                 (w["confidence"] for w in selected), default=0
@@ -201,9 +208,13 @@ def parse_requirements(text, db, *, positions, market, budget):
         "rating": ["player rating", "minimum ovr", "note individuelle", "note des joueurs"],
         "rare": ["rare players", "joueurs rares", "cartes rares"],
         "nations": ["nationalities", "nationalites", "countries regions"],
-        "leagues": ["leagues", "ligues", "championnats"],
+        "leagues": ["leagues", "leagues in squad", "ligues", "championnats"],
         "clubs": ["clubs"],
-        "same_nation": ["players from the same nation", "joueurs du meme pays"],
+        "same_nation": [
+            "players from the same nation",
+            "players from the same countries regions",
+            "joueurs du meme pays",
+        ],
         "same_league": ["players from the same league", "joueurs de la meme ligue"],
         "same_club": ["players from the same club", "joueurs du meme club"],
         "team_rating": ["squad rating", "team rating", "note d equipe"],
@@ -222,13 +233,21 @@ def parse_requirements(text, db, *, positions, market, budget):
         if joined and re.fullmatch(
             r"(?:(?:min|max|exact|minimum|maximum)\.?\s*)?[\d ,.]+", line, re.I
         ):
-            joined[-1] += ": " + line
+            joined[-1] += (" " if ":" in joined[-1] else ": ") + line
         else:
             joined.append(line)
     for line in joined:
         if normalize_name(line) in {"requirements", "conditions", "exigences"}:
             continue
         try:
+            source_text = line
+            # « Silver: Min. 5 Players » compte les argent, sans imposer cette qualité à tous.
+            count = re.fullmatch(
+                r"(gold|silver|bronze|or|argent)\s*:\s*(.+?)\s+(?:players|joueurs)", line, re.I
+            )
+            if count:
+                level = {"or": "gold", "argent": "silver"}.get(count[1].lower(), count[1].lower())
+                line = f"{level} players: {count[2]}"
             quality = re.fullmatch(
                 r"(?:player quality|qualit[eé] des joueurs)\s*:\s*"
                 r"(?:(min(?:imum)?|max(?:imum)?|exact(?:ly|ement)?)\.?\s+)?"
@@ -307,7 +326,9 @@ def parse_requirements(text, db, *, positions, market, budget):
             if operator is None and metric not in {"players", "item_score"}:
                 raise ValueError(f"Minimum, maximum ou valeur exacte à confirmer : {line}")
             rules.append(
-                Condition(metric=metric, op=op, value=number(amount), target=target, text=line)
+                Condition(
+                    metric=metric, op=op, value=number(amount), target=target, text=source_text
+                )
             )
         except ValueError as error:
             issues.append(str(error))
@@ -350,7 +371,12 @@ def challenge_from_ocr(report, db, *, market, budget, minimum=0.75):
         for region in regions:
             if region["field"] == "slots":
                 positions.extend(POSITIONS.get(p, p) for p in region["text"].upper().split())
-    text = "\n".join(r["text"] for r in regions if r["field"] == "requirements")
+    # Une seule condition peut s'étaler sur plusieurs lignes visuelles.
+    text = "\n".join(
+        " ".join(r["text"].splitlines()) if r["text"].count(":") == 1 else r["text"]
+        for r in regions
+        if r["field"] == "requirements"
+    )
     return parse_requirements(text, db, positions=positions, market=market, budget=budget)
 
 

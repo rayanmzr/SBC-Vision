@@ -47,7 +47,7 @@ Installer Tesseract (`brew install tesseract` sur macOS), puis l'option Python `
 
 Le fichier des régions contient `capture_id` et une liste `regions`, avec `element_id`, `field` et `bbox` (`x`, `y`, `width`, `height` en pixels). Le [schéma SBC](../../../contracts/sbc.schema.json) rassemble les formats dans `$defs` : `OcrInput`, `CardReading`, `ClubItem`, `Challenge` et `SolverResult`. Les régions viennent du détecteur de Saber ou d'une annotation de test ; aucun emplacement de carte n'est fixé dans le code.
 
-L'image est agrandie et passée en niveaux de gris. Un premier passage Tesseract lit tous les mots, puis leurs coordonnées les rattachent aux régions. Un petit champ de carte sous 0,75 de confiance est relu isolément en mode ligne, à plus grande échelle ; le rapport indique `method: global` ou `region`. La confiance n'est pas augmentée artificiellement et les coordonnées reviennent dans la capture originale. Le texte brut et les confiances sont conservés. Les noms et notes incertains restent à relire ; aucune lecture OCR n'ajoute automatiquement un exemplaire au club.
+L'image est agrandie et passée en niveaux de gris. Un premier passage Tesseract lit tous les mots, puis leurs coordonnées les rattachent aux régions. Un champ de carte ou de condition sous 0,75 de confiance est relu isolément, à plus grande échelle : mode ligne pour une carte, mode bloc pour une condition pouvant occuper plusieurs lignes. Le rapport indique `method: global` ou `region`. La confiance n'est pas augmentée artificiellement et les coordonnées reviennent dans la capture originale. Le texte brut et les confiances sont conservés. Les noms et notes incertains restent à relire ; aucune lecture OCR n'ajoute automatiquement un exemplaire au club.
 
 `club list` affiche le club confirmé. `club protect IDENTIFIANT` protège un exemplaire ; `--remove` retire cette protection. `club add FICHIER --confirm` ajoute un exemplaire après vérification. Une nouvelle observation du même exemplaire ne crée pas de doublon et conserve sa protection.
 
@@ -90,6 +90,8 @@ Leagues: Exact 2
 ```
 
 Passer `Leagues: Exact 2` à `Leagues: Exact 1` change la composition avec le même moteur. Des libellés français courants sont reconnus. Un libellé inconnu, une valeur incertaine ou une cible absente du catalogue donne `ready: false` et bloque la résolution. L'OCR des interfaces réelles devra être évalué sur les captures annotées du groupe.
+
+Les libellés `Players from the same Countries/Regions`, `Leagues in Squad` et `Silver: Min. 5 Players` sont reconnus. Le dernier exige cinq cartes de qualité argent ; des cartes or ne satisfont pas ce quota. Une condition peut occuper plusieurs lignes dans sa région. L'essai sur l'écran réel à sept conditions lit celles-ci et les onze postes, mais ne produit pas encore d'équipe réelle : le catalogue local limité aux cartes or ne couvre pas le quota argent et le club réel n'est pas inventorié.
 
 ## Mesurer l'OCR
 
