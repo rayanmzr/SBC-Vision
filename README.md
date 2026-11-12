@@ -56,7 +56,7 @@ python -m sbc_vision.sbc_engine solve --demo
 
 Sur le petit défi fictif, la sélection simple coûte 2 600 crédits en valeur économique ; OR-Tools trouve 2 100 crédits, dont 1 300 d'achats et 800 de valeur sacrifiée. Les exemplaires protégés sont exclus et chaque proposition est vérifiée séparément. Le rapport reste dans `data/processed/solution.json`.
 
-Le [guide du moteur](src/sbc_vision/sbc_engine/README.md) explique les cinq fichiers et les commandes. Les bases restent dans `data/processed/`, ignoré par Git. Les démos utilisent des bases distinctes des données réelles. FUTBIN a répondu HTTP 403 le 6 novembre : le cache est conservé et un export normalisé peut être importé.
+Le [guide du moteur](src/sbc_vision/sbc_engine/README.md) explique les cinq fichiers et les commandes, dont `demo --complex` à onze joueurs et dix conditions. Les bases restent dans `data/processed/`, ignoré par Git. Les démos utilisent des bases distinctes des données réelles. FUTBIN a répondu HTTP 403 le 6 novembre ; le 12 novembre, un nouvel essai ciblé et deux pages ont fonctionné. Le cache et l'import de fichier restent disponibles.
 
 Le moteur reçoit les conditions de chaque capture : aucun nom de SBC n'est codé dans l'algorithme. Il prend en charge les compositions et l'Item Score, des contraintes minimum/maximum/exactes, la note à onze joueurs et un profil de collectif standard. Les lectures ou règles non prises en charge bloquent la proposition. Voir le [guide du moteur](src/sbc_vision/sbc_engine/README.md) pour les limites et les commandes OCR.
 

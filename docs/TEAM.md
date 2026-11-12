@@ -38,6 +38,6 @@ Compte : [SamyALlali](https://github.com/SamyALlali). Cartes : SBV-014 à SBV-01
 - Afficher inventaire, protections, conditions, achats et coût, avec les états chargement, lecture incertaine, règle inconnue, absence de solution et confirmation en attente.
 - Préparer Docker, CI et cloud ; construire un secours local minimal uniquement si le repli est validé et nécessaire.
 
-Le contrôleur ira dans `src/sbc_vision/controller/`. Il signale une divergence sans inventer de coordonnées ni afficher une réussite après une erreur réseau. Les modèles et le solveur restent côté Python. La soumission exige un récapitulatif et une confirmation utilisateur.
+Le contrôleur ira dans `src/sbc_vision/controller/`. Il signale une divergence sans inventer de coordonnées ni afficher une réussite après une erreur réseau. Les modèles et le solveur restent côté Python. Pour les essais sur le compte de Rayan, la soumission d'un SBC reste exclusivement à Rayan : aucun clic automatisé de confirmation ou d'échange.
 
 Livrables : client, API documentée, parcours reproductible, tests d'intégration, conteneur et guide de lancement. Distinguer la vraie Web App du démonstrateur local.

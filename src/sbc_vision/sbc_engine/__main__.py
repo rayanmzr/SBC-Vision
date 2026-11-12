@@ -149,9 +149,14 @@ def run_solver(args, *, now=None):
 def run_demo(args):
     from .ocr import analyze, challenge_from_ocr, evaluate, evaluation_demo
 
-    folder = args.directory
     club = json.loads(Path("data/fixtures/club.synthetic.json").read_text())
     demo = json.loads(Path("data/fixtures/solver.synthetic.json").read_text())
+    if args.complex:
+        demo = demo["complex"]
+        club = demo["club"]
+    folder = args.directory or Path(
+        "data/processed/pipeline_complex_demo" if args.complex else "data/processed/pipeline_demo"
+    )
     cards = {card["id"]: card for card in club["catalogue"]}
     args.db, args.reading, args.output = [
         folder / name for name in ("club.sqlite3", "reading.json", "solution.json")
@@ -169,7 +174,10 @@ def run_demo(args):
             choices[element_id] = {
                 k: item[k] for k in ("instance_id", "card_id", "protected", "tradeable")
             }
-        labels.append(("formation", "slots", " ".join(demo["challenge"]["positions"])))
+        labels.extend(
+            (f"slot-{i}", "slots", position)
+            for i, position in enumerate(demo["challenge"]["positions"])
+        )
         labels.extend(
             (f"condition-{i}", "requirements", line)
             for i, line in enumerate(demo["requirements_text"].splitlines())
@@ -197,6 +205,10 @@ def run_demo(args):
         if not report["ready"]:
             print("Conditions à relire : " + "; ".join(report["issues"]))
             return 2
+        print(
+            f"Conditions lues : {len(report['challenge']['conditions'])} contraintes "
+            f"et qualité {report['challenge']['card_level']}."
+        )
         confirm_readings(db, report, choices, confirmed=True)
         print(f"OCR → inventaire : {len(list_items(db))} exemplaires, protections conservées.")
     # La démo conserve la date de ses prix fictifs, sans rajeunir des relevés réels.
@@ -209,7 +221,10 @@ def main(argv=None):
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--db", type=Path)
     demo = commands.add_parser("demo", help="Tester image, inventaire et solveur ensemble.")
-    demo.add_argument("--directory", type=Path, default=Path("data/processed/pipeline_demo"))
+    demo.add_argument("--directory", type=Path)
+    demo.add_argument(
+        "--complex", action="store_true", help="Onze joueurs et dix conditions fictives."
+    )
     demo.add_argument("--max-card-value", type=int, default=1000)
     demo.set_defaults(demo=False, seconds=5, alternatives=2, max_age=24)
     market = commands.add_parser("import", parents=[common], help="Importer FUTBIN.")

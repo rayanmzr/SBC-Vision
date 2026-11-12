@@ -253,6 +253,16 @@
           "default": null,
           "title": "Card Level"
         },
+        "card_level_op": {
+          "default": "exact",
+          "enum": [
+            "min",
+            "max",
+            "exact"
+          ],
+          "title": "Card Level Op",
+          "type": "string"
+        },
         "market": {
           "enum": [
             "ps",

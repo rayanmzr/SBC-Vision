@@ -110,6 +110,7 @@ class Challenge(StrictModel):
     max_items: int = Field(default=100, ge=1, le=100)
     score_progress: int = Field(default=0, ge=0, le=1_000_000_000)
     card_level: Literal["BRONZE", "SILVER", "GOLD"] | None = None
+    card_level_op: Literal["min", "max", "exact"] = "exact"
     market: Literal["ps", "pc"]
     budget: int = Field(ge=0, le=1_000_000_000)
     # Préférence utilisateur : valeur sacrifiée ou prix d'achat maximal par carte.

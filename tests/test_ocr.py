@@ -99,6 +99,53 @@ def test_out_of_bounds_region_is_rejected_before_ocr(tmp_path):
         read_regions(path, specification())
 
 
+def test_isolated_retry_restores_original_coordinates_without_faking_confidence(
+    tmp_path, monkeypatch
+):
+    path = tmp_path / "blank.png"
+    Image.new("RGB", (800, 230), "white").save(path)
+    from sbc_vision.sbc_engine.ocr import ocr_words
+
+    def data(image, **kwargs):
+        return {
+            "text": ["83"],
+            "conf": [55],
+            "left": [6],
+            "top": [9],
+            "width": [30],
+            "height": [45],
+            "block_num": [1],
+            "par_num": [1],
+            "line_num": [1],
+        }
+
+    monkeypatch.setattr("sbc_vision.sbc_engine.ocr.pytesseract.image_to_data", data)
+    result = ocr_words(Image.open(path), lang="eng", scale=3, x=10, y=80, psm=7)
+    assert result[0]["x"] == 12
+    assert result[0]["y"] == 83
+    assert result[0]["confidence"] == 0.55
+
+
+def test_item_score_accepts_the_visible_label_without_guessing_the_number(db, monkeypatch):
+    regions = [
+        {"element_id": "card-1", "field": "name", "text": "Alex Exemple", "confidence": 0.99},
+        {"element_id": "card-1", "field": "rating", "text": "83", "confidence": 0.99},
+        {
+            "element_id": "card-1",
+            "field": "item_score",
+            "text": "Score: 14,000",
+            "confidence": 0.95,
+        },
+    ]
+    monkeypatch.setattr("sbc_vision.sbc_engine.ocr.read_regions", lambda *a, **kw: regions)
+    report = analyze("unused.png", specification(), db)
+    assert report["cards"][0]["reading"]["item_score"] == 14000
+    regions[-1]["text"] = "Score: 14,OOO"
+    invalid = analyze("unused.png", specification(), db)
+    assert invalid["cards"][0]["reading"]["item_score"] is None
+    assert invalid["cards"][0]["issues"]
+
+
 def test_duplicate_fields_cannot_silently_overwrite_one_another():
     data = specification().model_dump()
     data["regions"].append(data["regions"][0])
@@ -344,3 +391,31 @@ def test_complete_demo_refuses_a_real_catalogue_before_overwriting_outputs(tmp_p
     assert main(["demo", "--directory", str(tmp_path)]) == 1
     assert (tmp_path / "solution.json").read_text() == old
     assert not (tmp_path / "ocr_demo.png").exists()
+
+
+@pytest.mark.skipif(shutil.which("tesseract") is None, reason="Tesseract doit être installé")
+def test_complex_demo_reads_ten_conditions_and_rejects_the_cheaper_invalid_player(tmp_path):
+    from sbc_vision.sbc_engine.__main__ import main
+    from sbc_vision.sbc_engine.models import Assignment, Challenge
+    from sbc_vision.sbc_engine.players import load_pool
+    from sbc_vision.sbc_engine.solver import validate
+
+    assert main(["demo", "--complex", "--directory", str(tmp_path)]) == 0
+    reading = json.loads((tmp_path / "reading.json").read_text())
+    report = json.loads((tmp_path / "solution.json").read_text())
+    challenge = Challenge.model_validate(report["challenge"])
+    assert len(challenge.conditions) == 9
+    assert challenge.card_level == "GOLD" and challenge.card_level_op == "min"
+    assert len(challenge.positions) == 11
+    assert reading["ready"] is True
+    assert report["solution"]["total_cost"] == 1100
+    assert report["solution"]["purchase_cost"] == 200
+    assert report["baseline"]["status"] == "unknown"
+    assert all(a["candidate_key"] != "market:910099" for a in report["solution"]["assignments"])
+    with closing(open_database(tmp_path / "club.sqlite3")) as db:
+        pool = load_pool(
+            db, challenge.market, now=datetime.fromisoformat(report["price_reference_at"])
+        )
+        assert len(list_items(db)) == 9
+    team = [Assignment.model_validate(a) for a in report["solution"]["assignments"]]
+    assert validate(challenge, pool, team) == []

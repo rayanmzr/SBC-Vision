@@ -64,3 +64,9 @@ Les manifestes et guides d'accès sont versionnés ; les captures privées, inve
 ## Vérification du 6 novembre
 
 Un appel public au JSON FUTBIN a répondu HTTP 403 depuis l’environnement local. Aucun contournement n’a été tenté. Le cache est conservé et un import de fichier normalisé est disponible pour les exports obtenus par un accès autorisé ; la provenance, les prix inconnus et les dates de collecte sont préservés.
+
+## Essais du 12 novembre
+
+L'actualisation ciblée d'une version puis l'import de deux pages ont fonctionné, sans modification du mécanisme d'accès : 60 versions actualisées et 62 versions en base locale. Le refus précédent n'est donc plus reproductible sur ce périmètre limité. Le catalogue complet et les correspondances des cartes évoluées restent à vérifier.
+
+Trois captures réelles de Chrome ont été conservées uniquement en local dans `data/raw/ea_2026-11-12/` : club, fiche joueur et écran de SBC. Les régions et textes attendus ont été annotés manuellement pour un essai OCR de développement. Les lectures et mesures restent dans `data/processed/ea_2026-11-12/`, sans ajout automatique d'exemplaires ni partage des captures sur GitHub. Aucun achat, placement ou échange n'a été effectué.

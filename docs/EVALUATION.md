@@ -50,3 +50,18 @@ Les explorations pourront être regroupées dans `notebooks/` : corpus et splits
 ## Premier cas de solveur fictif
 
 La démo `python -m sbc_vision.sbc_engine solve --demo` compare les deux méthodes sur trois emplacements et des prix inventés. Elle vérifie un coût économique de 2 600 pour la sélection simple et de 2 100 pour CP-SAT. Une énumération exhaustive du petit pool confirme le résultat dans les tests. Ces valeurs servent à contrôler l'algorithme, pas à annoncer une performance sur les SBC EA FC.
+
+`demo --complex` ajoute onze joueurs et dix conditions combinées, avec un candidat moins cher qui viole les quotas. L'équipe vérifiée coûte 1 100 crédits dans ce jeu fictif. Des variantes rendent les règles incompatibles pour vérifier le refus d'une fausse solution.
+
+## Premier essai OCR réel — 12 novembre
+
+Trois captures et 26 champs annotés manuellement ont servi au diagnostic et aux corrections. Les régions sont fournies, sans évaluer le détecteur : noms, notes, postes, score de carte et conditions. Le seuil de confiance est resté à 0,75.
+
+| Mesure sur ces mêmes 26 champs | Avant correction | Après correction |
+| --- | --- | --- |
+| Erreurs / caractères attendus | 23 / 162 | 7 / 162 |
+| CER | 14,2 % | 4,3 % |
+| Champs exacts acceptés | 19 / 26 | 22 / 26 |
+| Champs inconnus | 5 / 26 | 2 / 26 |
+
+Ces chiffres décrivent le lot utilisé pour corriger le code, pas un test indépendant ni une performance générale sur EA FC. Des accents/icônes perturbent encore les noms et deux petits champs d'une carte restent incertains. L'écran de SBC est interprété, et le score de la fiche est lu ; l'inventaire complet et les règles réelles de collectif ne sont pas validés. Un lot séparé reste nécessaire avant la soutenance.

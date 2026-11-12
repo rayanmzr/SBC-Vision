@@ -29,33 +29,36 @@ POSITIONS = {
 }
 
 
+def ocr_words(image, *, lang, scale, psm=11, x=0, y=0):
+    data = pytesseract.image_to_data(
+        image, lang=lang, config=f"--psm {psm}", output_type=pytesseract.Output.DICT, timeout=20
+    )
+    return [
+        {
+            "text": text.strip(),
+            "confidence": max(0, float(data["conf"][i])) / 100,
+            "x": x + data["left"][i] / scale,
+            "y": y + data["top"][i] / scale,
+            "width": data["width"][i] / scale,
+            "height": data["height"][i] / scale,
+            "line": (data["block_num"][i], data["par_num"][i], data["line_num"][i]),
+        }
+        for i, text in enumerate(data["text"])
+        if text.strip()
+    ]
+
+
 def read_regions(path, spec: OcrInput, *, lang="eng") -> list[dict]:
     with Image.open(path) as image:
         for region in spec.regions:
             box = region.bbox
             if box.x + box.width > image.width or box.y + box.height > image.height:
                 raise ValueError(f"Région hors de l'image : {region.element_id}/{region.field}.")
-        # Un seul passage OCR par capture ; agrandir aide à lire les petits caractères.
+        # Premier passage global ; les petits champs incertains sont ensuite relus isolément.
         prepared = ImageOps.autocontrast(ImageOps.grayscale(image)).resize(
             (image.width * 2, image.height * 2), Image.Resampling.LANCZOS
         )
-        data = pytesseract.image_to_data(
-            prepared, lang=lang, config="--psm 11", output_type=pytesseract.Output.DICT, timeout=20
-        )
-    words = []
-    for i, text in enumerate(data["text"]):
-        if text.strip():
-            words.append(
-                {
-                    "text": text.strip(),
-                    "confidence": max(0, float(data["conf"][i])) / 100,
-                    "x": data["left"][i] / 2,
-                    "y": data["top"][i] / 2,
-                    "width": data["width"][i] / 2,
-                    "height": data["height"][i] / 2,
-                    "line": (data["block_num"][i], data["par_num"][i], data["line_num"][i]),
-                }
-            )
+        words = ocr_words(prepared, lang=lang, scale=2)
     results = []
     for region in spec.regions:
         box, lines, selected = region.bbox, defaultdict(list), []
@@ -64,6 +67,22 @@ def read_regions(path, spec: OcrInput, *, lang="eng") -> list[dict]:
             if box.x <= x < box.x + box.width and box.y <= y < box.y + box.height:
                 selected.append(word)
                 lines[word["line"]].append(word["text"])
+        method = "global"
+        if (
+            region.field in {"name", "rating", "position", "item_score"}
+            and min((w["confidence"] for w in selected), default=0) < 0.75
+        ):
+            crop = prepared.crop(
+                (box.x * 2, box.y * 2, (box.x + box.width) * 2, (box.y + box.height) * 2)
+            ).resize((box.width * 3, box.height * 3), Image.Resampling.LANCZOS)
+            retry = ocr_words(crop, lang=lang, scale=3, psm=7, x=box.x, y=box.y)
+            # Une seconde lecture ne devient jamais fiable simplement parce qu'elle est différente.
+            if min((w["confidence"] for w in retry), default=0) > min(
+                (w["confidence"] for w in selected), default=0
+            ):
+                selected, lines, method = retry, defaultdict(list), "region"
+                for word in retry:
+                    lines[word["line"]].append(word["text"])
         results.append(
             {
                 "element_id": region.element_id,
@@ -72,6 +91,7 @@ def read_regions(path, spec: OcrInput, *, lang="eng") -> list[dict]:
                 "confidence": min((w["confidence"] for w in selected), default=0),
                 "bbox": box.model_dump(),
                 "words": selected,
+                "method": method,
             }
         )
     return results
@@ -115,7 +135,9 @@ def analyze(path, spec: OcrInput, db, *, lang="eng", minimum=0.75, regions=None)
                 score = fields.get("item_score")
                 if score and score["confidence"] >= minimum:
                     try:
-                        value = number(score["text"])
+                        value = number(
+                            re.sub(r"^\s*(?:item\s+)?score\s*:\s*", "", score["text"], flags=re.I)
+                        )
                         if value <= 0:
                             raise ValueError("Score non positif.")
                         values["item_score"] = value
@@ -189,7 +211,7 @@ def parse_requirements(text, db, *, positions, market, budget):
         "item_score": ["item score", "score element", "score d element", "remaining item score"],
     }
     names = {normalize_name(label): key for key, values in labels.items() for label in values}
-    rules, issues, progress, card_level = [], [], 0, None
+    rules, issues, progress, card_level, card_level_op = [], [], 0, None, "exact"
     positions = [POSITIONS.get(p.strip().upper(), p.strip().upper()) for p in positions]
     if any(p not in set(POSITIONS.values()) | {"CF", "LWB", "RWB", "LF", "RF"} for p in positions):
         issues.append("Un poste doit être relu.")
@@ -209,17 +231,23 @@ def parse_requirements(text, db, *, positions, market, budget):
         try:
             quality = re.fullmatch(
                 r"(?:player quality|qualit[eé] des joueurs)\s*:\s*"
-                r"(?:exact(?:ly|ement)?\s+)?(gold|silver|bronze|or|argent)",
+                r"(?:(min(?:imum)?|max(?:imum)?|exact(?:ly|ement)?)\.?\s+)?"
+                r"(gold|silver|bronze|or|argent)",
                 line,
                 re.I,
             )
             if quality:
                 level = {"or": "GOLD", "argent": "SILVER"}.get(
-                    quality[1].lower(), quality[1].upper()
+                    quality[2].lower(), quality[2].upper()
                 )
-                if card_level is not None and card_level != level:
+                quality_op = (
+                    "min"
+                    if (quality[1] or "").lower().startswith("min")
+                    else ("max" if (quality[1] or "").lower().startswith("max") else "exact")
+                )
+                if card_level is not None and (card_level, card_level_op) != (level, quality_op):
                     raise ValueError("Qualités de cartes contradictoires.")
-                card_level = level
+                card_level, card_level_op = level, quality_op
                 continue
             match = re.fullmatch(
                 r"(.+?)(?:\s*:\s*|\s+(?=(?:min|max|exact)))"
@@ -297,6 +325,7 @@ def parse_requirements(text, db, *, positions, market, budget):
                 conditions=rules,
                 score_progress=progress,
                 card_level=card_level,
+                card_level_op=card_level_op,
             )
         except ValueError as error:
             issues.append(str(error))
@@ -316,7 +345,7 @@ def challenge_from_ocr(report, db, *, market, budget, minimum=0.75):
             "challenge": None,
             "issues": ["Conditions absentes ou lecture incertaine."],
         }
-    positions = report.get("positions", [])
+    positions = list(report.get("positions", []))
     if not positions:
         for region in regions:
             if region["field"] == "slots":

@@ -15,6 +15,15 @@ def compare(actual, op, expected):
     return {"min": actual >= expected, "max": actual <= expected, "exact": actual == expected}[op]
 
 
+def quality_matches(challenge, card):
+    if challenge.card_level is None:
+        return True
+    levels = {"BRONZE": 0, "SILVER": 1, "GOLD": 2}
+    return card.card_level in levels and compare(
+        levels[card.card_level], challenge.card_level_op, levels[challenge.card_level]
+    )
+
+
 def team_rating(ratings):
     # Référence à onze joueurs : correction des notes au-dessus de la moyenne, puis arrondi.
     average = Fraction(sum(ratings), 11)
@@ -71,7 +80,7 @@ def eligible(challenge, pool):
         if not c.protected
         and c.value is not None
         and (challenge.max_card_value is None or c.value <= challenge.max_card_value)
-        and (challenge.card_level is None or c.card_level == challenge.card_level)
+        and quality_matches(challenge, c)
         and (not need_score or c.item_score is not None)
         and (not need_club or c.club_id is not None)
         and (not any(r.metric == "quality" for r in rules) or c.card_level is not None)
@@ -108,7 +117,7 @@ def validate(challenge: Challenge, pool: list[Candidate], team: list[Assignment]
             errors.append(f"Valeur maximale par carte dépassée : {card.key}.")
         if challenge.mode == "squad" and challenge.positions[assignment.slot] not in card.positions:
             errors.append(f"Poste incompatible : {card.key}.")
-        if challenge.card_level is not None and card.card_level != challenge.card_level:
+        if not quality_matches(challenge, card):
             errors.append(f"Qualité incompatible : {card.key}.")
     if any(c.value is None for c in cards):
         return errors

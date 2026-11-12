@@ -33,13 +33,21 @@ Les fichiers restent dans `data/processed/pipeline_demo/` : image, annotations, 
 
 Le résultat attendu est trois exemplaires et une composition à 2 100 crédits, dont 1 300 d'achats. Relancer conserve les identifiants et protections, sans ajouter de copies. Une condition ou une lecture obligatoire incertaine bloque le parcours et retire la proposition d'un précédent essai dans ce dossier de démonstration. Les détails restent dans `reading.json`.
 
+Pour onze joueurs avec davantage de contraintes :
+
+```bash
+python -m sbc_vision.sbc_engine demo --complex
+```
+
+Ce deuxième scénario fictif combine dix conditions : onze joueurs, qualité or minimum, deux nationalités, au plus deux ligues, trois clubs, au plus quatre joueurs d'un club, au moins six d'un même pays, trois rares minimum, note d'équipe de 83 minimum et collectif de 30 minimum. Un candidat moins cher viole les quotas. La sélection simple se bloque ; CP-SAT trouve 1 100 crédits, dont 200 d'achats et 900 de valeur sacrifiée. Les fichiers sont séparés dans `data/processed/pipeline_complex_demo/`. Les tests ajoutent aussi des contraintes contradictoires pour vérifier le statut impossible. Ce scénario ne prouve pas la validité de nos calculs sur un SBC réel.
+
 ## Lire une capture
 
 Installer Tesseract (`brew install tesseract` sur macOS), puis l'option Python `.[ocr]`. `ocr CAPTURE REGIONS_JSON` lit une image locale et écrit `data/processed/ocr.json`. `--lang` choisit une langue installée dans Tesseract, `eng` par défaut. `--min-confidence` règle le seuil (0,75 par défaut).
 
 Le fichier des régions contient `capture_id` et une liste `regions`, avec `element_id`, `field` et `bbox` (`x`, `y`, `width`, `height` en pixels). Le [schéma SBC](../../../contracts/sbc.schema.json) rassemble les formats dans `$defs` : `OcrInput`, `CardReading`, `ClubItem`, `Challenge` et `SolverResult`. Les régions viennent du détecteur de Saber ou d'une annotation de test ; aucun emplacement de carte n'est fixé dans le code.
 
-L'image est agrandie et passée en niveaux de gris. Un passage Tesseract lit tous les mots, puis leurs coordonnées les rattachent aux régions. Le texte brut et les confiances sont conservés. Les noms et notes incertains restent à relire ; aucune lecture OCR n'ajoute automatiquement un exemplaire au club.
+L'image est agrandie et passée en niveaux de gris. Un premier passage Tesseract lit tous les mots, puis leurs coordonnées les rattachent aux régions. Un petit champ de carte sous 0,75 de confiance est relu isolément en mode ligne, à plus grande échelle ; le rapport indique `method: global` ou `region`. La confiance n'est pas augmentée artificiellement et les coordonnées reviennent dans la capture originale. Le texte brut et les confiances sont conservés. Les noms et notes incertains restent à relire ; aucune lecture OCR n'ajoute automatiquement un exemplaire au club.
 
 `club list` affiche le club confirmé. `club protect IDENTIFIANT` protège un exemplaire ; `--remove` retire cette protection. `club add FICHIER --confirm` ajoute un exemplaire après vérification. Une nouvelle observation du même exemplaire ne crée pas de doublon et conserve sa protection.
 
@@ -120,6 +128,7 @@ Les espaces et les formes Unicode équivalentes sont harmonisés ; la casse, les
 ## Règles et profils
 
 - Composition : postes, notes individuelles, qualité, rareté, quotas et nombres distincts ou communs de pays/ligues/clubs.
+- Qualité de chaque carte : minimum, maximum ou exacte, dans l'ordre bronze, argent, or. Ainsi, `Player Quality: Min. Silver` accepte argent et or, et `Max. Silver` accepte bronze et argent. `card_level_op` précise l'opérateur ; le défaut `exact` conserve le comportement des premiers exemples.
 - Note d'équipe : correction des notes au-dessus de la moyenne et arrondi, limitée aux formations de onze emplacements. Une autre taille est refusée tant qu'elle n'est pas vérifiée.
 - Collectif : seuils standard de club, pays et ligue, plafonnés à trois points par joueur. Les héros, icônes et bonus particuliers ne sont pas modélisés ; leurs profils sont exclus quand un collectif est demandé. Seuls les minima de collectif sont acceptés. Les liens particuliers entre clubs restent à vérifier sur l'interface.
 - Item Score : total minimum ou exact, progression acquise, filtre de qualité/note et doublons jusqu'aux quantités disponibles. Un exemplaire possédé vaut toujours une unité ; une offre vaut une unité tant qu'une autre quantité n'a pas été renseignée. Le score vient d'une lecture confirmée ou du catalogue, jamais de la seule note.
@@ -146,7 +155,7 @@ Le prix plafond par carte est le prix unitaire utilisé pour le calcul. La marge
 
 ## Accès aux données
 
-Le 6 novembre, un appel FUTBIN local a répondu HTTP 403. L'import s'arrête et garde le cache. `import --file FICHIER --db BASE` lit un export normalisé obtenu par un accès autorisé : une liste `cards` avec les champs du catalogue, ses sources, ses dates et ses prix `ps`/`pc` éventuellement nuls. Les dates ne sont pas rajeunies et les données fictives restent dans des bases séparées.
+Le 6 novembre, un appel FUTBIN local a répondu HTTP 403. Le 12 novembre, l'actualisation d'une version puis de deux pages a fonctionné : 60 versions actualisées, 62 en base locale. Le catalogue complet reste à importer et l'accès peut changer. En cas de refus, l'import s'arrête et garde le cache. `import --file FICHIER --db BASE` lit un export normalisé obtenu par un accès autorisé : une liste `cards` avec les champs du catalogue, ses sources, ses dates et ses prix `ps`/`pc` éventuellement nuls. Les dates ne sont pas rajeunies et les données fictives restent dans des bases séparées.
 
 ## Ordre de lecture pour expliquer le code
 

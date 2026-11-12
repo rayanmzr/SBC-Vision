@@ -247,3 +247,78 @@ def test_quality_applies_to_every_selected_card_and_max_score_is_not_a_goal(setu
     assert report["ready"], report["issues"]
     assert report["challenge"]["card_level"] == "GOLD"
     assert not parsed("Item Score: Max 100", db)["ready"]
+
+
+@pytest.mark.parametrize(
+    "label, accepted",
+    [
+        ("Min. Silver", {"SILVER", "GOLD"}),
+        ("Max. Silver", {"BRONZE", "SILVER"}),
+        ("Exactly Silver", {"SILVER"}),
+        ("Min. Gold", {"GOLD"}),
+    ],
+)
+def test_quality_minimum_maximum_and_exact_are_not_confused(setup, label, accepted):
+    db, pool = setup
+    report = parsed(f"Player Quality: {label}\nNumber of players: 1", db, ["CM"])
+    assert report["ready"], report["issues"]
+    challenge = Challenge.model_validate(report["challenge"])
+    for level in ("BRONZE", "SILVER", "GOLD", None):
+        card = pool[0].model_copy(update={"protected": False, "card_level": level})
+        result = solve(challenge, [card])
+        assert result.status == ("optimal" if level in accepted else "infeasible")
+
+
+def test_eleven_players_must_meet_all_constraints_together(setup):
+    db, pool = setup
+    positions = ["GK", "RB", "CB", "CB", "LB", "CDM", "RM", "LM", "CAM", "ST", "ST"]
+    text = (
+        "Number of Players in the Squad: 11\nPlayer Quality: Min. Gold\n"
+        "Nationalities: Exact 2\nLeagues: Max 2\nClubs: Exact 3\n"
+        "Players from the same club: Max 4\nPlayers from the same nation: Min 6\n"
+        "Rare players: Min 3\nSquad rating: Min 83\nTotal chemistry: Min 30"
+    )
+    report = parsed(text, db, positions)
+    assert report["ready"], report["issues"]
+    cards = [
+        pool[0].model_copy(
+            update={
+                "key": f"complex:{i}",
+                "base_id": 990000 + i,
+                "card_id": 990000 + i,
+                "protected": False,
+                "rating": 83,
+                "positions": [position],
+                "card_level": "GOLD",
+                "nation_id": 9001 if i < 6 else 9002,
+                "league_id": 9011 if i < 6 else 9012,
+                "club_id": 9020 + i % 3,
+                "is_rare": i < 3,
+                "owned": i < 9,
+                "value": 100,
+                "chemistry_kind": "standard",
+            }
+        )
+        for i, position in enumerate(positions)
+    ]
+    challenge = Challenge.model_validate(report["challenge"]).model_copy(update={"budget": 200})
+    result = solve(challenge, cards)
+    assert result.status == "optimal"
+    assert result.purchase_cost == 200
+    assert result.sacrifice_value == 900
+    assert len(result.assignments) == 11
+    assert validate(challenge, cards, result.assignments) == []
+    from collections import Counter
+
+    assert sorted(Counter(c.nation_id for c in cards).values()) == [5, 6]
+    assert sorted(Counter(c.club_id for c in cards).values()) == [3, 4, 4]
+    assert sum(c.is_rare for c in cards) == 3
+    # Un minimum supplémentaire incompatible doit faire échouer le même moteur.
+    for impossible in [
+        Condition(metric="rare", value=4),
+        Condition(metric="nations", op="exact", value=3),
+        Condition(metric="same_club", op="max", value=3),
+        Condition(metric="team_rating", value=84),
+    ]:
+        harder = challenge.model_copy(update={"conditions": [*challenge.conditions, impossible]})
+        assert solve(harder, cards).status == "infeasible"
