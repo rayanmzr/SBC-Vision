@@ -15,6 +15,8 @@ Depuis la racine du dépôt :
 ```bash
 source .venv/bin/activate
 python -m sbc_vision.sbc_engine import --pages 2
+python -m sbc_vision.sbc_engine import --quality silver --pages 5
+python -m sbc_vision.sbc_engine import --quality bronze --pages 5
 python -m sbc_vision.sbc_engine club demo
 python -m sbc_vision.sbc_engine solve --demo
 ```
@@ -91,7 +93,7 @@ Leagues: Exact 2
 
 Passer `Leagues: Exact 2` à `Leagues: Exact 1` change la composition avec le même moteur. Des libellés français courants sont reconnus. Un libellé inconnu, une valeur incertaine ou une cible absente du catalogue donne `ready: false` et bloque la résolution. L'OCR des interfaces réelles devra être évalué sur les captures annotées du groupe.
 
-Les libellés `Players from the same Countries/Regions`, `Leagues in Squad` et `Silver: Min. 5 Players` sont reconnus. Le dernier exige cinq cartes de qualité argent ; des cartes or ne satisfont pas ce quota. Une condition peut occuper plusieurs lignes dans sa région. L'essai sur l'écran réel à sept conditions lit celles-ci et les onze postes, mais ne produit pas encore d'équipe réelle : le catalogue local limité aux cartes or ne couvre pas le quota argent et le club réel n'est pas inventorié.
+Les libellés `Players from the same Countries/Regions`, `Leagues in Squad` et `Silver: Min. 5 Players` sont reconnus. Le dernier exige cinq cartes de qualité argent ; des cartes or ne satisfont pas ce quota. Une condition peut occuper plusieurs lignes dans sa région. L'essai réel à sept conditions produit une proposition locale après ajout des cartes argent et bronze. Le club réel reste à inventorier ; les cartes proposées sont donc considérées comme des achats.
 
 ## Mesurer l'OCR
 
@@ -141,6 +143,8 @@ Références : [formats SBC de FC 27](https://help.ea.com/en/articles/ea-sports-
 
 Le coût économique additionne achats et valeur des cartes du club sacrifiées. Les exemplaires protégés et prix inconnus ou anciens sont exclus. Les séries `ps` et `pc` du fournisseur restent distinctes. Les identités de joueurs sont provisoirement groupées selon `base_id` FUTBIN.
 
+`solve --budget 5000` remplace explicitement le budget du rapport lu, sans modifier ce rapport. Le budget et le plafond par carte sont affichés et conservés dans la proposition. Changer le budget ne lance aucun achat.
+
 `solve --max-card-value 1000` exclut toutes les cartes estimées à plus de 1 000 crédits, y compris celles du club. Cette préférence utilisateur est indépendante du budget total d'achat et ne modifie pas les protections enregistrées. Elle peut aussi être définie dans le JSON du défi via `max_card_value` ; l'option de commande prend la priorité. Par défaut, aucun plafond par carte n'est ajouté. La résolution et le vérificateur appliquent tous deux cette limite ; si elle empêche de remplir le SBC sur le pool connu, le moteur le signale sans la relever automatiquement.
 
 ```bash
@@ -158,6 +162,10 @@ Le prix plafond par carte est le prix unitaire utilisé pour le calcul. La marge
 ## Accès aux données
 
 Le 6 novembre, un appel FUTBIN local a répondu HTTP 403. Le 12 novembre, l'actualisation d'une version puis de deux pages a fonctionné : 60 versions actualisées, 62 en base locale. Le catalogue complet reste à importer et l'accès peut changer. En cas de refus, l'import s'arrête et garde le cache. `import --file FICHIER --db BASE` lit un export normalisé obtenu par un accès autorisé : une liste `cards` avec les champs du catalogue, ses sources, ses dates et ses prix `ps`/`pc` éventuellement nuls. Les dates ne sont pas rajeunies et les données fictives restent dans des bases séparées.
+
+`--quality` choisit l'index `all`, `gold`, `silver` ou `bronze` à partir des filtres publics FUTBIN. Les pages sont mises en cache par qualité et numéro ; les cartes et les prix restent communs. L'ancien index est conservé dans `all` lors de la migration. Un lot d'une autre qualité que celle demandée est refusé. Le filtre s'applique aux pages, pas à `--ids` ni à `--file`.
+
+L'essai étendu du 12 novembre contient 362 versions : 62 or, 150 argent et 150 bronze. Sur les sept conditions lues, `--budget 5000 --max-card-value 1000 --seconds 30` donne une proposition à 3 900 crédits dans le pool connu, avec cinq argent, six bronze, cinq ligues et un collectif standard calculé de 17. Le plafond retenu est de 550 crédits pour la carte la plus chère. Les prix ne garantissent pas une offre disponible ; la composition n'a été ni placée ni validée dans la Web App.
 
 ## Ordre de lecture pour expliquer le code
 

@@ -47,6 +47,9 @@ La commande lance le lint, les tests hors ligne et la vérification du schéma J
 ```bash
 # Import limité avec cache, si la source est accessible.
 python -m sbc_vision.sbc_engine import --pages 2
+# Compléter le pool avec les qualités utiles aux SBC.
+python -m sbc_vision.sbc_engine import --quality silver --pages 5
+python -m sbc_vision.sbc_engine import --quality bronze --pages 5
 # Démonstrations hors ligne avec des cartes fictives.
 python -m sbc_vision.sbc_engine club demo
 python -m sbc_vision.sbc_engine solve --demo

@@ -2,7 +2,7 @@
 
 import json
 from contextlib import closing
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from itertools import permutations
 from pathlib import Path
 from unittest.mock import Mock
@@ -13,7 +13,7 @@ from pydantic import ValidationError
 
 from sbc_vision.sbc_engine.__main__ import main
 from sbc_vision.sbc_engine.models import Assignment, Challenge, Condition
-from sbc_vision.sbc_engine.players import load_pool, open_database, seed_demo
+from sbc_vision.sbc_engine.players import load_pool, open_database, save_cards, seed_demo
 from sbc_vision.sbc_engine.solver import greedy, shopping_list, solve, validate
 
 FIXTURES = Path(__file__).resolve().parents[1] / "data/fixtures"
@@ -328,3 +328,26 @@ def test_cli_value_cap_is_saved_in_the_plan_and_invalid_limits_are_rejected(tmp_
     assert all(c["value"] <= 1000 for c in report["selected_candidates"])
     assert main(args + ["--max-card-value", "0", "--output", str(tmp_path / "invalid.json")]) == 1
     assert not (tmp_path / "invalid.json").exists()
+
+
+def test_cli_budget_override_is_explicit_and_does_not_change_saved_reading(tmp_path):
+    fixture = json.loads((FIXTURES / "solver.synthetic.json").read_text())
+    reading = tmp_path / "reading.json"
+    reading.write_text(json.dumps({"ready": True, "challenge": fixture["challenge"]}))
+    output = tmp_path / "solution.json"
+    database = tmp_path / "demo.sqlite3"
+    assert main(["solve", "--demo", "--db", str(database), "--output", str(output)]) == 0
+    with closing(open_database(database)) as db:
+        cards = [json.loads(row["data"]) for row in db.execute("SELECT data FROM cards")]
+        for card in cards:
+            card["observed_at"] = datetime.now(UTC).isoformat()
+        save_cards(db, cards)
+    args = ["solve", "--reading", str(reading), "--db", str(database), "--alternatives", "0"]
+    assert main(args + ["--budget", "1300", "--output", str(output)]) == 0
+    result = json.loads(output.read_text())
+    assert result["challenge"]["budget"] == 1300
+    assert result["solution"]["purchase_cost"] == 1300
+    assert json.loads(reading.read_text())["challenge"]["budget"] == 2000
+    assert main(args + ["--output", str(output)]) == 0
+    assert json.loads(output.read_text())["challenge"]["budget"] == 2000
+    assert main(args + ["--budget", "-1", "--output", str(tmp_path / "invalid.json")]) == 1

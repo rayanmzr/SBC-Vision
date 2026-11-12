@@ -79,7 +79,8 @@ def open_database(path: str | Path) -> sqlite3.Connection:
     db.execute("PRAGMA foreign_keys = ON")
     db.executescript("""
         CREATE TABLE IF NOT EXISTS pages (
-            number INTEGER PRIMARY KEY, ids TEXT NOT NULL, last_page INTEGER NOT NULL
+            quality TEXT NOT NULL, number INTEGER NOT NULL, ids TEXT NOT NULL,
+            last_page INTEGER NOT NULL, PRIMARY KEY(quality, number)
         );
         CREATE TABLE IF NOT EXISTS cards (
             id INTEGER PRIMARY KEY, name TEXT NOT NULL, rating INTEGER NOT NULL,
@@ -92,6 +93,17 @@ def open_database(path: str | Path) -> sqlite3.Connection:
             CHECK(market IN ('ps', 'pc'))
         );
     """)
+    if "quality" not in {row[1] for row in db.execute("PRAGMA table_info(pages)")}:
+        # Conserver l'ancien index dans le filtre général, sans toucher aux cartes ni aux prix.
+        with db:
+            db.execute("BEGIN")
+            db.execute("ALTER TABLE pages RENAME TO pages_old")
+            db.execute(
+                "CREATE TABLE pages (quality TEXT NOT NULL, number INTEGER NOT NULL, "
+                "ids TEXT NOT NULL, last_page INTEGER NOT NULL, PRIMARY KEY(quality, number))"
+            )
+            db.execute("INSERT INTO pages SELECT 'all', number, ids, last_page FROM pages_old")
+            db.execute("DROP TABLE pages_old")
     db.execute("""
         CREATE TABLE IF NOT EXISTS club_items (
             instance_id TEXT PRIMARY KEY, card_id INTEGER NOT NULL REFERENCES cards(id),
@@ -105,12 +117,12 @@ def open_database(path: str | Path) -> sqlite3.Connection:
     return db
 
 
-def save_page(db: sqlite3.Connection, number: int, ids: list[int], last_page: int):
+def save_page(db: sqlite3.Connection, number: int, ids: list[int], last_page: int, quality="all"):
     # Ce point de reprise permet de retrouver les cartes même si le téléchargement échoue.
     with db:
         db.execute(
-            "INSERT OR REPLACE INTO pages VALUES (?, ?, ?)",
-            (number, json.dumps(ids), last_page),
+            "INSERT OR REPLACE INTO pages VALUES (?, ?, ?, ?)",
+            (quality, number, json.dumps(ids), last_page),
         )
 
 
@@ -154,8 +166,13 @@ class Futbin:
         response.raise_for_status()  # Un refus HTTP arrête l'import, sans contournement.
         return response
 
-    def page(self, number: int) -> tuple[list[int], int]:
-        html = self.get("/27/players", {"page": number}).text
+    def page(self, number: int, *, quality="all") -> tuple[list[int], int]:
+        if quality not in {"all", "gold", "silver", "bronze"}:
+            raise ValueError("Qualité de catalogue inconnue.")
+        params = {"page": number}
+        if quality != "all":
+            params["version"] = quality
+        html = self.get("/27/players", params).text
         soup = BeautifulSoup(html, "html.parser")
         ids = []
         for link in soup.select("tr.player-row a.player-row-playercard[href]"):
@@ -227,11 +244,18 @@ def normalize(raw: dict, observed_at: str) -> dict:
     }
 
 
-def import_catalog(db, source, pages=2, ids=None, refresh=False, max_age=24):
+def import_catalog(db, source, pages=2, ids=None, refresh=False, max_age=24, *, quality="all"):
+    if quality not in {"all", "gold", "silver", "bronze"} or (ids and quality != "all"):
+        raise ValueError("Choisir une qualité valide ; les identifiants ciblés utilisent all.")
     cutoff = (datetime.now(UTC) - timedelta(hours=max_age)).isoformat()
     # Les cartes encore fraîches sont réutilisées plutôt que téléchargées à nouveau.
     fresh = {
-        row["id"] for row in db.execute("SELECT id FROM cards WHERE observed_at > ?", (cutoff,))
+        row["id"]
+        for row in db.execute(
+            "SELECT id FROM cards WHERE observed_at > ? AND "
+            "(? = 'all' OR json_extract(data, '$.card_level') = ?)",
+            (cutoff, quality, quality.upper()),
+        )
     }
     if refresh:
         fresh.clear()
@@ -242,23 +266,27 @@ def import_catalog(db, source, pages=2, ids=None, refresh=False, max_age=24):
         if ids:
             page_ids = list(dict.fromkeys(ids))
         else:
-            cached = db.execute("SELECT * FROM pages WHERE number = ?", (number,)).fetchone()
+            cached = db.execute(
+                "SELECT * FROM pages WHERE quality = ? AND number = ?", (quality, number)
+            ).fetchone()
             if cached and not refresh:
                 page_ids, last_page = json.loads(cached["ids"]), cached["last_page"]
             else:
-                page_ids, last_page = source.page(number)
+                page_ids, last_page = source.page(number, quality=quality)
                 if page_ids == previous_ids:
                     raise ValueError("FUTBIN répète la même page : import arrêté.")
-                save_page(db, number, page_ids, last_page)
+                save_page(db, number, page_ids, last_page, quality)
             previous_ids = page_ids
         pending = [card_id for card_id in page_ids if card_id not in fresh]
         for start in range(0, len(pending), 60):
             cards = source.cards(pending[start : start + 60])
+            if quality != "all" and any(c.get("card_level") != quality.upper() for c in cards):
+                raise ValueError("Le lot reçu ne correspond pas à la qualité demandée.")
             save_cards(db, cards)
             fresh.update(card["id"] for card in cards)
             imported += len(cards)
         print(
-            f"Page {number}/{last_page} : {len(pending)} cartes importées, "
+            f"Page {quality} {number}/{last_page} : {len(pending)} cartes importées, "
             f"{len(page_ids) - len(pending)} en cache."
         )
         if number >= last_page:

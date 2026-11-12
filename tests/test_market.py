@@ -173,3 +173,89 @@ def test_requests_are_spaced_out(monkeypatch):
         source.get("/test")
         source.get("/test")
     assert sleep.call_args_list[-1].args == (1.5,)
+
+
+def test_quality_filters_have_separate_page_caches(db, raw_card):
+    gold = card(raw_card)
+    silver = {**card(raw_card, 900002), "card_level": "SILVER", "rating": 70}
+    source = Mock()
+    source.page.return_value = ([gold["id"]], 1)
+    source.cards.return_value = [gold]
+    assert import_catalog(db, source, pages=1) == 1
+    source.page.return_value = ([silver["id"]], 1)
+    source.cards.return_value = [silver]
+    assert import_catalog(db, source, pages=1, quality="silver") == 1
+    source.page.assert_called_with(1, quality="silver")
+    rows = db.execute("SELECT quality, ids FROM pages WHERE number=1 ORDER BY quality").fetchall()
+    assert [(row["quality"], json.loads(row["ids"])) for row in rows] == [
+        ("all", [900001]),
+        ("silver", [900002]),
+    ]
+    source.reset_mock()
+    assert import_catalog(db, source, pages=1, quality="silver") == 0
+    source.page.assert_not_called()
+    source.cards.assert_not_called()
+
+
+def test_old_page_index_is_migrated_without_losing_cards_or_prices(tmp_path, raw_card):
+    path = tmp_path / "old.sqlite3"
+    db = open_database(path)
+    save_cards(db, [card(raw_card)])
+    db.execute("DROP TABLE pages")
+    db.execute(
+        "CREATE TABLE pages (number INTEGER PRIMARY KEY, ids TEXT NOT NULL, "
+        "last_page INTEGER NOT NULL)"
+    )
+    db.execute("INSERT INTO pages VALUES (1, '[900001]', 4)")
+    db.commit()
+    db.close()
+    reopened = open_database(path)
+    row = dict(reopened.execute("SELECT * FROM pages").fetchone())
+    assert row == {"quality": "all", "number": 1, "ids": "[900001]", "last_page": 4}
+    assert reopened.execute("SELECT COUNT(*) FROM cards").fetchone()[0] == 1
+    assert reopened.execute("SELECT COUNT(*) FROM prices").fetchone()[0] == 2
+    reopened.close()
+
+
+def test_wrong_quality_from_the_provider_is_not_saved(db, raw_card):
+    source = Mock()
+    source.page.return_value = ([900001], 1)
+    source.cards.return_value = [card(raw_card)]
+    with pytest.raises(ValueError, match="qualité demandée"):
+        import_catalog(db, source, quality="silver")
+    assert db.execute("SELECT COUNT(*) FROM cards").fetchone()[0] == 0
+
+
+def test_fresh_card_of_another_quality_does_not_hide_an_ignored_filter(db, raw_card):
+    gold = card(raw_card)
+    save_cards(db, [gold])
+    source = Mock()
+    source.page.return_value = ([900001], 1)
+    source.cards.return_value = [gold]
+    with pytest.raises(ValueError, match="qualité demandée"):
+        import_catalog(db, source, quality="silver")
+    source.cards.assert_called_once_with([900001])
+
+
+def test_invalid_quality_is_rejected_before_any_request(db):
+    source = Mock()
+    with pytest.raises(ValueError, match="qualité valide"):
+        import_catalog(db, source, quality="unknown")
+    source.page.assert_not_called()
+    source.cards.assert_not_called()
+
+
+def test_quality_filter_is_sent_in_the_public_list_request(monkeypatch):
+    monkeypatch.setattr("sbc_vision.sbc_engine.players.time.sleep", lambda _: None)
+
+    def handler(request):
+        assert request.url.params["page"] == "2"
+        assert request.url.params["version"] == "bronze"
+        return httpx.Response(
+            200,
+            text='<tr class="player-row"><td><a class="player-row-playercard" '
+            'href="/27/player/900001/test">Carte</a></td></tr>',
+        )
+
+    with httpx.Client(base_url=BASE_URL, transport=httpx.MockTransport(handler)) as http:
+        assert Futbin(http).page(2, quality="bronze")[0] == [900001]

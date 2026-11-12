@@ -29,6 +29,8 @@ from .solver import alternatives, greedy, shopping_list, solve
 
 
 def run_import(args):
+    if (args.ids or args.file) and args.quality != "all":
+        raise ValueError("Le filtre de qualité s'applique à l'index, pas aux IDs ou aux fichiers.")
     if args.pages < 1 or args.max_age < 0 or (args.ids and min(args.ids) < 1):
         raise ValueError("Pages et identifiants positifs ; durée du cache positive ou nulle.")
     with closing(open_database(args.db or "data/processed/futbin_fc27.sqlite3")) as db:
@@ -42,7 +44,9 @@ def run_import(args):
             headers={"User-Agent": "SBC-Vision/0.1 (projet etudiant)", "Accept-Encoding": "gzip"},
         ) as http:
             source = Futbin(http, float(os.getenv("FUTBIN_MIN_INTERVAL_SECONDS", "2")))
-            import_catalog(db, source, args.pages, args.ids, args.refresh, args.max_age)
+            import_catalog(
+                db, source, args.pages, args.ids, args.refresh, args.max_age, quality=args.quality
+            )
         print(f"{db.execute('SELECT COUNT(*) FROM cards').fetchone()[0]} versions en base.")
         print(ATTRIBUTION)
     return 0
@@ -89,10 +93,14 @@ def run_solver(args, *, now=None):
         challenge = Challenge.model_validate(reading["challenge"])
     else:
         challenge = Challenge.model_validate_json(args.challenge.read_text())
-    if args.max_card_value is not None:
-        challenge = Challenge.model_validate(
-            {**challenge.model_dump(), "max_card_value": args.max_card_value}
-        )
+    preferences = {
+        key: getattr(args, key)
+        for key in ("budget", "max_card_value")
+        if getattr(args, key, None) is not None
+    }
+    if preferences:
+        challenge = Challenge.model_validate({**challenge.model_dump(), **preferences})
+    print(f"Budget d'achat : {challenge.budget} crédits.")
     if challenge.max_card_value is not None:
         print(f"Valeur maximale par carte : {challenge.max_card_value} crédits (club et achats).")
     name = "solver_demo" if args.demo else "futbin_fc27"
@@ -105,8 +113,13 @@ def run_solver(args, *, now=None):
     baseline, outcome = greedy(challenge, pool), solve(challenge, pool, seconds=args.seconds)
     options = alternatives(challenge, pool, outcome, limit=args.alternatives)
     purchases = shopping_list(challenge, pool, outcome)
-    print(f"Sélection simple : {baseline.status}, coût économique {baseline.total_cost}.")
-    print(f"OR-Tools : {outcome.status}, coût économique {outcome.total_cost}.")
+    for label, result in [("Sélection simple", baseline), ("OR-Tools", outcome)]:
+        cost = (
+            f"coût économique {result.total_cost}"
+            if result.total_cost is not None
+            else "sans proposition"
+        )
+        print(f"{label} : {result.status}, {cost}.")
     by_key = {card.key: card for card in pool}
     for item in outcome.assignments:
         card = by_key[item.candidate_key]
@@ -120,7 +133,8 @@ def run_solver(args, *, now=None):
             f"{position} : {card.name}, version {card.card_id}, "
             f"{origin}, valeur {card.value} ({card.key})."
         )
-    print(f"Achats : {outcome.purchase_cost} ; valeur sacrifiée : {outcome.sacrifice_value}.")
+    if outcome.purchase_cost is not None:
+        print(f"Achats : {outcome.purchase_cost} ; valeur sacrifiée : {outcome.sacrifice_value}.")
     if purchases:
         for item in purchases["items"]:
             print(
@@ -229,6 +243,7 @@ def main(argv=None):
     demo.set_defaults(demo=False, seconds=5, alternatives=2, max_age=24)
     market = commands.add_parser("import", parents=[common], help="Importer FUTBIN.")
     market.add_argument("--pages", type=int, default=2)
+    market.add_argument("--quality", choices=["all", "gold", "silver", "bronze"], default="all")
     market.add_argument("--ids", type=int, nargs="+")
     market.add_argument("--file", type=Path, help="Export JSON normalisé, sans accès réseau.")
     market.add_argument("--refresh", action="store_true")
@@ -256,6 +271,7 @@ def main(argv=None):
     solver.add_argument("--seconds", type=float, default=5)
     solver.add_argument("--alternatives", type=int, choices=range(4), default=2)
     solver.add_argument("--max-age", type=float, default=24)
+    solver.add_argument("--budget", type=int, help="Budget d'achat remplaçant celui du rapport lu.")
     solver.add_argument(
         "--max-card-value", type=int, help="Valeur maximale par carte, club inclus."
     )
