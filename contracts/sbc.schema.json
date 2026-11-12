@@ -177,6 +177,31 @@
           ],
           "default": null,
           "title": "Item Score"
+        },
+        "stats": {
+          "additionalProperties": {
+            "maximum": 99,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "propertyNames": {
+            "enum": [
+              "PAC",
+              "SHO",
+              "PAS",
+              "DRI",
+              "DEF",
+              "PHY",
+              "DIV",
+              "HAN",
+              "KIC",
+              "REF",
+              "SPD",
+              "POS"
+            ]
+          },
+          "title": "Stats",
+          "type": "object"
         }
       },
       "required": [
@@ -572,6 +597,7 @@
             "name",
             "rating",
             "position",
+            "stats",
             "item_score",
             "requirements",
             "slots"

@@ -16,6 +16,20 @@ from .models import Candidate, CardReading, ClubItem
 
 BASE_URL = "https://www.futbin.com"
 ATTRIBUTION = f"Données de prix : FUTBIN — {BASE_URL}/"
+BASE_STATS = {
+    "PAC": "BasePace",
+    "SHO": "BaseShooting",
+    "PAS": "BasePassing",
+    "DRI": "BaseDribbling",
+    "DEF": "BaseDefending",
+    "PHY": "BasePhysicality",
+    "DIV": "BaseDiving",
+    "HAN": "BaseHandling",
+    "KIC": "BaseKicking",
+    "REF": "BaseReflexes",
+    "SPD": "BaseSpeed",
+    "POS": "BasePositioning",
+}
 
 
 def nested(data, *path):
@@ -91,6 +105,7 @@ def open_database(path: str | Path) -> sqlite3.Connection:
             id INTEGER PRIMARY KEY, name TEXT NOT NULL, rating INTEGER NOT NULL,
             data TEXT NOT NULL, observed_at TEXT NOT NULL
         );
+        CREATE INDEX IF NOT EXISTS cards_rating ON cards(rating);
         CREATE TABLE IF NOT EXISTS prices (
             card_id INTEGER NOT NULL REFERENCES cards(id), market TEXT NOT NULL,
             credits INTEGER CHECK(credits > 0), observed_at TEXT NOT NULL,
@@ -171,12 +186,16 @@ class Futbin:
         response.raise_for_status()  # Un refus HTTP arrête l'import, sans contournement.
         return response
 
-    def page(self, number: int, *, quality="all") -> tuple[list[int], int]:
+    def page(self, number: int, *, quality="all", search=None) -> tuple[list[int], int]:
         if quality not in {"all", "gold", "silver", "bronze"}:
             raise ValueError("Qualité de catalogue inconnue.")
         params = {"page": number}
         if quality != "all":
             params["version"] = quality
+        if search is not None:
+            if not any(c.isalpha() for c in search):
+                raise ValueError("Le nom recherché doit contenir des lettres.")
+            params["search"] = search
         html = self.get("/27/players", params).text
         soup = BeautifulSoup(html, "html.parser")
         ids = []
@@ -187,6 +206,9 @@ class Futbin:
         # Une carte peut apparaître dans les versions mobile et bureau du tableau.
         ids = list(dict.fromkeys(ids))
         if not ids:
+            # Une table vide est un résultat absent ; une page non reconnue reste une erreur.
+            if search and soup.select_one("table.players-table tbody:empty"):
+                return [], number
             raise ValueError(f"Page {number} sans cartes : le format FUTBIN a peut-être changé.")
         pages = [number]
         for link in soup.select("a.pagination-button[href]"):
@@ -330,9 +352,61 @@ def find_candidates(db: sqlite3.Connection, reading: CardReading) -> list[dict]:
             continue
         if any(value is not None and card.get(key) != value for key, value in filters.items()):
             continue
+        stats = card.get("stats")
+        if reading.stats and (
+            not isinstance(stats, dict)
+            or any(
+                type(stats.get(BASE_STATS[k])) is not int or stats[BASE_STATS[k]] != v
+                for k, v in reading.stats.items()
+            )
+        ):
+            continue
         candidates.append(card)
     # Même un seul candidat reste à confirmer : le catalogue peut être incomplet.
     return candidates
+
+
+def import_readings(db, source, report, *, pages=2, refresh=False):
+    """Enrichir le catalogue depuis l'OCR, sans ajouter de joueurs au club."""
+    if pages < 1 or not isinstance(report.get("cards"), list):
+        raise ValueError("Fournir un rapport de cartes et un nombre de pages positif.")
+    if db.execute(
+        "SELECT 1 FROM cards WHERE json_extract(data, '$.source_url') LIKE 'urn:%'"
+    ).fetchone():
+        raise ValueError(
+            "Conserver les données fictives dans une base séparée, sans recherche réelle."
+        )
+    cards = [{**c, "candidate_ids": [], "needs_confirmation": True} for c in report["cards"]]
+    searches, imported = {}, 0
+    for card in cards:
+        if card.get("issues") or not card.get("reading"):
+            continue
+        reading = CardReading.model_validate(card["reading"])
+        if reading.capture_id != report["capture_id"] or reading.element_id != card["element_id"]:
+            raise ValueError("La lecture ne correspond pas à sa capture et à son élément.")
+        if refresh or not find_candidates(db, reading):
+            # Retirer les icônes lues comme ponctuation, sans corriger les lettres du nom.
+            name = " ".join("".join(c if c.isalnum() else " " for c in reading.name).split())
+            if name not in searches:
+                ids = set()
+                for number in range(1, pages + 1):
+                    found, last = source.page(number, search=name)
+                    if found and set(found) <= ids:
+                        raise ValueError("FUTBIN répète la même page : recherche arrêtée.")
+                    ids.update(found)
+                    if number >= last:
+                        break
+                if ids:
+                    # Récupérer aussi les alias manquants des anciennes entrées du cache.
+                    imported += import_catalog(db, source, ids=sorted(ids), refresh=True)
+                searches[name] = {"name": name, "pages": number, "complete": number >= last}
+        card["candidate_ids"] = [c["id"] for c in find_candidates(db, reading)]
+    return {
+        **report,
+        "cards": cards,
+        "catalogue_searches": list(searches.values()),
+        "imported": imported,
+    }
 
 
 def save_item(db: sqlite3.Connection, item: ClubItem, *, confirmed: bool = False):

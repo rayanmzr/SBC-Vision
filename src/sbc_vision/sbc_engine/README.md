@@ -51,6 +51,18 @@ Le fichier des régions contient `capture_id` et une liste `regions`, avec `elem
 
 L'image est agrandie et passée en niveaux de gris. Un premier passage Tesseract lit tous les mots, puis leurs coordonnées les rattachent aux régions. Un champ de carte ou de condition sous 0,75 de confiance est relu isolément, à plus grande échelle : mode ligne pour une carte, mode bloc pour une condition pouvant occuper plusieurs lignes. Le rapport indique `method: global` ou `region`. La confiance n'est pas augmentée artificiellement et les coordonnées reviennent dans la capture originale. Le texte brut et les confiances sont conservés. Les noms et notes incertains restent à relire ; aucune lecture OCR n'ajoute automatiquement un exemplaire au club.
 
+Une région facultative `field: "stats"` peut contenir les six intitulés anglais puis les six nombres de la carte : `PAC SHO PAS DRI DEF PHY`, ou `DIV HAN KIC REF SPD POS` pour un gardien. Ils complètent `CardReading.stats` et filtrent les versions ayant le même nom et la même note. Une statistique absente du catalogue ne prouve pas une correspondance ; un bloc présent mais incertain ou mal formé bloque la confirmation. Aucun emplacement n'est fixé dans le code.
+
+Pour chercher les cartes manquantes directement depuis un rapport OCR :
+
+```bash
+python -m sbc_vision.sbc_engine import --reading data/processed/ocr.json
+```
+
+La commande réutilise les correspondances locales et interroge le filtre public de nom FUTBIN pour les autres lectures sans alerte. Elle télécharge les versions trouvées, puis recalcule les candidats ; elle n'ajoute aucun exemplaire au club. `--refresh` force la recherche et l'actualisation ; `--pages` limite les pages par nom (deux par défaut). Une absence de résultat ne lance jamais l'import de l'index entier. Les caches des index or/argent/bronze restent séparés de ces recherches. Une base de démonstration est refusée pour éviter le mélange avec les données réelles.
+
+Le rapport local `data/processed/catalogue_matches.json` conserve les textes, les candidats et `catalogue_searches`. `complete: false` indique qu'une recherche dépasse la limite de pages ; même une recherche terminée ne prouve pas l'exhaustivité du catalogue EA. `--output` change ce chemin. Le rapport peut être transmis à `club sync` avec des versions et des identifiants d'exemplaires vérifiés ; aucune sélection n'est confirmée automatiquement. Pour l'API, utiliser `players.import_readings(db, source, report)` après l'OCR.
+
 `club list` affiche le club confirmé. `club protect IDENTIFIANT` protège un exemplaire ; `--remove` retire cette protection. `club add FICHIER --confirm` ajoute un exemplaire après vérification. Une nouvelle observation du même exemplaire ne crée pas de doublon et conserve sa protection.
 
 ### Enregistrer un lot de lectures

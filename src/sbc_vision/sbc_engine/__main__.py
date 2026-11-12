@@ -18,6 +18,7 @@ from .players import (
     confirm_readings,
     import_catalog,
     import_file,
+    import_readings,
     list_items,
     load_pool,
     open_database,
@@ -29,7 +30,7 @@ from .solver import alternatives, greedy, shopping_list, solve, verification
 
 
 def run_import(args):
-    if (args.ids or args.file) and args.quality != "all":
+    if (args.ids or args.file or args.reading) and args.quality != "all":
         raise ValueError("Le filtre de qualité s'applique à l'index, pas aux IDs ou aux fichiers.")
     if args.pages < 1 or args.max_age < 0 or (args.ids and min(args.ids) < 1):
         raise ValueError("Pages et identifiants positifs ; durée du cache positive ou nulle.")
@@ -44,9 +45,29 @@ def run_import(args):
             headers={"User-Agent": "SBC-Vision/0.1 (projet etudiant)", "Accept-Encoding": "gzip"},
         ) as http:
             source = Futbin(http, float(os.getenv("FUTBIN_MIN_INTERVAL_SECONDS", "2")))
-            import_catalog(
-                db, source, args.pages, args.ids, args.refresh, args.max_age, quality=args.quality
-            )
+            if args.reading:
+                report = import_readings(
+                    db,
+                    source,
+                    json.loads(args.reading.read_text()),
+                    pages=args.pages,
+                    refresh=args.refresh,
+                )
+                args.output.parent.mkdir(parents=True, exist_ok=True)
+                args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
+                matched = sum(bool(c["candidate_ids"]) for c in report["cards"])
+                print(f"{matched}/{len(report['cards'])} lectures avec candidats ; à confirmer.")
+                print(f"Rapprochements locaux : {args.output}")
+            else:
+                import_catalog(
+                    db,
+                    source,
+                    args.pages,
+                    args.ids,
+                    args.refresh,
+                    args.max_age,
+                    quality=args.quality,
+                )
         print(f"{db.execute('SELECT COUNT(*) FROM cards').fetchone()[0]} versions en base.")
         print(ATTRIBUTION)
     return 0
@@ -252,8 +273,13 @@ def main(argv=None):
     market = commands.add_parser("import", parents=[common], help="Importer FUTBIN.")
     market.add_argument("--pages", type=int, default=2)
     market.add_argument("--quality", choices=["all", "gold", "silver", "bronze"], default="all")
-    market.add_argument("--ids", type=int, nargs="+")
-    market.add_argument("--file", type=Path, help="Export JSON normalisé, sans accès réseau.")
+    imports = market.add_mutually_exclusive_group()
+    imports.add_argument("--ids", type=int, nargs="+")
+    imports.add_argument("--file", type=Path, help="Export JSON normalisé, sans accès réseau.")
+    imports.add_argument("--reading", type=Path, help="Chercher les cartes d'un rapport OCR.")
+    market.add_argument(
+        "--output", type=Path, default=Path("data/processed/catalogue_matches.json")
+    )
     market.add_argument("--refresh", action="store_true")
     market.add_argument("--max-age", type=float, default=24)
     club = commands.add_parser("club", parents=[common], help="Gérer les exemplaires.")

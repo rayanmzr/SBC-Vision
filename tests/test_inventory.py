@@ -184,6 +184,38 @@ def test_nonrare_filter_is_not_ignored_when_false(db, fixture):
     assert list_items(db) == []
 
 
+def test_visible_stats_distinguish_versions_and_are_rechecked_on_confirmation(
+    db, fixture, ocr_report
+):
+    for card, pace in zip(fixture["catalogue"][:2], [70, 75], strict=True):
+        card["stats"] = {"BasePace": pace}
+    save_cards(db, fixture["catalogue"])
+    raw = ocr_report["cards"][0]["reading"]
+    raw["stats"] = {"PAC": 70}
+    assert [c["id"] for c in find_candidates(db, CardReading.model_validate(raw))] == [900001]
+    choice = {"card-1": {"instance_id": "stats-copy", "card_id": 900002}}
+    with pytest.raises(ValueError, match="incompatible"):
+        confirm_readings(db, ocr_report, choice, confirmed=True)
+    assert list_items(db) == []
+    choice["card-1"]["card_id"] = 900001
+    assert confirm_readings(db, ocr_report, choice, confirmed=True) == 1
+
+
+@pytest.mark.parametrize("stats", [None, {}, {"BasePace": 70.0}])
+def test_missing_catalogue_stats_cannot_confirm_a_visible_stat(db, fixture, stats):
+    for card in fixture["catalogue"]:
+        card["stats"] = stats
+    save_cards(db, fixture["catalogue"])
+    reading = CardReading.model_validate({**fixture["readings"][0], "stats": {"PAC": 70}})
+    assert find_candidates(db, reading) == []
+
+
+@pytest.mark.parametrize("stats", [{"PAC": 100}, {"PAC": True}, {"PAC": "70"}, {"OVR": 70}])
+def test_stats_contract_refuses_invalid_values_and_unknown_labels(fixture, stats):
+    with pytest.raises(ValidationError):
+        CardReading.model_validate({**fixture["readings"][0], "stats": stats})
+
+
 @pytest.mark.parametrize("update", [{"rating": 90}, {"position": "GK"}, {"club_id": 9999}])
 def test_incompatible_readings_have_no_candidate(db, fixture, update):
     reading = CardReading.model_validate({**fixture["readings"][0], **update})

@@ -11,7 +11,7 @@ import pytesseract
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 from .models import CardReading, Challenge, Condition, OcrInput
-from .players import find_candidates, normalize_name
+from .players import BASE_STATS, find_candidates, normalize_name
 
 POSITIONS = {
     "G": "GK",
@@ -69,7 +69,7 @@ def read_regions(path, spec: OcrInput, *, lang="eng") -> list[dict]:
                 lines[word["line"]].append(word["text"])
         method = "global"
         if (
-            region.field in {"name", "rating", "position", "item_score", "requirements"}
+            region.field in {"name", "rating", "position", "stats", "item_score", "requirements"}
             and min((w["confidence"] for w in selected), default=0) < 0.75
         ):
             crop = prepared.crop(
@@ -79,7 +79,7 @@ def read_regions(path, spec: OcrInput, *, lang="eng") -> list[dict]:
                 crop,
                 lang=lang,
                 scale=3,
-                psm=6 if region.field == "requirements" else 7,
+                psm=6 if region.field in {"requirements", "stats"} else 7,
                 x=box.x,
                 y=box.y,
             )
@@ -111,7 +111,7 @@ def analyze(path, spec: OcrInput, db, *, lang="eng", minimum=0.75, regions=None)
     regions = read_regions(path, spec, lang=lang) if regions is None else regions
     grouped = defaultdict(dict)
     for region in regions:
-        if region["field"] in {"name", "rating", "position", "item_score"}:
+        if region["field"] in {"name", "rating", "position", "stats", "item_score"}:
             grouped[region["element_id"]][region["field"]] = region
     cards = []
     for element_id, fields in grouped.items():
@@ -139,6 +139,21 @@ def analyze(path, spec: OcrInput, db, *, lang="eng", minimum=0.75, regions=None)
                 if position and position["confidence"] >= minimum:
                     value = position["text"].strip().upper()
                     values["position"] = POSITIONS.get(value, value)
+                stats = fields.get("stats")
+                if stats:
+                    # Les six intitulés et leurs valeurs doivent être lisibles, dans cet ordre.
+                    tokens = stats["text"].upper().split()
+                    labels, numbers = tokens[:6], tokens[6:]
+                    if (
+                        stats["confidence"] < minimum
+                        or len(numbers) != 6
+                        or labels not in [list(BASE_STATS)[:6], list(BASE_STATS)[6:]]
+                        or any(not re.fullmatch(r"\d{1,2}", n) for n in numbers)
+                    ):
+                        issues.append("Statistiques à relire.")
+                    else:
+                        values["stats"] = dict(zip(labels, map(int, numbers), strict=True))
+                        values["confidence"] = min(values["confidence"], stats["confidence"])
                 score = fields.get("item_score")
                 if score and score["confidence"] >= minimum:
                     try:
@@ -152,7 +167,7 @@ def analyze(path, spec: OcrInput, db, *, lang="eng", minimum=0.75, regions=None)
                     except ValueError:
                         issues.append("Item Score à relire.")
                 reading = CardReading.model_validate(values)
-        candidates = find_candidates(db, reading) if reading else []
+        candidates = find_candidates(db, reading) if reading and not issues else []
         cards.append(
             {
                 "element_id": element_id,

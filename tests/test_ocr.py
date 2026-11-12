@@ -20,6 +20,7 @@ from sbc_vision.sbc_engine.ocr import (
     read_regions,
 )
 from sbc_vision.sbc_engine.players import (
+    BASE_STATS,
     confirm_readings,
     list_items,
     open_database,
@@ -90,6 +91,50 @@ def test_unreadable_rating_never_becomes_a_confirmed_card(monkeypatch, db, ratin
     assert report["cards"][0]["reading"] is None
     assert report["cards"][0]["issues"]
     assert list_items(db) == []
+
+
+@pytest.mark.parametrize(
+    "text, confidence, valid",
+    [
+        ("PAC SHO PAS DRI DEF PHY\n70 71 72 73 74 75", 0.99, True),
+        ("DIV HAN KIC REF SPD POS\n70 71 72 73 74 75", 0.99, True),
+        ("PAC SHO PAS DRI DEF PHY\n70 71 72 73 74 75", 0.3, False),
+        ("PAC SHO PAS DRI DEF PHY\n70 71 72 73 74", 0.99, False),
+        ("PAC SHO PAS DRI DEF PHY\n100 71 72 73 74 75", 0.99, False),
+        ("PAC SHO PAS DRI DEF PHY\n7O 71 72 73 74 75", 0.99, False),
+        ("PAC PAC PAS DRI DEF PHY\n70 71 72 73 74 75", 0.99, False),
+    ],
+)
+def test_stat_reading_selects_a_version_only_when_all_six_values_are_readable(
+    db, text, confidence, valid
+):
+    labels = list(BASE_STATS)[6:] if text.startswith("DIV") else list(BASE_STATS)[:6]
+    # Même nom et même note, mais une statistique différente selon la version.
+    cards = [json.loads(r["data"]) for r in db.execute("SELECT data FROM cards WHERE rating=83")]
+    for card in cards:
+        card["stats"] = {BASE_STATS[k]: 70 + i for i, k in enumerate(labels)}
+        if card["id"] == 900002:
+            card["stats"][BASE_STATS[labels[0]]] = 80
+    save_cards(db, cards)
+    regions = [
+        {"element_id": "card-1", "field": f, "text": t, "confidence": c}
+        for f, t, c in [
+            ("name", "Alex Exemple", 0.99),
+            ("rating", "83", 0.99),
+            ("stats", text, confidence),
+        ]
+    ]
+    report = analyze("unused.png", specification(), db, regions=regions)
+    card = report["cards"][0]
+    assert card["candidate_ids"] == ([900001] if valid else [])
+    assert bool(card["issues"]) is not valid
+    assert card["needs_confirmation"] is True
+    assert list_items(db) == []
+    if not valid:
+        with pytest.raises(ValueError, match="corriger"):
+            confirm_readings(
+                db, report, {"card-1": {"instance_id": "copy", "card_id": 900001}}, confirmed=True
+            )
 
 
 def test_out_of_bounds_region_is_rejected_before_ocr(tmp_path):

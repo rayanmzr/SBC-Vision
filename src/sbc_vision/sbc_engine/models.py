@@ -1,6 +1,6 @@
 """Formats des lectures, exemplaires et conditions du solveur."""
 
-from typing import Literal, Self
+from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -14,7 +14,7 @@ class StrictModel(BaseModel):
 
 class TextRegion(StrictModel):
     element_id: str = Field(min_length=1)
-    field: Literal["name", "rating", "position", "item_score", "requirements", "slots"]
+    field: Literal["name", "rating", "position", "stats", "item_score", "requirements", "slots"]
     bbox: BoundingBox
 
 
@@ -50,6 +50,10 @@ class CardReading(StrictModel):
     rare_type: int | None = Field(default=None, ge=0)
     is_rare: bool | None = None
     item_score: int | None = Field(default=None, gt=0, le=1_000_000_000)
+    stats: dict[
+        Literal["PAC", "SHO", "PAS", "DRI", "DEF", "PHY", "DIV", "HAN", "KIC", "REF", "SPD", "POS"],
+        Annotated[int, Field(ge=0, le=99)],
+    ] = Field(default_factory=dict)
 
 
 class ClubItem(StrictModel):

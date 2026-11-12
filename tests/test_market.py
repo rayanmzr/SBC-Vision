@@ -14,6 +14,8 @@ from sbc_vision.sbc_engine.players import (
     Futbin,
     import_catalog,
     import_file,
+    import_readings,
+    list_items,
     normalize,
     open_database,
     save_cards,
@@ -280,3 +282,145 @@ def test_quality_filter_is_sent_in_the_public_list_request(monkeypatch):
 
     with httpx.Client(base_url=BASE_URL, transport=httpx.MockTransport(handler)) as http:
         assert Futbin(http).page(2, quality="bronze")[0] == [900001]
+
+
+@pytest.mark.parametrize("empty", [False, True])
+def test_name_search_uses_the_public_filter_and_recognizes_an_empty_table(monkeypatch, empty):
+    monkeypatch.setattr("sbc_vision.sbc_engine.players.time.sleep", lambda _: None)
+
+    def handler(request):
+        assert dict(request.url.params) == {"page": "1", "search": "Fictif"}
+        row = (
+            ""
+            if empty
+            else (
+                '<tr class="player-row"><td><a class="player-row-playercard" '
+                'href="/27/player/900001/test">Fictif</a></td></tr>'
+            )
+        )
+        return httpx.Response(
+            200, text=f'<table class="players-table"><tbody>{row}</tbody></table>'
+        )
+
+    with httpx.Client(base_url=BASE_URL, transport=httpx.MockTransport(handler)) as http:
+        assert Futbin(http).page(1, search="Fictif") == ([] if empty else [900001], 1)
+
+
+def test_name_search_never_treats_an_unrecognized_page_as_an_empty_result(monkeypatch):
+    monkeypatch.setattr("sbc_vision.sbc_engine.players.time.sleep", lambda _: None)
+    with httpx.Client(
+        base_url=BASE_URL,
+        transport=httpx.MockTransport(lambda _: httpx.Response(200, text="<p>Connexion</p>")),
+    ) as http:
+        with pytest.raises(ValueError, match="format FUTBIN"):
+            Futbin(http).page(1, search="Fictif")
+
+
+def reading_report():
+    return {
+        "capture_id": "synthetic",
+        "cards": [
+            {
+                "element_id": "card-1",
+                "issues": [],
+                "reading": {
+                    "capture_id": "synthetic",
+                    "element_id": "card-1",
+                    "name": "Fictif@)",
+                    "rating": 80,
+                    "confidence": 0.99,
+                },
+            },
+            {"element_id": "bad", "issues": ["Note incertaine"], "reading": None},
+        ],
+    }
+
+
+def test_ocr_lookup_fetches_versions_without_creating_owned_cards_or_polluting_pages(db, raw_card):
+    raw_card["playerName"] = "Fictif"
+    source = Mock()
+    source.page.side_effect = [([900001], 2), ([900002], 2)]
+    source.cards.return_value = [card(raw_card), card(raw_card, 900002)]
+    report = import_readings(db, source, reading_report())
+    assert report["cards"][0]["candidate_ids"] == [900001, 900002]
+    assert report["cards"][0]["needs_confirmation"] is True
+    assert report["cards"][1]["candidate_ids"] == []
+    assert report["imported"] == 2 and report["catalogue_searches"][0]["complete"] is True
+    assert source.page.call_args_list == [
+        ((1,), {"search": "Fictif"}),
+        ((2,), {"search": "Fictif"}),
+    ]
+    assert list_items(db) == []
+    assert db.execute("SELECT COUNT(*) FROM pages").fetchone()[0] == 0
+    source.reset_mock()
+    cached = import_readings(db, source, report)
+    source.page.assert_not_called()
+    source.cards.assert_not_called()
+    assert cached["imported"] == 0
+
+
+def test_bounded_lookup_marks_truncation_and_updates_missing_aliases(db, raw_card):
+    save_cards(db, [card(raw_card)])
+    raw_card["playerName"] = "Fictif"
+    source = Mock()
+    source.page.return_value = ([900001], 3)
+    source.cards.return_value = [card(raw_card)]
+    result = import_readings(db, source, reading_report(), pages=1)
+    assert result["cards"][0]["candidate_ids"] == [900001]
+    assert result["catalogue_searches"] == [{"name": "Fictif", "pages": 1, "complete": False}]
+    assert result["imported"] == 1
+    source.page.assert_called_once()
+
+
+def test_empty_lookup_never_falls_back_to_importing_the_whole_index(db):
+    source = Mock()
+    source.page.return_value = ([], 1)
+    result = import_readings(db, source, reading_report())
+    assert result["cards"][0]["candidate_ids"] == [] and result["imported"] == 0
+    source.page.assert_called_once_with(1, search="Fictif")
+    source.cards.assert_not_called()
+
+
+def test_repeated_search_page_stops_before_downloading_wrong_versions(db):
+    source = Mock()
+    source.page.return_value = ([900001], 3)
+    with pytest.raises(ValueError, match="répète"):
+        import_readings(db, source, reading_report())
+    source.cards.assert_not_called()
+    assert list_items(db) == []
+
+
+def test_lookup_rejects_a_synthetic_database_before_any_request(db, raw_card):
+    save_cards(db, [{**card(raw_card), "source_url": "urn:sbc-vision:synthetic:900001"}])
+    source = Mock()
+    with pytest.raises(ValueError, match="base séparée"):
+        import_readings(db, source, reading_report())
+    source.page.assert_not_called()
+    source.cards.assert_not_called()
+
+
+def test_lookup_cli_writes_a_report_without_confirming_inventory(tmp_path, monkeypatch, raw_card):
+    from sbc_vision.sbc_engine.__main__ import main
+
+    raw_card["playerName"] = "Fictif"
+    source = Mock()
+    source.page.return_value = ([900001], 1)
+    source.cards.return_value = [card(raw_card)]
+    monkeypatch.setattr("sbc_vision.sbc_engine.__main__.Futbin", lambda *_: source)
+    reading, output = tmp_path / "reading.json", tmp_path / "matches.json"
+    reading.write_text(json.dumps(reading_report()))
+    assert (
+        main(
+            [
+                "import",
+                "--reading",
+                str(reading),
+                "--output",
+                str(output),
+                "--db",
+                str(tmp_path / "catalogue.sqlite3"),
+            ]
+        )
+        == 0
+    )
+    assert json.loads(output.read_text())["cards"][0]["candidate_ids"] == [900001]
