@@ -159,6 +159,10 @@ Le champ `shopping_list` donne les achats de la composition et de chaque alterna
 
 Le prix plafond par carte est le prix unitaire utilisé pour le calcul. La marge du budget n'est pas affectée à plusieurs achats en même temps. Une offre plus chère impose un nouveau calcul ; les prix relevés ne garantissent pas une offre disponible. La composition est revérifiée avant de produire cette liste, qui reste une recommandation. Samy pourra appeler `solver.shopping_list(challenge, pool, solution)` ; aucune transaction n'est exécutée.
 
+Le champ `verification` du rapport détaille chaque condition : libellé, opérateur, valeur demandée, valeur obtenue et résultat. Il est aussi présent pour les alternatives. Ces valeurs sont recalculées depuis les cartes retenues en Python, sans lire les variables d'OR-Tools. Le contrôle complet vérifie également postes, exemplaires, protections et budget. Une proposition absente donne `verification: null` ; une composition incorrecte ne reçoit pas un rapport valide.
+
+La commande affiche ces contrôles après les achats. Par exemple : cinq joueurs d'un même pays pour un minimum de cinq, trois d'une ligue pour un maximum de trois et collectif standard de 17 pour un minimum de 16. `valid: true` signifie conforme à nos règles et données connues, sans validation par EA. Pour l'API, `solver.verification(challenge, pool, solution)` fournit le même détail ; le pool doit être rechargé pour prendre en compte prix et protections actuels.
+
 ## Accès aux données
 
 Le 6 novembre, un appel FUTBIN local a répondu HTTP 403. Le 12 novembre, l'actualisation d'une version puis de deux pages a fonctionné : 60 versions actualisées, 62 en base locale. Le catalogue complet reste à importer et l'accès peut changer. En cas de refus, l'import s'arrête et garde le cache. `import --file FICHIER --db BASE` lit un export normalisé obtenu par un accès autorisé : une liste `cards` avec les champs du catalogue, ses sources, ses dates et ses prix `ps`/`pc` éventuellement nuls. Les dates ne sont pas rajeunies et les données fictives restent dans des bases séparées.

@@ -68,6 +68,49 @@ def metric(rule, cards, challenge):
     return team_rating([c.rating for c in cards]) if name == "team_rating" else chemistry(cards)
 
 
+def condition_checks(challenge, cards):
+    """Recalculer les valeurs de chaque règle depuis les cartes retenues, sans OR-Tools."""
+    checks = []
+    for rule in challenge.conditions:
+        missing = (
+            (rule.metric == "item_score" and any(c.item_score is None for c in cards))
+            or (
+                rule.metric in {"club", "clubs", "same_club", "chemistry"}
+                and any(c.club_id is None for c in cards)
+            )
+            or (rule.metric == "quality" and any(c.card_level is None for c in cards))
+            or (rule.metric == "chemistry" and any(c.chemistry_kind != "standard" for c in cards))
+        )
+        actual = (
+            None
+            if missing
+            else (
+                [c.rating for c in cards]
+                if rule.metric == "rating"
+                else metric(rule, cards, challenge)
+            )
+        )
+        passed = actual is not None and (
+            all(compare(r, rule.op, rule.value) for r in actual)
+            if rule.metric == "rating"
+            else compare(actual, rule.op, rule.value)
+        )
+        checks.append({**rule.model_dump(), "actual": actual, "passed": passed})
+    if challenge.card_level is not None:
+        checks.append(
+            {
+                "metric": "card_level",
+                "op": challenge.card_level_op,
+                "value": challenge.card_level,
+                "target": None,
+                "text": "Qualité de chaque carte",
+                "actual": dict(Counter(c.card_level for c in cards)),
+                "passed": all(quality_matches(challenge, c) for c in cards),
+            }
+        )
+    return checks
+
+
 def eligible(challenge, pool):
     if len({c.key for c in pool}) != len(pool):
         raise ValueError("Les identifiants des candidats doivent être uniques.")
@@ -123,24 +166,46 @@ def validate(challenge: Challenge, pool: list[Candidate], team: list[Assignment]
         return errors
     if sum(c.value for c in cards if not c.owned) > challenge.budget:
         errors.append("Budget d'achat dépassé.")
-    for rule in challenge.conditions:
-        if rule.metric == "rating":
-            valid = all(compare(c.rating, rule.op, rule.value) for c in cards)
-        elif rule.metric == "item_score" and any(c.item_score is None for c in cards):
-            valid = False
-        elif rule.metric == "chemistry" and any(c.chemistry_kind != "standard" for c in cards):
-            valid = False
-        elif rule.metric in {"club", "clubs", "same_club"} and any(
-            c.club_id is None for c in cards
-        ):
-            valid = False
-        elif rule.metric == "quality" and any(c.card_level is None for c in cards):
-            valid = False
-        else:
-            valid = compare(metric(rule, cards, challenge), rule.op, rule.value)
-        if not valid:
-            errors.append(f"Condition non respectée : {rule.text or rule.metric}.")
+    for check in condition_checks(challenge, cards):
+        if not check["passed"]:
+            errors.append(f"Condition non respectée : {check['text'] or check['metric']}.")
     return errors
+
+
+def verification(challenge, pool, solution):
+    if solution.status not in {"optimal", "feasible"}:
+        return None
+    errors = validate(challenge, pool, solution.assignments)
+    if errors:
+        raise ValueError("Vérification refusée : " + "; ".join(errors))
+    by_key = {c.key: c for c in pool}
+    cards = [by_key[a.candidate_key] for a in solution.assignments]
+    checks = condition_checks(challenge, cards)
+    purchase = sum(c.value for c in cards if not c.owned)
+    checks.append(
+        {
+            "metric": "budget",
+            "text": "Budget d'achat",
+            "op": "max",
+            "value": challenge.budget,
+            "actual": purchase,
+            "passed": purchase <= challenge.budget,
+        }
+    )
+    if challenge.max_card_value is not None:
+        maximum = max((c.value for c in cards), default=0)
+        checks.append(
+            {
+                "metric": "max_card_value",
+                "text": "Valeur maximale par carte",
+                "op": "max",
+                "value": challenge.max_card_value,
+                "actual": maximum,
+                "passed": maximum <= challenge.max_card_value,
+            }
+        )
+    # La validation complète couvre aussi postes, quantités, protections et identités des joueurs.
+    return {"valid": True, "checks": checks}
 
 
 def result(challenge, pool, team, status, elapsed):
@@ -432,6 +497,7 @@ def alternatives(challenge, pool, solution, *, limit=2):
                     "excluded_card_id": card_id,
                     "solution": outcome.model_dump(),
                     "shopping_list": shopping_list(challenge, pool, outcome),
+                    "verification": verification(challenge, pool, outcome),
                 }
             )
     return proposals

@@ -10,7 +10,7 @@ import pytest
 from sbc_vision.sbc_engine.models import Challenge, ClubItem, Condition
 from sbc_vision.sbc_engine.ocr import challenge_from_ocr, number, parse_requirements
 from sbc_vision.sbc_engine.players import import_file, load_pool, open_database, seed_demo
-from sbc_vision.sbc_engine.solver import alternatives, solve, team_rating, validate
+from sbc_vision.sbc_engine.solver import alternatives, solve, team_rating, validate, verification
 
 FIXTURES = Path(__file__).resolve().parents[1] / "data/fixtures"
 
@@ -139,6 +139,9 @@ def test_completed_score_challenge_does_not_sacrifice_anything(setup):
     assert result.status == "optimal"
     assert result.assignments == []
     assert result.total_cost == 0
+    checked = verification(Challenge.model_validate(report["challenge"]), pool, result)
+    assert checked["checks"][0]["actual"] == 1000
+    assert checked["checks"][0]["passed"] is True
 
 
 @pytest.mark.parametrize(
@@ -239,6 +242,7 @@ def test_alternatives_are_recomputed_and_validate_the_whole_team(setup):
         selected = {a.candidate_key for a in team}
         assert not any(c.card_id == option["excluded_card_id"] and c.key in selected for c in pool)
         assert option["shopping_list"]["estimated_cost"] == option["solution"]["purchase_cost"]
+        assert option["verification"]["valid"] is True
 
 
 def test_quality_applies_to_every_selected_card_and_max_score_is_not_a_goal(setup):
@@ -384,6 +388,19 @@ def test_seven_visible_conditions_are_read_and_enforced_on_a_synthetic_pool(setu
     assert sorted(Counter(c.league_id for c in cards).values()) == [2, 3, 3, 3]
     assert sum(c.card_level == "SILVER" for c in cards) == 5
     assert chemistry(cards) == 25
+    checked = verification(challenge, cards, result)
+    assert checked["valid"] is True
+    values = {row["metric"]: row["actual"] for row in checked["checks"]}
+    assert values == {
+        "same_nation": 5,
+        "same_league": 3,
+        "leagues": 4,
+        "quality": 5,
+        "chemistry": 25,
+        "players": 11,
+        "card_level": {"SILVER": 5, "BRONZE": 6},
+        "budget": 1100,
+    }
     # Une carte or ne compte pas comme une carte argent dans le quota demandé.
     wrong_silver = [cards[0].model_copy(update={"card_level": "GOLD", "rating": 80}), *cards[1:]]
     wrong_nation = [cards[0].model_copy(update={"nation_id": 9002}), *cards[1:]]

@@ -14,7 +14,14 @@ from pydantic import ValidationError
 from sbc_vision.sbc_engine.__main__ import main
 from sbc_vision.sbc_engine.models import Assignment, Challenge, Condition
 from sbc_vision.sbc_engine.players import load_pool, open_database, save_cards, seed_demo
-from sbc_vision.sbc_engine.solver import greedy, shopping_list, solve, validate
+from sbc_vision.sbc_engine.solver import (
+    condition_checks,
+    greedy,
+    shopping_list,
+    solve,
+    validate,
+    verification,
+)
 
 FIXTURES = Path(__file__).resolve().parents[1] / "data/fixtures"
 
@@ -226,6 +233,11 @@ def test_cli_produces_a_verifiable_local_report(tmp_path):
     report = json.loads(output.read_text())
     assert report["solution"]["status"] == "optimal"
     assert report["solution"]["total_cost"] == 2100
+    assert report["verification"]["valid"] is True
+    checks = {row["metric"]: row for row in report["verification"]["checks"]}
+    assert checks["budget"]["actual"] == 1300
+    assert checks["budget"]["value"] == 2000
+    assert all(row["passed"] for row in checks.values())
     purchases = report["shopping_list"]
     assert purchases["estimated_cost"] == 1300
     assert purchases["remaining_budget"] == 700
@@ -282,6 +294,7 @@ def test_no_purchase_list_is_suggested_without_a_valid_solution(setup, status):
     challenge, pool, _, _ = setup
     solution = solve(challenge, pool).model_copy(update={"status": status})
     assert shopping_list(challenge, pool, solution) is None
+    assert verification(challenge, pool, solution) is None
 
 
 def test_owned_only_solution_does_not_create_a_purchase(setup):
@@ -308,6 +321,8 @@ def test_value_cap_is_enforced_for_both_owned_cards_and_purchases(setup, owned):
     assert "Valeur maximale" in " ".join(validate(challenge, [card], old_plan.assignments))
     with pytest.raises(ValueError, match="Liste d'achats refusée"):
         shopping_list(challenge, [card], old_plan)
+    with pytest.raises(ValueError, match="Vérification refusée"):
+        verification(challenge, [card], old_plan)
     assert solve(challenge.model_copy(update={"max_card_value": 800}), [card]).status == "optimal"
 
 
@@ -351,3 +366,57 @@ def test_cli_budget_override_is_explicit_and_does_not_change_saved_reading(tmp_p
     assert main(args + ["--output", str(output)]) == 0
     assert json.loads(output.read_text())["challenge"]["budget"] == 2000
     assert main(args + ["--budget", "-1", "--output", str(tmp_path / "invalid.json")]) == 1
+
+
+@pytest.mark.parametrize(
+    "op, value, expected", [("min", 82, True), ("max", 82, False), ("exact", 83, False)]
+)
+def test_individual_rating_report_checks_every_selected_card(setup, op, value, expected):
+    _, pool, _, _ = setup
+    cards = [pool[0].model_copy(update={"rating": r}) for r in (83, 82)]
+    challenge = Challenge(
+        positions=["CM", "CM"],
+        market="pc",
+        budget=0,
+        conditions=[Condition(metric="rating", op=op, value=value)],
+    )
+    row = condition_checks(challenge, cards)[0]
+    assert row["actual"] == [83, 82]
+    assert row["passed"] is expected
+
+
+def test_missing_club_cannot_create_a_fictional_chemistry_link(setup):
+    _, pool, _, _ = setup
+    cards = [
+        pool[0].model_copy(
+            update={
+                "key": f"c{i}",
+                "base_id": 980000 + i,
+                "positions": ["CM"],
+                "protected": False,
+                "club_id": None,
+                "chemistry_kind": "standard",
+            }
+        )
+        for i in range(11)
+    ]
+    challenge = Challenge(
+        positions=["CM"] * 11,
+        market="pc",
+        budget=0,
+        conditions=[Condition(metric="chemistry", value=30)],
+    )
+    team = [Assignment(slot=i, candidate_key=c.key) for i, c in enumerate(cards)]
+    row = condition_checks(challenge, cards)[0]
+    assert row["actual"] is None and row["passed"] is False
+    assert validate(challenge, cards, team)
+
+
+def test_verification_rejects_a_plan_when_a_copy_is_now_protected(setup):
+    challenge, pool, _, _ = setup
+    solution = solve(challenge, pool)
+    changed = [
+        c.model_copy(update={"protected": True}) if c.key == "club:demo-002" else c for c in pool
+    ]
+    with pytest.raises(ValueError, match="protégée"):
+        verification(challenge, changed, solution)

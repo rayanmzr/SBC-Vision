@@ -25,7 +25,7 @@ from .players import (
     seed_demo,
     set_protected,
 )
-from .solver import alternatives, greedy, shopping_list, solve
+from .solver import alternatives, greedy, shopping_list, solve, verification
 
 
 def run_import(args):
@@ -113,6 +113,7 @@ def run_solver(args, *, now=None):
     baseline, outcome = greedy(challenge, pool), solve(challenge, pool, seconds=args.seconds)
     options = alternatives(challenge, pool, outcome, limit=args.alternatives)
     purchases = shopping_list(challenge, pool, outcome)
+    checked = verification(challenge, pool, outcome)
     for label, result in [("Sélection simple", baseline), ("OR-Tools", outcome)]:
         cost = (
             f"coût économique {result.total_cost}"
@@ -141,6 +142,12 @@ def run_solver(args, *, now=None):
                 f"À acheter : {item['quantity']} × {item['name']}, version {item['card_id']}, "
                 f"plafond {item['max_unit_price']} crédits par carte."
             )
+    if checked:
+        print("Vérification locale des conditions (hors validation EA) :")
+        for check in checked["checks"]:
+            op = {"min": ">=", "max": "<=", "exact": "="}[check["op"]]
+            label = check["text"] or check["metric"]
+            print(f"  OK | {label} : obtenu {check['actual']} ; attendu {op} {check['value']}.")
     chosen = {a.candidate_key for a in baseline.assignments + outcome.assignments}
     chosen.update(
         a["candidate_key"] for option in options for a in option["solution"]["assignments"]
@@ -151,6 +158,7 @@ def run_solver(args, *, now=None):
         "baseline": baseline.model_dump(),
         "solution": outcome.model_dump(),
         "shopping_list": purchases,
+        "verification": checked,
         "alternatives": options,
         "selected_candidates": [c.model_dump() for c in pool if c.key in chosen],
     }
