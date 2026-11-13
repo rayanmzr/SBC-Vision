@@ -20,6 +20,10 @@ La [répartition détaillée](docs/TEAM.md) précise les interfaces et livrables
 
 La partie de Rayan est regroupée dans [sbc_engine](src/sbc_vision/sbc_engine/README.md) : catalogue FUTBIN, inventaire, OCR et optimisation. Une seule commande permet de tester les fonctions : `python -m sbc_vision.sbc_engine --help`.
 
+Les routes d'inventaire, de protections et de résolution sont maintenant raccordées à
+ce moteur. Leur activation est explicite : voir le [guide API SBC](docs/SBC_API.md),
+notamment le parcours de démonstration avec cartes fictives et véritable calcul CP-SAT.
+
 ## Démarrage local
 
 Python **3.11 ou 3.12**. Depuis la racine du dépôt :

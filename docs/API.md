@@ -1,5 +1,9 @@
 # Première étape de SBV-014 : transporter une capture
 
+Les routes d'inventaire, protections et résolution sont décrites dans [SBC_API.md](SBC_API.md).
+Elles utilisent le moteur de Rayan et ne modifient pas le raccordement encore attendu
+du détecteur à cette route d'analyse d'image.
+
 Cette branche prépare l'API de perception. Le détecteur de Saber et l'OCR de Rayan ne sont
 pas encore raccordés. **Une installation normale renvoie donc HTTP 503 à une analyse valide.**
 Les tests utilisent un pipeline fictif clairement nommé ; ils ne mesurent aucune performance
