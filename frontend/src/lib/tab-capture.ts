@@ -94,7 +94,7 @@ export function sameContext(a: TabContext, b: TabContext): boolean {
     );
 }
 
-async function activeContext(signal: AbortSignal): Promise<TabContext> {
+export async function activeContext(signal: AbortSignal): Promise<TabContext> {
     signal.throwIfAborted();
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     signal.throwIfAborted();

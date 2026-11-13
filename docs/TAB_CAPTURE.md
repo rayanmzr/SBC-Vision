@@ -1,10 +1,10 @@
 # Capture d'onglet — premier lot SBV-016
 
 Cette branche ajoute la capture manuelle de l'onglet actif à l'extension Chrome.
-Elle prépare le contrôleur ; elle ne réalise encore aucun clic dans la page.
-L'issue [#16](https://github.com/rayanmzr/SBC-Vision/issues/16) reste ouverte : le clic
-local, la simulation de plans, le budget d'étapes et la vérification après action
-seront le lot suivant.
+Cette fonction d'observation ne réalise aucun clic. Le [deuxième lot du contrôleur](LOCAL_CONTROLLER.md)
+ajoute observation, simulation et exécution avec vérification sur une page locale distincte.
+L'issue [#16](https://github.com/rayanmzr/SBC-Vision/issues/16) reste ouverte pour la
+validation native dans Chrome et le raccordement aux observations de l'API.
 
 ## Comprendre les étapes
 

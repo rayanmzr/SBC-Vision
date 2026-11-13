@@ -38,6 +38,13 @@ Compte : [SamyALlali](https://github.com/SamyALlali). Cartes : SBV-014 à SBV-01
 - Afficher inventaire, protections, conditions, achats et coût, avec les états chargement, lecture incertaine, règle inconnue, absence de solution et confirmation en attente.
 - Préparer Docker, CI et cloud ; construire un secours local minimal uniquement si le repli est validé et nécessaire.
 
-Le contrôleur ira dans `src/sbc_vision/controller/`. Il signale une divergence sans inventer de coordonnées ni afficher une réussite après une erreur réseau. Les modèles et le solveur restent côté Python. Pour les essais sur le compte de Rayan, la soumission d'un SBC reste exclusivement à Rayan : aucun clic automatisé de confirmation ou d'échange.
+Le prototype du contrôleur tourne dans l'extension, dans `frontend/src/lib/controller.ts`,
+avec ses adaptateurs de navigateur. Cette localisation réutilise les permissions Chrome
+et le repère de capture ; le répertoire Python initialement prévu n'est pas créé pour
+dupliquer ce code. Le [laboratoire local](LOCAL_CONTROLLER.md) teste la boucle avant le
+raccordement à l'API. Le contrôleur signale une divergence sans inventer de coordonnées
+ni afficher une réussite après une erreur réseau. Les modèles réels et le solveur restent
+côté Python. Pour les essais sur le compte de Rayan, la soumission d'un SBC reste exclusivement
+à Rayan : aucun clic automatisé de confirmation ou d'échange.
 
 Livrables : client, API documentée, parcours reproductible, tests d'intégration, conteneur et guide de lancement. Distinguer la vraie Web App du démonstrateur local.

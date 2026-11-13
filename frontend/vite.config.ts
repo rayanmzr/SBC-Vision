@@ -15,6 +15,9 @@ export default defineConfig({
     plugins: [react()],
     server: { port: 5173, strictPort: true, proxy, fs: { allow: ['..'] } },
     preview: { port: 4173, strictPort: true, proxy },
-    build: { target: 'chrome120' },
+    build: {
+        target: 'chrome120',
+        rolldownOptions: { input: { app: 'index.html', lab: 'controller-lab.html' } },
+    },
     test: { environment: 'node', restoreMocks: true },
 });

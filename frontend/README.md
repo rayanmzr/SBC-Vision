@@ -7,6 +7,10 @@ l'API, enregistre les protections et lance le véritable solveur de Rayan. Il ou
 des rapports JSON locaux. Le scan et le placement dans le navigateur restent à raccorder
 avec #16 : **le parcours de l'issue #15 n'est pas encore terminé**.
 
+L'espace **Contrôleur local** prépare le deuxième lot de #16. Il propose observation,
+simulation et clics vérifiés sur une page locale dédiée : [guide du laboratoire](../docs/LOCAL_CONTROLLER.md).
+Cette page se teste aussi sans API sur <http://127.0.0.1:5173/controller-lab.html>.
+
 ## Comprendre ce premier lot
 
 React construit les champs, boutons et résultats. TypeScript vérifie les types pendant
@@ -94,8 +98,9 @@ dimensions de la réponse doivent correspondre à la demande.
    n'appelle pas le serveur et n'effectue aucune inférence.
 6. Déplier le JSON pour retrouver identifiants, types, textes, boîtes, scores et actions.
 
-Les actions du JSON sont seulement décrites. Aucun clic, achat ou soumission n'est
-exécuté. La capture d'onglet est le premier lot de #16 : le [guide de capture](../docs/TAB_CAPTURE.md)
+Dans Analyse d'image et Composition SBC, les actions du JSON sont seulement décrites.
+Les clics synthétiques sont réservés à **Contrôleur local** et à sa page de test.
+Aucun achat ou soumission n'est exécuté. La capture d'onglet est le premier lot de #16 : le [guide de capture](../docs/TAB_CAPTURE.md)
 explique le popup, les permissions et la vérification manuelle dans Chrome.
 
 ## Stockage et permissions
@@ -113,7 +118,9 @@ accès global n'est accordé automatiquement.
 `activeTab` donne un accès temporaire à la page depuis laquelle l'utilisateur invoque
 l'extension. `scripting` sert à relever les dimensions et le défilement du cadre principal,
 sans lire le contenu des cartes ou les textes de l'interface. Ces mesures encadrent
-la capture ; elles ne remplacent pas la vision. Aucun script de contenu permanent.
+la capture ; elles ne remplacent pas la vision. Le laboratoire utilise aussi `scripting`
+pour envoyer un clic au canevas local à partir des coordonnées observées, dans le
+document précis de la capture. Aucune nouvelle permission et aucun script de contenu permanent.
 
 Aucune permission `tabs`, `debugger` ou `cookies` n'est déclarée. Ouvrir la page propre
 à l'extension dans un onglet ne lit pas les autres onglets ; la capture s'effectue depuis

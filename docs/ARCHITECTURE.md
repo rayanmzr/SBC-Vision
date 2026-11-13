@@ -47,7 +47,9 @@ L'inventaire, les protections persistantes et le solveur sont accessibles via HT
 le serveur est explicitement configuré ; voir le [guide API SBC](SBC_API.md).
 Le popup de l'extension ajoute la capture manuelle et la conservation de son repère
 image/viewport, décrites dans le [guide de capture](TAB_CAPTURE.md).
-L'inférence réelle, le scan du club, les clics et la vérification après action restent
+Un [laboratoire du contrôleur](LOCAL_CONTROLLER.md) teste les clics et la vérification
+après action avec une vision déterministe par couleurs et des cartes fictives.
+L'inférence réelle, le scan du club et le contrôleur sur les données de l'API restent
 à raccorder. Les capacités `controller` et `live_actions_enabled` restent donc fausses.
 
 Les conditions sont transmises dynamiquement par l'OCR au contrat `dynamic-v1`. Le solveur distingue composition et Item Score, traite les contraintes reconnues et vérifie ses résultats séparément. La note d'équipe est limitée à onze emplacements et le collectif à un profil standard sans bonus particuliers. Les autres cas sont rejetés. Le [guide](../src/sbc_vision/sbc_engine/README.md) précise les limites et l'interface entre les membres.

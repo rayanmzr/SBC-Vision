@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import demoPayload from '../../data/fixtures/perception.synthetic.json';
 import demoImage from '../../data/fixtures/perception.synthetic.png';
 import SbcWorkspace from './SbcWorkspace';
+import ControllerPanel from './ControllerPanel';
+import { nativeLabAdapter } from './lib/lab-adapter';
 import { captureActiveTab, imagePointToViewport, type TabCapture } from './lib/tab-capture';
 import {
     analyzeImage,
@@ -74,7 +76,8 @@ function describeError(error: unknown, context: string): Notice {
 }
 
 export default function App() {
-    const [workspace, setWorkspace] = useState<'perception' | 'sbc'>('perception');
+    const [workspace, setWorkspace] = useState<'perception' | 'sbc' | 'controller'>('perception');
+    const [controllerRunning, setControllerRunning] = useState(false);
     const [apiUrl, setApiUrl] = useState(DEFAULT_API_URL);
     const [settingsReady, setSettingsReady] = useState(false);
     const [connection, setConnection] = useState<Connection | null>(null);
@@ -270,12 +273,16 @@ export default function App() {
                 <h2>
                     {workspace === 'perception'
                         ? 'Une image. Des informations exploitables.'
-                        : 'Comprendre la composition proposée.'}
+                        : workspace === 'sbc'
+                          ? 'Comprendre la composition proposée.'
+                          : 'Observer, agir, vérifier.'}
                 </h2>
                 <p>
                     {workspace === 'perception'
                         ? 'Capture un onglet ou choisis une image, puis examine le JSON renvoyé par l’API.'
-                        : 'Examine les cartes, les conditions et les coûts transmis par le moteur SBC.'}
+                        : workspace === 'sbc'
+                          ? 'Examine les cartes, les conditions et les coûts transmis par le moteur SBC.'
+                          : 'Teste le contrôleur sur une page locale avec des cartes fictives.'}
                 </p>
             </div>
 
@@ -284,7 +291,7 @@ export default function App() {
                     type="button"
                     aria-pressed={workspace === 'perception'}
                     onClick={() => setWorkspace('perception')}
-                    disabled={!!busy}
+                    disabled={!!busy || controllerRunning}
                 >
                     Analyse d’image
                 </button>
@@ -292,9 +299,17 @@ export default function App() {
                     type="button"
                     aria-pressed={workspace === 'sbc'}
                     onClick={() => setWorkspace('sbc')}
-                    disabled={!!busy}
+                    disabled={!!busy || controllerRunning}
                 >
                     Composition SBC
+                </button>
+                <button
+                    type="button"
+                    aria-pressed={workspace === 'controller'}
+                    onClick={() => setWorkspace('controller')}
+                    disabled={!!busy || controllerRunning}
+                >
+                    Contrôleur local
                 </button>
             </nav>
             <div hidden={workspace !== 'perception'}>
@@ -627,12 +642,22 @@ export default function App() {
             <div hidden={workspace !== 'sbc'}>
                 <SbcWorkspace apiUrl={apiUrl} connected={!!connection} onConnect={connect} />
             </div>
+            {workspace === 'controller' && (
+                <ControllerPanel
+                    adapter={nativeLabAdapter()}
+                    native
+                    enabled={isExtension()}
+                    onRunning={setControllerRunning}
+                />
+            )}
             <footer className="app-footer">
                 <span>Epitech 2026–2027</span>
                 <span>
                     {workspace === 'perception'
                         ? 'Étape 1 · Perception de l’interface'
-                        : 'Étape 2 · Lecture des propositions'}
+                        : workspace === 'sbc'
+                          ? 'Étape 2 · Lecture des propositions'
+                          : 'Étape 3 · Laboratoire du contrôleur'}
                 </span>
             </footer>
         </main>
