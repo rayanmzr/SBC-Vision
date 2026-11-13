@@ -6,6 +6,8 @@ Projet Computer Vision Epitech 2026-2027 en groupe de trois. Le sujet 2 attend u
 
 L'application métier choisie est la préparation économique des SBC sur la **Web App EA FC 27**. Le jeu PC/console et l'application mobile Companion sont hors du périmètre de pilotage.
 
+Le 30 octobre, le superviseur a donné son accord pour commencer et demandé de préciser le format du client. Le groupe retient une **extension Chrome avec interface React**, reliée à l'API Python ; ce choix doit encore lui être confirmé.
+
 ## Produit visé
 
 - Inventorier automatiquement le club par captures, détection et OCR.
@@ -34,7 +36,7 @@ Les données de marché sont un complément du solveur, pas une substitution au 
 
 ## Points encore ouverts
 
-- Validation du sujet, de la généralisation et du secours local par le superviseur.
+- Confirmation du format extension auprès du superviseur et des modalités du test hors domaine et du secours local.
 - Règles et formats de SBC réellement pris en charge dans l'édition 27.
 - Licence du code, compatibilité des modèles et droits de diffusion des données.
 - Fournisseur cloud, capacité de calcul, budget et limites de service.

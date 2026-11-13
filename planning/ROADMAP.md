@@ -2,7 +2,7 @@
 
 [Tableau GitHub Project](https://github.com/users/rayanmzr/projects/5)
 
-[Liste des tâches et responsables](ISSUES.md)
+[Responsabilités et interfaces](../docs/TEAM.md) · [Issues](https://github.com/rayanmzr/SBC-Vision/issues)
 
 ## Étapes
 

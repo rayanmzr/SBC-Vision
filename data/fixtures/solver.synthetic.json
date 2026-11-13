@@ -1,0 +1,132 @@
+{
+  "description": "Défi et prix fictifs. La sélection poste par poste coûte plus cher que l'optimisation globale.",
+  "price_reference_at": "2026-10-30T12:00:00+00:00",
+  "requirements_text": "Number of players: 3\nPlayer rating: Min 82\nRare players: Min 1\nNation #9003: Min 2\nLeague #9002: Min 2",
+  "challenge": {
+    "rules_version": "dynamic-v1", "positions": ["CAM", "CM", "ST"], "market": "pc",
+    "budget": 2000,
+    "conditions": [
+      {"metric": "rating", "value": 82},
+      {"metric": "rare", "value": 1},
+      {"metric": "nation", "value": 2, "target": 9003},
+      {"metric": "league", "value": 2, "target": 9002}
+    ]
+  },
+  "extra_cards": [
+    {
+      "id": 900004, "base_id": 900004, "name": "Léa Fictive", "rating": 83,
+      "position": "ST", "positions": ["ST"], "club_id": 9008,
+      "nation_id": 9003, "league_id": 9002, "is_rare": true, "rare_type": 1,
+      "card_level": "GOLD", "prices": {"ps": 350, "pc": 400},
+      "source_url": "urn:sbc-vision:synthetic:900004", "observed_at": "2026-10-30T12:00:00+00:00"
+    },
+    {
+      "id": 900005, "base_id": 900005, "name": "Nora Exemple", "rating": 82,
+      "position": "CM", "positions": ["CM"], "club_id": 9009,
+      "nation_id": 9003, "league_id": 9007, "is_rare": false, "rare_type": 0,
+      "card_level": "GOLD", "prices": {"ps": 1300, "pc": 1400},
+      "source_url": "urn:sbc-vision:synthetic:900005", "observed_at": "2026-10-30T12:00:00+00:00"
+    },
+    {
+      "id": 900006, "base_id": 900006, "name": "Eli Test", "rating": 82,
+      "position": "CAM", "positions": ["CAM"], "club_id": 9010,
+      "nation_id": 9003, "league_id": 9002, "is_rare": false, "rare_type": 0,
+      "card_level": "GOLD", "prices": {"ps": 850, "pc": 900},
+      "source_url": "urn:sbc-vision:synthetic:900006", "observed_at": "2026-10-30T12:00:00+00:00"
+    }
+  ],
+  "complex": {
+    "description": "Scénario entièrement fictif à onze postes, dix conditions et un candidat moins cher incompatible.",
+    "price_reference_at": "2026-10-30T12:00:00+00:00",
+    "requirements_text": "Number of Players in the Squad: 11\nPlayer Quality: Min. Gold\nNationalities: Exact 2\nLeagues: Max 2\nClubs: Exact 3\nPlayers from the same club: Max 4\nPlayers from the same nation: Min 6\nRare players: Min 3\nSquad rating: Min 83\nTotal chemistry: Min 30",
+    "challenge": {"positions": ["GK", "RB", "CB", "CB", "LB", "CDM", "RM", "LM", "CAM", "ST", "ST"], "market": "pc", "budget": 200},
+    "club": {
+      "catalogue": [
+        {
+          "id": 910001, "base_id": 910001, "name": "Alex Test", "rating": 83,
+          "position": "GK", "positions": ["GK"], "nation_id": 9001, "league_id": 9011, "club_id": 9020,
+          "rare_type": 1, "is_rare": true, "card_level": "GOLD", "chemistry_kind": "standard", "prices": {"ps": 100, "pc": 100},
+          "source_url": "urn:sbc-vision:synthetic:910001", "observed_at": "2026-10-30T12:00:00+00:00"
+        },
+        {
+          "id": 910002, "base_id": 910002, "name": "Bruno Test", "rating": 83,
+          "position": "RB", "positions": ["RB"], "nation_id": 9001, "league_id": 9011, "club_id": 9021,
+          "rare_type": 1, "is_rare": true, "card_level": "GOLD", "chemistry_kind": "standard", "prices": {"ps": 100, "pc": 100},
+          "source_url": "urn:sbc-vision:synthetic:910002", "observed_at": "2026-10-30T12:00:00+00:00"
+        },
+        {
+          "id": 910003, "base_id": 910003, "name": "Carla Test", "rating": 83,
+          "position": "CB", "positions": ["CB"], "nation_id": 9001, "league_id": 9011, "club_id": 9022,
+          "rare_type": 1, "is_rare": true, "card_level": "GOLD", "chemistry_kind": "standard", "prices": {"ps": 100, "pc": 100},
+          "source_url": "urn:sbc-vision:synthetic:910003", "observed_at": "2026-10-30T12:00:00+00:00"
+        },
+        {
+          "id": 910004, "base_id": 910004, "name": "David Test", "rating": 83,
+          "position": "CB", "positions": ["CB"], "nation_id": 9001, "league_id": 9011, "club_id": 9020,
+          "rare_type": 0, "is_rare": false, "card_level": "GOLD", "chemistry_kind": "standard", "prices": {"ps": 100, "pc": 100},
+          "source_url": "urn:sbc-vision:synthetic:910004", "observed_at": "2026-10-30T12:00:00+00:00"
+        },
+        {
+          "id": 910005, "base_id": 910005, "name": "Emma Test", "rating": 83,
+          "position": "LB", "positions": ["LB"], "nation_id": 9001, "league_id": 9011, "club_id": 9021,
+          "rare_type": 0, "is_rare": false, "card_level": "GOLD", "chemistry_kind": "standard", "prices": {"ps": 100, "pc": 100},
+          "source_url": "urn:sbc-vision:synthetic:910005", "observed_at": "2026-10-30T12:00:00+00:00"
+        },
+        {
+          "id": 910006, "base_id": 910006, "name": "Faris Test", "rating": 83,
+          "position": "CDM", "positions": ["CDM"], "nation_id": 9001, "league_id": 9011, "club_id": 9022,
+          "rare_type": 0, "is_rare": false, "card_level": "GOLD", "chemistry_kind": "standard", "prices": {"ps": 100, "pc": 100},
+          "source_url": "urn:sbc-vision:synthetic:910006", "observed_at": "2026-10-30T12:00:00+00:00"
+        },
+        {
+          "id": 910007, "base_id": 910007, "name": "Gabriel Test", "rating": 83,
+          "position": "RM", "positions": ["RM"], "nation_id": 9002, "league_id": 9012, "club_id": 9020,
+          "rare_type": 0, "is_rare": false, "card_level": "GOLD", "chemistry_kind": "standard", "prices": {"ps": 100, "pc": 100},
+          "source_url": "urn:sbc-vision:synthetic:910007", "observed_at": "2026-10-30T12:00:00+00:00"
+        },
+        {
+          "id": 910008, "base_id": 910008, "name": "Hugo Test", "rating": 83,
+          "position": "LM", "positions": ["LM"], "nation_id": 9002, "league_id": 9012, "club_id": 9021,
+          "rare_type": 0, "is_rare": false, "card_level": "GOLD", "chemistry_kind": "standard", "prices": {"ps": 100, "pc": 100},
+          "source_url": "urn:sbc-vision:synthetic:910008", "observed_at": "2026-10-30T12:00:00+00:00"
+        },
+        {
+          "id": 910009, "base_id": 910009, "name": "Ines Test", "rating": 83,
+          "position": "CAM", "positions": ["CAM"], "nation_id": 9002, "league_id": 9012, "club_id": 9022,
+          "rare_type": 0, "is_rare": false, "card_level": "GOLD", "chemistry_kind": "standard", "prices": {"ps": 100, "pc": 100},
+          "source_url": "urn:sbc-vision:synthetic:910009", "observed_at": "2026-10-30T12:00:00+00:00"
+        },
+        {
+          "id": 910010, "base_id": 910010, "name": "Julia Test", "rating": 83,
+          "position": "ST", "positions": ["ST"], "nation_id": 9002, "league_id": 9012, "club_id": 9020,
+          "rare_type": 0, "is_rare": false, "card_level": "GOLD", "chemistry_kind": "standard", "prices": {"ps": 100, "pc": 100},
+          "source_url": "urn:sbc-vision:synthetic:910010", "observed_at": "2026-10-30T12:00:00+00:00"
+        },
+        {
+          "id": 910011, "base_id": 910011, "name": "Karim Test", "rating": 83,
+          "position": "ST", "positions": ["ST"], "nation_id": 9002, "league_id": 9012, "club_id": 9021,
+          "rare_type": 0, "is_rare": false, "card_level": "GOLD", "chemistry_kind": "standard", "prices": {"ps": 100, "pc": 100},
+          "source_url": "urn:sbc-vision:synthetic:910011", "observed_at": "2026-10-30T12:00:00+00:00"
+        },
+        {
+          "id": 910099, "base_id": 910099, "name": "Autre Test", "rating": 83,
+          "position": "ST", "positions": ["ST"], "nation_id": 9999, "league_id": 9012, "club_id": 9999,
+          "rare_type": 0, "is_rare": false, "card_level": "GOLD", "chemistry_kind": "standard", "prices": {"ps": 20, "pc": 20},
+          "source_url": "urn:sbc-vision:synthetic:910099", "observed_at": "2026-10-30T12:00:00+00:00"
+        }
+      ],
+      "items": [
+        {"instance_id": "complex-01", "card_id": 910001, "protected": false, "tradeable": null, "source_observation": "fixture:complex:0"},
+        {"instance_id": "complex-02", "card_id": 910002, "protected": false, "tradeable": null, "source_observation": "fixture:complex:1"},
+        {"instance_id": "complex-03", "card_id": 910003, "protected": false, "tradeable": null, "source_observation": "fixture:complex:2"},
+        {"instance_id": "complex-04", "card_id": 910004, "protected": false, "tradeable": null, "source_observation": "fixture:complex:3"},
+        {"instance_id": "complex-05", "card_id": 910005, "protected": false, "tradeable": null, "source_observation": "fixture:complex:4"},
+        {"instance_id": "complex-06", "card_id": 910006, "protected": false, "tradeable": null, "source_observation": "fixture:complex:5"},
+        {"instance_id": "complex-07", "card_id": 910007, "protected": false, "tradeable": null, "source_observation": "fixture:complex:6"},
+        {"instance_id": "complex-08", "card_id": 910008, "protected": false, "tradeable": null, "source_observation": "fixture:complex:7"},
+        {"instance_id": "complex-09", "card_id": 910009, "protected": false, "tradeable": null, "source_observation": "fixture:complex:8"}
+      ]
+    },
+    "extra_cards": []
+  }
+}
