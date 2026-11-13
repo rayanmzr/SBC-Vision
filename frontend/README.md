@@ -1,10 +1,10 @@
 # Extension Chrome SBC Vision — SBV-015
 
 Responsable : Samy Allali. Cette version permet de joindre l'API, d'envoyer manuellement
-une image et d'examiner son JSON. L'espace **Composition SBC** ouvre aussi les rapports
-JSON locaux du moteur de Rayan : cartes, protections, conditions, composition et coûts.
-Le raccordement automatique à l'inventaire et au solveur reste à faire : **l'issue #15
-n'est pas terminée**.
+une image et d'examiner son JSON. L'espace **Composition SBC** charge l'inventaire de
+l'API, enregistre les protections et lance le véritable solveur de Rayan. Il ouvre aussi
+des rapports JSON locaux. Le scan et le placement dans le navigateur restent à raccorder
+avec #16 : **le parcours de l'issue #15 n'est pas encore terminé**.
 
 ## Comprendre ce premier lot
 
@@ -65,6 +65,8 @@ nécessaire pour ce premier lot.
 | `src/main.tsx`                          | Démarrage de React et taille propre au popup             |
 | `src/App.tsx`                           | Interface et déroulement des opérations                  |
 | `src/SbcWorkspace.tsx`                  | Lecture des propositions et états du solveur             |
+| `src/SbcApiPanel.tsx`                   | Inventaire serveur, protections et calcul                |
+| `src/lib/sbc-api.ts`                    | Contrats et appels JSON du moteur SBC                    |
 | `src/lib/sbc-report.ts`                 | Validation des rapports locaux et présentation des coûts |
 | `src/lib/platform.ts`                   | Adresse, stockage et permissions Chrome                  |
 | `src/lib/api.ts`                        | HTTP, délais, image et validation des réponses           |
@@ -130,20 +132,56 @@ pas l'arrêt immédiat d'un calcul déjà commencé sur le serveur.
 
 ## Espace Composition SBC
 
-Cet espace consomme le format JSON écrit par `run_solver` sur la branche de Rayan.
-Il s'ouvre avec **Composition SBC**, puis **Ouvrir un rapport JSON**. Le fichier est lu
+Cet espace utilise le moteur intégré depuis la branche de Rayan, en conservant son
+historique. Cette intégration sur nos branches ne fusionne pas sa PR #23 dans `main`.
+Trois sources sont proposées : **Depuis l'API**, **Rapport local** et **Exemple fictif**.
+
+### Inventaire et calcul par l'API
+
+Activer d'abord les routes SBC selon le [guide API SBC](../docs/SBC_API.md). Un serveur
+lancé sans configuration reste joignable mais renvoie `503 sbc_unavailable` pour ces routes.
+Pour tester sans compte EA, utiliser la base de démonstration du guide : cartes fictives,
+véritable calcul et protections réellement enregistrées dans une base distincte.
+
+1. Ouvrir **Composition SBC → Depuis l'API → Charger l'inventaire**. La connexion et,
+   dans Chrome, les permissions de l'hôte sont vérifiées si nécessaire.
+2. Les lignes représentent tous les exemplaires possédés. `club:demo-001` et
+   `club:demo-002` sont deux copies de la même version : leur protection est indépendante.
+3. Cliquer une protection envoie `PUT /api/v1/sbc/protections`. La case change uniquement
+   après confirmation du serveur. Toute ancienne proposition est retirée dès la demande.
+4. Régler le **budget d'achat**, puis **Calculer une proposition**. Le navigateur envoie
+   `POST /api/v1/sbc/solve` avec un JSON contenant seulement `expected_revision` et `budget`.
+   Le solveur reçoit les cartes et conditions structurées depuis la base ; aucune image.
+5. Lire la composition, les conditions, les achats et les coûts du rapport retourné.
+   Avec la démo initiale : 1 300 d'achats + 800 sacrifiés = 2 100 crédits au total.
+6. Protéger `club:demo-002`, puis recalculer avec 2 000 de budget : aucune solution sur
+   ce pool. Porter le budget à 3 000 : une équipe à 2 100, entièrement en achats, est proposée.
+7. Recharger la page puis l'inventaire pour constater que la protection est conservée.
+   La décocher permet de retrouver le scénario initial.
+
+La **révision** est une empreinte des données du serveur. Elle évite de calculer ou
+modifier une protection sur un état dépassé. Si les données changent (`409`), l'interface
+retire l'ancien résultat et exige de recharger l'inventaire. Changer le budget, la source
+ou l'adresse retire aussi la proposition concernée ; une réponse tardive est ignorée.
+
+Le plafond par carte provient des conditions configurées sur le serveur et est affiché.
+L'interface n'édite pas encore ces conditions ni ce plafond. Elle affiche au plus 50
+exemplaires à la fois, avec un bouton pour en afficher davantage.
+
+### Rapports locaux et exemples
+
+Choisir **Rapport local → Ouvrir un rapport JSON**. Le fichier est lu
 dans le navigateur, sans être envoyé au serveur ni enregistré dans le stockage Chrome.
 Taille maximale : 2 Mio. Un fichier invalide retire l'ancien résultat et affiche une erreur.
 
 Sur la branche du moteur, `python -m sbc_vision.sbc_engine solve --demo` écrit normalement
-`data/processed/solution.json`. Choisir ce rapport dans l'extension. Cette commande n'est
-pas fournie par notre branche frontend ; le moteur reste dans la PR #23, sans fusion ici.
+`data/processed/solution.json`. Choisir ce rapport dans l'extension.
 Un rapport OCR avec `ready: false` et une liste `issues` affiche une lecture à confirmer,
 sans réutiliser une éventuelle ancienne proposition.
 
 L'interface distingue :
 
-- les candidats du rapport et l'inventaire complet, qui n'est pas encore chargé ;
+- les candidats retenus du rapport et l'inventaire complet chargé depuis l'API ;
 - un exemplaire du club et une version proposée à l'achat ;
 - les achats, la valeur sacrifiée et leur somme économique ;
 - un prix inconnu et un prix nul ;
@@ -163,13 +201,20 @@ Python, ni les règles complètes, ni la relecture de la Web App.
 
 Le scénario fictif est préparé à la main depuis les fixtures de Rayan : **aucun solveur
 n'est exécuté dans le navigateur**. Il comprend des cartes supplémentaires pour montrer
-une protection et un prix inconnu. Une case de protection est modifiable uniquement
-dans cet exemple ; tout changement retire la composition et les coûts jusqu'à un nouveau
-calcul. Recharger l'exemple réinitialise ces choix. Pour un fichier importé, les protections
-restent en lecture seule et aucune modification du club réel n'est prétendue.
+une protection et un prix inconnu. Une case de protection dans cet exemple ne modifie
+que sa copie en mémoire ; tout changement retire la composition et les coûts.
+Recharger l'exemple réinitialise ces choix. Les cartes du rapport restent en lecture seule
+quand il est importé ou reçu de l'API. Pour modifier la base, utiliser les cases de
+l'inventaire **Depuis l'API**.
 
-À terminer pour #15 : routes d'inventaire et de propositions, modification persistante
-des protections, relecture et recalcul par le véritable moteur, puis intégration avec #16.
+La fixture `data/fixtures/workspace-api.synthetic.json` enregistre de vraies réponses de
+l'adaptateur et de CP-SAT sur les cartes fictives. Dates et durée sont normalisées pour
+les tests ; ce fichier ne constitue pas une mesure de performance. Les tests vérifient
+aussi les échecs d'enregistrement, les révisions incompatibles et les réponses tardives.
+
+À terminer pour #15 : alimentation par le scan réel, relecture des conditions et
+intégration du parcours avec le contrôleur #16. L'interface n'effectue encore aucun
+clic, achat, placement ou soumission dans la Web App.
 
 Références : [réseau des extensions](https://developer.chrome.com/docs/extensions/develop/concepts/network-requests),
 [permissions optionnelles](https://developer.chrome.com/docs/extensions/reference/api/permissions).

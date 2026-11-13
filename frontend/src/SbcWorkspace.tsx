@@ -1,4 +1,7 @@
-import { useRef, useState, useEffect, type ChangeEvent } from 'react';
+import { useRef, useState, useEffect, useCallback, type ChangeEvent } from 'react';
+import SbcApiPanel from './SbcApiPanel';
+import { DEFAULT_API_URL } from './lib/platform';
+import type { ApiProposal } from './lib/sbc-api';
 import fixture from '../../data/fixtures/sbc-report.synthetic.json';
 import {
     conditionLabel,
@@ -12,9 +15,24 @@ import {
 } from './lib/sbc-report';
 
 type Scenario = 'optimal' | 'feasible' | 'infeasible' | 'unknown' | 'uncertain';
-type Document = { data: ImportedReport; source: 'file' | 'synthetic'; name: string };
+type Document = {
+    data: ImportedReport;
+    source: 'file' | 'synthetic' | 'api';
+    name: string;
+    mode?: 'demo' | 'local';
+};
+const noConnection = async () => false;
 
-export default function SbcWorkspace() {
+export default function SbcWorkspace({
+    apiUrl = DEFAULT_API_URL,
+    connected = false,
+    onConnect = noConnection,
+}: {
+    apiUrl?: string;
+    connected?: boolean;
+    onConnect?: () => Promise<boolean>;
+}) {
+    const [source, setSource] = useState<'api' | 'file' | 'example'>('api');
     const [document, setDocument] = useState<Document | null>(null);
     const [scenario, setScenario] = useState<Scenario>('optimal');
     const [error, setError] = useState<string | null>(null);
@@ -23,6 +41,37 @@ export default function SbcWorkspace() {
     const [protectionDraft, setProtectionDraft] = useState<Record<string, boolean>>({});
     const request = useRef(0);
     const fileInput = useRef<HTMLInputElement>(null);
+    const apiReset = useCallback(
+        () => setDocument((previous) => (previous?.source === 'api' ? null : previous)),
+        [],
+    );
+    const apiStart = useCallback(() => {
+        const token = ++request.current;
+        setLoading(false);
+        setDocument(null);
+        setError(null);
+        setProtectionDraft({});
+        return token;
+    }, []);
+    const apiReport = useCallback((proposal: ApiProposal, token: number) => {
+        if (request.current !== token) return;
+        setDocument({
+            source: 'api',
+            mode: proposal.mode,
+            name: 'Proposition calculée par l’API',
+            data: { kind: 'solver', report: proposal.report },
+        });
+        setProtectionDraft({});
+        setVisible(50);
+    }, []);
+    function changeSource(next: typeof source) {
+        request.current++;
+        setSource(next);
+        setLoading(false);
+        setDocument(null);
+        setError(null);
+        setProtectionDraft({});
+    }
     useEffect(
         () => () => {
             request.current++;
@@ -112,50 +161,77 @@ export default function SbcWorkspace() {
 
     return (
         <section className="sbc-workspace" aria-label="Rapport de composition SBC">
-            <div className="panel report-toolbar">
-                <div>
-                    <h3>Ouvrir un rapport du moteur SBC</h3>
-                    <p className="field-hint">
-                        Lecture locale d’un JSON de Rayan · 2 Mio maximum · aucun envoi au serveur
-                    </p>
-                </div>
-                <input
-                    ref={fileInput}
-                    className="visually-hidden"
-                    type="file"
-                    accept=".json,application/json"
-                    aria-label="Importer un rapport SBC JSON"
-                    onChange={importFile}
+            <nav className="workspace-nav source-nav" aria-label="Source de la composition">
+                <button aria-pressed={source === 'api'} onClick={() => changeSource('api')}>
+                    Depuis l’API
+                </button>
+                <button aria-pressed={source === 'file'} onClick={() => changeSource('file')}>
+                    Rapport local
+                </button>
+                <button aria-pressed={source === 'example'} onClick={() => changeSource('example')}>
+                    Exemple fictif
+                </button>
+            </nav>
+            <div hidden={source !== 'api'}>
+                <SbcApiPanel
+                    apiUrl={apiUrl}
+                    connected={connected}
+                    active={source === 'api'}
+                    onConnect={onConnect}
+                    onStart={apiStart}
+                    onReport={apiReport}
+                    onReset={apiReset}
                 />
-                <button
-                    className="secondary-button"
-                    onClick={() => fileInput.current?.click()}
-                    disabled={loading}
-                >
-                    {loading ? 'Lecture en cours…' : 'Ouvrir un rapport JSON'}
-                </button>
             </div>
-            <div className="report-examples">
-                <span>Explorer un scénario fictif</span>
-                <select
-                    aria-label="Scénario du solveur"
-                    value={scenario}
-                    disabled={loading}
-                    onChange={(event) => example(event.target.value as Scenario)}
-                >
-                    <option value="optimal">Solution optimale</option>
-                    <option value="feasible">Solution faisable</option>
-                    <option value="infeasible">Aucune solution</option>
-                    <option value="unknown">Recherche sans conclusion</option>
-                    <option value="uncertain">Lecture incertaine</option>
-                </select>
-                <button
-                    className="text-button"
-                    onClick={() => example(scenario)}
-                    disabled={loading}
-                >
-                    Charger l’exemple du solveur →
-                </button>
+            <div hidden={source !== 'file'}>
+                <div className="panel report-toolbar">
+                    <div>
+                        <h3>Ouvrir un rapport du moteur SBC</h3>
+                        <p className="field-hint">
+                            Lecture locale d’un JSON de Rayan · 2 Mio maximum · aucun envoi au
+                            serveur
+                        </p>
+                    </div>
+                    <input
+                        ref={fileInput}
+                        className="visually-hidden"
+                        type="file"
+                        accept=".json,application/json"
+                        aria-label="Importer un rapport SBC JSON"
+                        onChange={importFile}
+                    />
+                    <button
+                        className="secondary-button"
+                        onClick={() => fileInput.current?.click()}
+                        disabled={loading}
+                    >
+                        {loading ? 'Lecture en cours…' : 'Ouvrir un rapport JSON'}
+                    </button>
+                </div>
+            </div>
+            <div hidden={source !== 'example'}>
+                <div className="report-examples">
+                    <span>Explorer un scénario fictif</span>
+                    <select
+                        aria-label="Scénario du solveur"
+                        value={scenario}
+                        disabled={loading}
+                        onChange={(event) => example(event.target.value as Scenario)}
+                    >
+                        <option value="optimal">Solution optimale</option>
+                        <option value="feasible">Solution faisable</option>
+                        <option value="infeasible">Aucune solution</option>
+                        <option value="unknown">Recherche sans conclusion</option>
+                        <option value="uncertain">Lecture incertaine</option>
+                    </select>
+                    <button
+                        className="text-button"
+                        onClick={() => example(scenario)}
+                        disabled={loading}
+                    >
+                        Charger l’exemple du solveur →
+                    </button>
+                </div>
             </div>
             {error && (
                 <div className="notice" role="alert">
@@ -163,7 +239,7 @@ export default function SbcWorkspace() {
                     <p>{error}</p>
                 </div>
             )}
-            {!document && !error && (
+            {!document && !error && source !== 'api' && (
                 <div className="panel report-empty">
                     <h3>Du JSON à la composition proposée</h3>
                     <p>
@@ -171,7 +247,7 @@ export default function SbcWorkspace() {
                         pour voir les cartes, les conditions et les achats suggérés.
                     </p>
                     <p className="field-hint">
-                        Le raccordement automatique à l’API viendra ensuite.
+                        L’onglet Depuis l’API permet de lancer un calcul sur le serveur.
                     </p>
                 </div>
             )}
@@ -185,9 +261,13 @@ export default function SbcWorkspace() {
                         <strong>
                             {document.source === 'synthetic'
                                 ? 'Exemple synthétique · Aucun calcul exécuté'
-                                : importedSynthetic
-                                  ? 'Rapport importé · Données fictives'
-                                  : 'Rapport importé · Non revérifié en direct'}
+                                : document.source === 'api'
+                                  ? document.mode === 'demo'
+                                      ? 'API de démonstration · Calcul CP-SAT réel'
+                                      : 'Proposition reçue de l’API · À vérifier dans le jeu'
+                                  : importedSynthetic
+                                    ? 'Rapport importé · Données fictives'
+                                    : 'Rapport importé · Non revérifié en direct'}
                         </strong>
                         <p>
                             {document.source === 'synthetic'
@@ -332,8 +412,8 @@ export default function SbcWorkspace() {
                                     </p>
                                 ) : (
                                     <p className="field-hint">
-                                        Protections en lecture seule : leur modification réelle
-                                        attend le raccordement à l’inventaire.
+                                        Protections du rapport en lecture seule. Utiliser
+                                        l’inventaire de l’API pour les modifier sur le serveur.
                                     </p>
                                 )}
                                 <div className="candidate-grid">

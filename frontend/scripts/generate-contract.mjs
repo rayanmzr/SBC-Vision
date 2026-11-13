@@ -6,6 +6,8 @@ import standalone from 'ajv/dist/standalone/index.js';
 for (const [contract, output] of [
     ['perception.schema.json', 'perception-validator.js'],
     ['sbc-report.schema.json', 'sbc-report-validator.js'],
+    ['workspace.schema.json', 'workspace-validator.js'],
+    ['solve-response.schema.json', 'solve-response-validator.js'],
 ]) {
     const schema = JSON.parse(
         await readFile(new URL(`../../contracts/${contract}`, import.meta.url)),

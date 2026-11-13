@@ -27,9 +27,9 @@ notamment le parcours de démonstration avec cartes fictives et véritable calcu
 ## Extension Chrome
 
 La [version React](frontend/README.md) reçoit les captures et affiche les résultats JSON.
-L’espace Composition SBC présente les cartes, conditions, protections et coûts. Les exemples
-fictifs restent identifiés. Le raccordement HTTP de cet espace au moteur est en cours
-sur la branche de l’issue #15 ; le détecteur et le contrôleur restent à raccorder.
+L’espace Composition SBC charge l’inventaire par HTTP, enregistre les protections et
+appelle le véritable solveur. Il présente les cartes retenues, conditions et coûts.
+Les exemples fictifs restent identifiés ; le détecteur et le contrôleur restent à raccorder.
 
 ## Démarrage local
 
@@ -90,7 +90,7 @@ L'API est exposée sur `127.0.0.1:8000`. Les modèles seront intégrés dans les
 ```text
 src/sbc_vision/      API, contrats et briques Python
 frontend/           Extension Chrome React, aperçu, tests et build MV3
-contracts/          Deux schémas générés : perception et formats SBC
+contracts/          Schémas JSON : perception, formats SBC, inventaire et propositions
 data/fixtures/      Exemples synthétiques et protocole enregistré anonymisé, sans compte réel
 data/raw/           Captures locales, ignorées par Git
 docs/               Cadrage, architecture, données, protocole et équipe

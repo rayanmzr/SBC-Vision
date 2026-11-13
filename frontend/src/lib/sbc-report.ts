@@ -45,7 +45,13 @@ export type SolverReport = {
     selected_candidates: Candidate[];
     verification?: {
         valid: boolean;
-        checks: Array<Condition & { actual: number; passed: boolean }>;
+        checks: Array<
+            Omit<Condition, 'value'> & {
+                value: number | string;
+                actual: number | number[] | Record<string, number> | null;
+                passed: boolean;
+            }
+        >;
     } | null;
 };
 

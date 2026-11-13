@@ -8,6 +8,7 @@ afterEach(cleanup);
 
 it('garde la mention fictive et les protections en lecture seule pour un fichier importé', async () => {
     render(<SbcWorkspace />);
+    fireEvent.click(screen.getByRole('button', { name: 'Rapport local' }));
     const file = new File(['test report'], 'solution.json', { type: 'application/json' });
     Object.defineProperty(file, 'text', { value: async () => JSON.stringify(fixture) });
     fireEvent.change(screen.getByLabelText('Importer un rapport SBC JSON'), {
@@ -25,6 +26,7 @@ it('garde la mention fictive et les protections en lecture seule pour un fichier
 
 function loadExample() {
     render(<SbcWorkspace />);
+    fireEvent.click(screen.getByRole('button', { name: 'Exemple fictif' }));
     fireEvent.click(screen.getByRole('button', { name: 'Charger l’exemple du solveur →' }));
 }
 

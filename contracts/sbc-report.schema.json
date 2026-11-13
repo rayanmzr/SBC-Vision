@@ -856,10 +856,15 @@
                 ]
               },
               "value": {
-                "type": "number"
+                "anyOf": [{ "type": "number" }, { "type": "string" }]
               },
               "actual": {
-                "type": "number"
+                "anyOf": [
+                  { "type": "number" },
+                  { "type": "null" },
+                  { "type": "array", "maxItems": 100, "items": { "type": "number" } },
+                  { "type": "object", "maxProperties": 10, "additionalProperties": { "type": "integer", "minimum": 0 } }
+                ]
               },
               "passed": {
                 "type": "boolean"

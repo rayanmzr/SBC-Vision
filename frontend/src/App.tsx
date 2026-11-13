@@ -141,28 +141,31 @@ export default function App() {
         });
     }
 
-    async function connect() {
+    async function connect(): Promise<boolean> {
         let normalized: string;
         try {
             normalized = normalizeApiUrl(apiUrl);
         } catch (error) {
             setNotice(describeError(error, 'Adresse à corriger'));
-            return;
+            return false;
         }
         const controller = begin('connection');
         setConnection(null);
         try {
             await authorizeApi(normalized);
-            if (active.current !== controller) return;
+            if (active.current !== controller) return false;
             await saveApiUrl(normalized);
             const value = await checkConnection(normalized, controller.signal);
             if (active.current === controller) {
                 setApiUrl(normalized);
                 setConnection(value);
+                return true;
             }
+            return false;
         } catch (error) {
             if (active.current === controller)
                 setNotice(describeError(error, 'Connexion impossible'));
+            return false;
         } finally {
             finish(controller);
         }
@@ -564,7 +567,7 @@ export default function App() {
                 </div>
             </div>
             <div hidden={workspace !== 'sbc'}>
-                <SbcWorkspace />
+                <SbcWorkspace apiUrl={apiUrl} connected={!!connection} onConnect={connect} />
             </div>
             <footer className="app-footer">
                 <span>Epitech 2026–2027</span>

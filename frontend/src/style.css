@@ -1,5 +1,96 @@
 @import url('./tokens.css');
 
+.source-nav {
+    margin-bottom: 0 !important;
+    max-width: 100%;
+}
+.source-nav button {
+    font-size: 11px !important;
+    padding: 8px 11px !important;
+}
+.api-workspace-panel .report-section-heading .secondary-button {
+    margin-top: 0;
+}
+.api-workspace-panel .synthetic-notice,
+.api-workspace-panel .import-notice {
+    margin-top: 18px;
+}
+.api-workspace-panel .notice {
+    margin-top: 15px;
+}
+.api-workspace-panel .busy-notice {
+    margin-top: 15px;
+}
+.server-inventory {
+    margin-top: 18px;
+}
+.server-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    padding: 13px 0;
+}
+.server-item-name {
+    flex: 1;
+    min-width: 0;
+}
+.server-item-name strong {
+    display: block;
+    font-size: 12px;
+}
+.server-item-name small {
+    display: block;
+    color: var(--muted);
+    font-size: 10px;
+    margin-top: 3px;
+}
+.server-protection {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--green);
+}
+.server-protection input {
+    accent-color: var(--green);
+}
+.api-solver-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    margin-top: 20px;
+}
+.api-solver-controls label {
+    font-size: 11px;
+    font-weight: 600;
+    flex: 1;
+    min-width: 130px;
+}
+.api-solver-controls input {
+    display: block;
+    width: 100%;
+    border: 1px solid #d7e0d9;
+    background: #fbfcfb;
+    border-radius: 7px;
+    padding: 10px;
+    margin-top: 5px;
+    color: var(--ink);
+}
+.api-solver-controls .primary-button {
+    margin-top: 0;
+    justify-content: center;
+}
+.api-solver-controls .field-hint {
+    width: 100%;
+}
+.saved-preference {
+    font-size: 11px;
+    color: var(--green);
+    margin-top: 15px;
+}
+
 .workspace-nav {
     display: flex;
     gap: 5px;

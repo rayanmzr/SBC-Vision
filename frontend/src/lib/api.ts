@@ -70,7 +70,7 @@ export function validatePerception(
     return result;
 }
 
-async function requestJson(
+export async function requestJson(
     base: string,
     path: string,
     options: RequestInit,
