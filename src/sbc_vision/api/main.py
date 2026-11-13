@@ -1,20 +1,22 @@
-"""API initiale : santé, état des capacités et contrat de perception."""
+"""API : santé, contrats et transport des captures vers le pipeline de perception."""
 
 import os
 
 from fastapi import FastAPI
 
 from sbc_vision import __version__
+from sbc_vision.api.perception import router as perception_router
 from sbc_vision.contracts.perception import PerceptionResponse
 
 app = FastAPI(
     title="SBC Vision",
     version=__version__,
     description=(
-        "Socle du projet. Les routes présentes ne réalisent pas encore d'inférence, "
-        "de résolution de SBC ou de pilotage de la Web App."
+        "Transport d'images prêt pour le raccordement détection/OCR. Sans pipeline chargé, "
+        "l'analyse renvoie 503. Aucun solveur ou pilotage du navigateur n'est exposé."
     ),
 )
+app.include_router(perception_router)
 
 
 @app.get("/health", tags=["system"])

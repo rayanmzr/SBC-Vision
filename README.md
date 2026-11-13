@@ -4,7 +4,11 @@ Assistant visuel de préparation des défis de création d'équipe (SBC) sur la 
 
 Le modèle transforme une capture en une liste JSON d'éléments et d'actions possibles. Un contrôleur exploite ce résultat pour inventorier le club, préparer une composition et vérifier les écrans. Le solveur cherche à réduire les dépenses et la valeur des cartes sacrifiées, en préservant les cartes protégées.
 
-**Avancement :** structure du dépôt, documentation, API de démarrage, contrat JSON et CI. La détection, l'OCR, le solveur et le contrôleur sont les prochaines étapes.
+**Avancement sur cette branche :** socle du dépôt et route de réception des captures avec
+validation et tests de transport. Le détecteur et l'OCR ne sont pas encore raccordés à
+l'API ; une analyse valide renvoie donc `503`, sans prédictions fictives. Voir le
+[guide de la première étape API](docs/API.md). Les développements non fusionnés des
+autres membres ne sont pas inclus dans cet état de `main`.
 
 ## Équipe
 
@@ -31,6 +35,7 @@ uvicorn sbc_vision.api.main:app --reload
 - Documentation API : <http://127.0.0.1:8000/docs>
 - Capacités implémentées : <http://127.0.0.1:8000/api/v1/capabilities>
 - Schéma de perception : <http://127.0.0.1:8000/api/v1/contracts/perception>
+- Analyse : `POST /api/v1/perception/analyze` (PNG/JPEG binaire ; `503` avant raccordement).
 
 ```bash
 make check
