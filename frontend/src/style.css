@@ -719,6 +719,25 @@ input[type='url'] {
     color: var(--ink);
     background: #f8faf8;
 }
+.tab-capture-button {
+    margin-top: 0;
+}
+.capture-hint {
+    margin-bottom: 15px;
+    line-height: 1.7;
+}
+.capture-context {
+    display: grid;
+    gap: 3px;
+    background: #eff6f1;
+    border: 1px solid #dce9df;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 12px;
+    font-size: 10px;
+    color: var(--green);
+    overflow-wrap: anywhere;
+}
 .file-picker:hover:not(:disabled) {
     background: #f0f6f1;
     border-color: var(--green);

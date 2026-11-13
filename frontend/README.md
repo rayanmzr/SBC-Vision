@@ -1,7 +1,8 @@
 # Extension Chrome SBC Vision — SBV-015
 
-Responsable : Samy Allali. Cette version permet de joindre l'API, d'envoyer manuellement
-une image et d'examiner son JSON. L'espace **Composition SBC** charge l'inventaire de
+Responsable : Samy Allali. Cette version permet de capturer l'onglet actif depuis le popup,
+de joindre l'API, d'envoyer manuellement une image et d'examiner son JSON.
+L'espace **Composition SBC** charge l'inventaire de
 l'API, enregistre les protections et lance le véritable solveur de Rayan. Il ouvre aussi
 des rapports JSON locaux. Le scan et le placement dans le navigateur restent à raccorder
 avec #16 : **le parcours de l'issue #15 n'est pas encore terminé**.
@@ -59,21 +60,22 @@ nécessaire pour ce premier lot.
 
 ## Rôle des fichiers
 
-| Fichier                                 | Rôle                                                     |
-| --------------------------------------- | -------------------------------------------------------- |
-| `public/manifest.json`                  | Déclaration MV3, popup et permissions                    |
-| `src/main.tsx`                          | Démarrage de React et taille propre au popup             |
-| `src/App.tsx`                           | Interface et déroulement des opérations                  |
-| `src/SbcWorkspace.tsx`                  | Lecture des propositions et états du solveur             |
-| `src/SbcApiPanel.tsx`                   | Inventaire serveur, protections et calcul                |
-| `src/lib/sbc-api.ts`                    | Contrats et appels JSON du moteur SBC                    |
-| `src/lib/sbc-report.ts`                 | Validation des rapports locaux et présentation des coûts |
-| `src/lib/platform.ts`                   | Adresse, stockage et permissions Chrome                  |
-| `src/lib/api.ts`                        | HTTP, délais, image et validation des réponses           |
-| `scripts/generate-contract.mjs`         | Compilation du schéma Python partagé                     |
-| `src/generated/perception-validator.js` | Validateur généré, à ne pas modifier à la main           |
-| `src/style.css`, `src/tokens.css`       | Mise en page et couleurs                                 |
-| `src/*.test.ts*`, `src/lib/api.test.ts` | Tests de l'interface et du transport                     |
+| Fichier                                 | Rôle                                                        |
+| --------------------------------------- | ----------------------------------------------------------- |
+| `public/manifest.json`                  | Déclaration MV3, popup et permissions                       |
+| `src/main.tsx`                          | Démarrage de React et taille propre au popup                |
+| `src/App.tsx`                           | Interface et déroulement des opérations                     |
+| `src/SbcWorkspace.tsx`                  | Lecture des propositions et états du solveur                |
+| `src/SbcApiPanel.tsx`                   | Inventaire serveur, protections et calcul                   |
+| `src/lib/sbc-api.ts`                    | Contrats et appels JSON du moteur SBC                       |
+| `src/lib/sbc-report.ts`                 | Validation des rapports locaux et présentation des coûts    |
+| `src/lib/platform.ts`                   | Adresse, stockage et permissions Chrome                     |
+| `src/lib/tab-capture.ts`                | Capture, contexte de l'onglet et conversion des coordonnées |
+| `src/lib/api.ts`                        | HTTP, délais, image et validation des réponses              |
+| `scripts/generate-contract.mjs`         | Compilation du schéma Python partagé                        |
+| `src/generated/perception-validator.js` | Validateur généré, à ne pas modifier à la main              |
+| `src/style.css`, `src/tokens.css`       | Mise en page et couleurs                                    |
+| `src/*.test.ts*`, `src/lib/api.test.ts` | Tests de l'interface et du transport                        |
 
 Dans React, `connection` décrit le serveur, `selection` décrit le fichier et `result`
 associe un JSON à son image et sa source. Modifier l'adresse ou le fichier retire
@@ -92,8 +94,9 @@ dimensions de la réponse doivent correspondre à la demande.
    n'appelle pas le serveur et n'effectue aucune inférence.
 6. Déplier le JSON pour retrouver identifiants, types, textes, boîtes, scores et actions.
 
-Les actions du JSON sont seulement décrites. Aucun clic EA, achat ou soumission n'est
-exécuté. La capture d'onglet fera partie de #16.
+Les actions du JSON sont seulement décrites. Aucun clic, achat ou soumission n'est
+exécuté. La capture d'onglet est le premier lot de #16 : le [guide de capture](../docs/TAB_CAPTURE.md)
+explique le popup, les permissions et la vérification manuelle dans Chrome.
 
 ## Stockage et permissions
 
@@ -107,8 +110,14 @@ Les permissions Chrome couvrent le schéma et l'hôte, pas seulement un port ou 
 Le motif optionnel `https://*/*` permet de choisir un futur fournisseur cloud ; aucun
 accès global n'est accordé automatiquement.
 
-Aucune permission `tabs`, `activeTab`, `scripting`, `debugger` ou `cookies` n'est déclarée.
-Ouvrir la page propre à l'extension dans un onglet ne lit pas les autres onglets.
+`activeTab` donne un accès temporaire à la page depuis laquelle l'utilisateur invoque
+l'extension. `scripting` sert à relever les dimensions et le défilement du cadre principal,
+sans lire le contenu des cartes ou les textes de l'interface. Ces mesures encadrent
+la capture ; elles ne remplacent pas la vision. Aucun script de contenu permanent.
+
+Aucune permission `tabs`, `debugger` ou `cookies` n'est déclarée. Ouvrir la page propre
+à l'extension dans un onglet ne lit pas les autres onglets ; la capture s'effectue depuis
+le popup sur la page cible. L'aperçu Vite affiche ce bouton désactivé.
 
 ## Contrôles et limites
 

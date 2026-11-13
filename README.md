@@ -29,7 +29,9 @@ notamment le parcours de démonstration avec cartes fictives et véritable calcu
 La [version React](frontend/README.md) reçoit les captures et affiche les résultats JSON.
 L’espace Composition SBC charge l’inventaire par HTTP, enregistre les protections et
 appelle le véritable solveur. Il présente les cartes retenues, conditions et coûts.
-Les exemples fictifs restent identifiés ; le détecteur et le contrôleur restent à raccorder.
+Les exemples fictifs restent identifiés. Le popup prépare la capture manuelle de l'onglet
+avec son repère de coordonnées ; voir le [guide de capture](docs/TAB_CAPTURE.md).
+Le détecteur, les clics et la vérification après action restent à raccorder.
 
 ## Démarrage local
 

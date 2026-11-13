@@ -1,12 +1,14 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { expect, it } from 'vitest';
 
-it('déclare une extension MV3 sans accès aux onglets ni moteur de modèle embarqué', () => {
+it('déclare une extension MV3 avec accès temporaire à l’onglet invoqué', () => {
     const manifest = JSON.parse(
         readFileSync(new URL('../public/manifest.json', import.meta.url), 'utf8'),
     );
     expect(manifest.manifest_version).toBe(3);
-    expect(manifest.permissions).toEqual(['storage']);
+    expect(manifest.permissions).toEqual(['storage', 'activeTab', 'scripting']);
+    expect(manifest.permissions).not.toContain('tabs');
+    expect(manifest.permissions).not.toContain('debugger');
     expect(manifest.host_permissions).toEqual(['http://127.0.0.1/*', 'http://localhost/*']);
     expect(manifest.optional_host_permissions).toEqual(['https://*/*']);
     expect(manifest.content_scripts).toBeUndefined();

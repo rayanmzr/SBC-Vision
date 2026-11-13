@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import demoPayload from '../../data/fixtures/perception.synthetic.json';
 import demoImage from '../../data/fixtures/perception.synthetic.png';
 import SbcWorkspace from './SbcWorkspace';
+import { captureActiveTab, imagePointToViewport, type TabCapture } from './lib/tab-capture';
 import {
     analyzeImage,
     ApiError,
@@ -22,7 +23,7 @@ import {
     saveApiUrl,
 } from './lib/platform';
 
-type Selection = { file: File; url: string; width: number; height: number };
+type Selection = { file: File; url: string; width: number; height: number; tab?: TabCapture };
 type Result = { data: Perception; source: 'api' | 'synthetic'; imageUrl: string };
 type Notice = { title: string; message: string; code?: string };
 const KIND_LABELS: Record<ElementKind, string> = {
@@ -80,7 +81,7 @@ export default function App() {
     const [selection, setSelection] = useState<Selection | null>(null);
     const [result, setResult] = useState<Result | null>(null);
     const [notice, setNotice] = useState<Notice | null>(null);
-    const [busy, setBusy] = useState<'connection' | 'image' | 'analysis' | null>(null);
+    const [busy, setBusy] = useState<'connection' | 'image' | 'capture' | 'analysis' | null>(null);
     const active = useRef<AbortController | null>(null);
     const fileInput = useRef<HTMLInputElement>(null);
 
@@ -205,6 +206,21 @@ export default function App() {
         }
     }
 
+    async function captureTab() {
+        const controller = begin('capture');
+        setSelection(null);
+        try {
+            const tab = await captureActiveTab(controller.signal);
+            if (active.current === controller) setSelection({ ...tab, tab });
+            else URL.revokeObjectURL(tab.url);
+        } catch (error) {
+            if (active.current === controller)
+                setNotice(describeError(error, 'Capture impossible'));
+        } finally {
+            finish(controller);
+        }
+    }
+
     function showExample() {
         setSelection(null);
         setNotice(null);
@@ -258,7 +274,7 @@ export default function App() {
                 </h2>
                 <p>
                     {workspace === 'perception'
-                        ? 'Connecte l’API, choisis une capture et examine les éléments qu’elle renvoie.'
+                        ? 'Capture un onglet ou choisis une image, puis examine le JSON renvoyé par l’API.'
                         : 'Examine les cartes, les conditions et les coûts transmis par le moteur SBC.'}
                 </p>
             </div>
@@ -344,6 +360,20 @@ export default function App() {
                                 <span className="step">02</span>
                                 <h3 id="image-title">Choisir une capture</h3>
                             </div>
+                            <button
+                                className="secondary-button full-width tab-capture-button"
+                                onClick={captureTab}
+                                disabled={!isExtension() || !!busy}
+                            >
+                                {busy === 'capture'
+                                    ? 'Capture en cours…'
+                                    : 'Capturer l’onglet actif'}
+                            </button>
+                            <p className="field-hint capture-hint">
+                                {isExtension()
+                                    ? 'Depuis une page HTTP ou HTTPS, ouvre le popup SBC Vision. Seule la zone visible est capturée ; tu choisis ensuite de l’envoyer.'
+                                    : 'Disponible dans le popup de l’extension Chrome installée. L’aperçu web permet de choisir une image.'}
+                            </p>
                             <input
                                 ref={fileInput}
                                 id="capture-file"
@@ -374,6 +404,26 @@ export default function App() {
                                         {selection.width} × {selection.height} px ·{' '}
                                         {(selection.file.size / 1024).toFixed(1)} Kio
                                     </span>
+                                </div>
+                            )}
+                            {selection?.tab && (
+                                <div className="capture-context" role="status">
+                                    <strong>Capture locale de l’onglet</strong>
+                                    <span>
+                                        {new URL(selection.tab.context.viewport.href).origin}
+                                    </span>
+                                    <span>
+                                        Zone visible : {selection.tab.context.viewport.width} ×{' '}
+                                        {selection.tab.context.viewport.height} px CSS
+                                    </span>
+                                    <span>
+                                        Échelle image/page :{' '}
+                                        {(
+                                            selection.width / selection.tab.context.viewport.width
+                                        ).toFixed(2)}
+                                        ×
+                                    </span>
+                                    <span>Aucun clic effectué.</span>
                                 </div>
                             )}
                             <button
@@ -418,7 +468,9 @@ export default function App() {
                                         ? 'Connexion au serveur…'
                                         : busy === 'image'
                                           ? 'Lecture de l’image…'
-                                          : 'L’API analyse la capture…'}
+                                          : busy === 'capture'
+                                            ? 'Capture de la zone visible…'
+                                            : 'L’API analyse la capture…'}
                                 </span>
                                 <button className="text-button" onClick={cancel}>
                                     Annuler
@@ -539,6 +591,12 @@ export default function App() {
                                                     x {element.bbox.x} · y {element.bbox.y} ·{' '}
                                                     {element.bbox.width} × {element.bbox.height} px
                                                 </small>
+                                                {selection?.tab && !synthetic && (
+                                                    <ViewportPoint
+                                                        capture={selection.tab}
+                                                        box={element.bbox}
+                                                    />
+                                                )}
                                                 <span className="element-actions">
                                                     {(element.actions ?? [])
                                                         .map((action) => ACTION_LABELS[action])
@@ -578,5 +636,21 @@ export default function App() {
                 </span>
             </footer>
         </main>
+    );
+}
+
+function ViewportPoint({
+    capture,
+    box,
+}: {
+    capture: TabCapture;
+    box: Perception['elements'][number]['bbox'];
+}) {
+    const point = imagePointToViewport(capture, box);
+    return (
+        <small>
+            Centre dans la page : x {point.x.toFixed(1)} · y {point.y.toFixed(1)} px CSS ·
+            observation
+        </small>
     );
 }
