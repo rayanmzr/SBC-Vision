@@ -2,7 +2,7 @@
 
 ```mermaid
 flowchart LR
-    A[Capture locale du navigateur] --> B[API Python de perception]
+    A[Capture par extension Chrome] --> B[API Python de perception]
     B --> C[Détection puis OCR]
     C --> D[JSON validé]
     D --> E[Contrôleur scripté]
@@ -34,8 +34,20 @@ flowchart LR
 - `/api/v1/capabilities` décrit les briques disponibles.
 - `/api/v1/contracts/perception` expose le schéma de sortie attendu.
 - Les modèles Pydantic et les fixtures permettent de développer les briques séparément.
+- L'importeur en ligne de commande alimente un catalogue et des relevés de prix SQLite.
+- Un rapport OCR peut déclencher une recherche ciblée des versions manquantes par nom ; les statistiques visibles affinent les candidats, sans créer d'exemplaires ni choisir une version automatiquement.
+- L'inventaire local référence les versions du catalogue et conserve chaque exemplaire, sa protection, son état échangeable connu ou inconnu et sa dernière observation. Une démo distincte utilise un club fictif.
+- Un lot de lectures OCR et de versions choisies peut être confirmé dans cet inventaire ; l'écriture est atomique et conserve les exemplaires déjà connus.
+- `sync_scan` réunit plusieurs rapports et leurs choix : aperçu sans écriture, fusion par exemplaire suivi, protections conservées et lectures non sélectionnées en attente. Le suivi et la fin du parcours restent fournis par le contrôleur.
+- Le solveur lit SQLite, cherche une composition avec CP-SAT et vérifie séparément les affectations, sur un pool connu de cartes et prix.
+- La proposition et ses alternatives incluent les valeurs recalculées de chaque condition dans `verification`, avec les limites demandées ; elles restent à confronter à l'état réel de la Web App.
+- La commande `demo` relie ces fonctions sur une image fictive annotée et un catalogue synthétique ; les exemplaires passent par la lecture OCR et les conditions sont interprétées depuis les textes lus.
 
-L'inférence, la persistance et les actions ne sont pas encore câblées. Ne pas brancher des prédictions synthétiques sur un compte réel.
+L'inférence, le scan du club et les actions ne sont pas encore câblés. L'import du catalogue, l'inventaire et le solveur sont indépendants de l'API pour le moment. Les routes de capacités ne les déclarent donc pas encore comme disponibles via HTTP.
+
+Les conditions sont transmises dynamiquement par l'OCR au contrat `dynamic-v1`. Le solveur distingue composition et Item Score, traite les contraintes reconnues et vérifie ses résultats séparément. La note d'équipe est limitée à onze emplacements et le collectif à un profil standard sans bonus particuliers. Les autres cas sont rejetés. Le [guide](../src/sbc_vision/sbc_engine/README.md) précise les limites et l'interface entre les membres.
+
+Les contrats `CardReading` et `ClubItem` préparent le raccordement à l'OCR et au contrôleur. Une version candidate reste à confirmer et l'identité des exemplaires entre captures est à gérer côté contrôleur. Les quantités et protections ne sont jamais déduites du seul nom du joueur.
 
 ## Contrat de perception v0.1
 
@@ -45,4 +57,6 @@ Le JSON sémantiquement valide ne garantit pas une bonne prédiction. La qualit�
 
 ## Déploiement cible
 
-Le client React et le contrôleur local consomment une API Python hébergeant les modèles. Le frontend n'embarque pas leurs poids. Les données SQLite appartiennent au service applicatif ; les originaux privés restent locaux par défaut. Le cloud devra prévoir des limites de taille, délais, authentification et suppression des captures temporaires avant un déploiement partagé.
+L'extension Chrome héberge l'interface React et le contrôleur du navigateur ; elle consomme une API Python hébergeant les modèles. La reconnaissance des éléments et des cartes repose sur les captures et l'OCR. Les modèles et le solveur restent côté Python. Un premier prototype devra vérifier la capture, les coordonnées et les permissions nécessaires aux interactions.
+
+Les données SQLite appartiennent au service applicatif ; les originaux privés restent locaux par défaut. Le cloud devra prévoir des limites de taille, délais, authentification et suppression des captures temporaires avant un déploiement partagé.

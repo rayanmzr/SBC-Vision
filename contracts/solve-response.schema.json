@@ -1,0 +1,28 @@
+{
+  "properties": {
+    "mode": {
+      "enum": [
+        "demo",
+        "local"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "revision": {
+      "title": "Revision",
+      "type": "string"
+    },
+    "report": {
+      "additionalProperties": true,
+      "title": "Report",
+      "type": "object"
+    }
+  },
+  "required": [
+    "mode",
+    "revision",
+    "report"
+  ],
+  "title": "SolveResponse",
+  "type": "object"
+}

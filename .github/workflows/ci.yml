@@ -2,7 +2,6 @@ name: CI
 
 on:
   push:
-    branches: [main]
   pull_request:
 
 permissions:
@@ -21,7 +20,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
           cache-dependency-path: requirements.lock
-      - run: python -m pip install -c requirements.lock -e '.[dev]'
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq tesseract-ocr
+      - run: python -m pip install -c requirements.lock -e '.[dev,data,solver,ocr]'
       - run: make check
 
   docker:
