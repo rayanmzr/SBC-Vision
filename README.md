@@ -10,6 +10,11 @@ l'API ; une analyse valide renvoie donc `503`, sans prédictions fictives. Voir 
 [guide de la première étape API](docs/API.md). Les développements non fusionnés des
 autres membres ne sont pas inclus dans cet état de `main`.
 
+Le premier lot de l'[extension Chrome React](frontend/README.md) ajoute la connexion à
+l'API, le choix manuel d'une image, l'affichage des erreurs et une visualisation du JSON.
+Le bouton d'exemple synthétique est explicitement identifié. La vision réelle,
+l'inventaire, le solveur et les actions restent à raccorder à cette interface.
+
 ## Équipe
 
 | Membre | Compte | Responsabilité principale | Document de travail |
@@ -55,7 +60,7 @@ L'API est exposée sur `127.0.0.1:8000`. Les modèles seront intégrés dans les
 
 ```text
 src/sbc_vision/      API, contrats et emplacements des briques Python
-frontend/           Périmètre de l'application React à construire
+frontend/           Extension Chrome React, aperçu web, tests et build MV3
 contracts/          Schémas JSON générés et versionnés
 data/fixtures/      Exemples synthétiques, sans compte réel
 data/raw/           Captures locales, ignorées par Git
