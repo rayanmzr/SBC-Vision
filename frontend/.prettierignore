@@ -1,3 +1,4 @@
 src/generated/perception-validator.js
+src/generated/sbc-report-validator.js
 pnpm-lock.yaml
 dist/

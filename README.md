@@ -15,6 +15,11 @@ l'API, le choix manuel d'une image, l'affichage des erreurs et une visualisation
 Le bouton d'exemple synthétique est explicitement identifié. La vision réelle,
 l'inventaire, le solveur et les actions restent à raccorder à cette interface.
 
+L'espace **Composition SBC** sait ouvrir les rapports JSON locaux de Rayan et présenter
+cartes, protections, conditions, proposition et coûts. Les scénarios fictifs montrent
+aussi les états sans solution ou incertains ; ils n'exécutent aucun solveur. Le chargement
+direct depuis l'API et la mise à jour des protections réelles restent à intégrer.
+
 ## Équipe
 
 | Membre | Compte | Responsabilité principale | Document de travail |

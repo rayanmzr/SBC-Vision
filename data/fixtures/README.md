@@ -8,3 +8,9 @@ avec les deux rectangles du JSON. Il sert aux tests de réception de fichiers. L
 sont injectés par les tests et ne sont pas calculés depuis cette image.
 
 Conserver de futurs petits clubs et défis synthétiques ici pour les tests hors ligne. Ne pas remplacer ces exemples par des données personnelles.
+
+`sbc-report.synthetic.json` est un rapport de visualisation écrit à la main depuis les
+fixtures du moteur de Rayan (PR #23, commit `e244b8e`). Il ne provient pas d'une exécution
+du solveur. Le scénario présente 1 300 crédits d'achats, 800 de valeur sacrifiée et
+2 100 au total, avec deux candidats supplémentaires pour montrer une protection et un
+prix inconnu. Le bandeau de l'interface conserve la mention fictive.

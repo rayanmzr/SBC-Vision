@@ -1,8 +1,10 @@
-# Extension Chrome SBC Vision — premier lot de SBV-015
+# Extension Chrome SBC Vision — SBV-015
 
 Responsable : Samy Allali. Cette version permet de joindre l'API, d'envoyer manuellement
-une image et d'examiner son JSON. L'inventaire, les protections, le solveur et les actions
-restent à raccorder : **l'issue #15 n'est pas terminée**.
+une image et d'examiner son JSON. L'espace **Composition SBC** ouvre aussi les rapports
+JSON locaux du moteur de Rayan : cartes, protections, conditions, composition et coûts.
+Le raccordement automatique à l'inventaire et au solveur reste à faire : **l'issue #15
+n'est pas terminée**.
 
 ## Comprendre ce premier lot
 
@@ -57,17 +59,19 @@ nécessaire pour ce premier lot.
 
 ## Rôle des fichiers
 
-| Fichier                                 | Rôle                                           |
-| --------------------------------------- | ---------------------------------------------- |
-| `public/manifest.json`                  | Déclaration MV3, popup et permissions          |
-| `src/main.tsx`                          | Démarrage de React et taille propre au popup   |
-| `src/App.tsx`                           | Interface et déroulement des opérations        |
-| `src/lib/platform.ts`                   | Adresse, stockage et permissions Chrome        |
-| `src/lib/api.ts`                        | HTTP, délais, image et validation des réponses |
-| `scripts/generate-contract.mjs`         | Compilation du schéma Python partagé           |
-| `src/generated/perception-validator.js` | Validateur généré, à ne pas modifier à la main |
-| `src/style.css`, `src/tokens.css`       | Mise en page et couleurs                       |
-| `src/*.test.ts*`, `src/lib/api.test.ts` | Tests de l'interface et du transport           |
+| Fichier                                 | Rôle                                                     |
+| --------------------------------------- | -------------------------------------------------------- |
+| `public/manifest.json`                  | Déclaration MV3, popup et permissions                    |
+| `src/main.tsx`                          | Démarrage de React et taille propre au popup             |
+| `src/App.tsx`                           | Interface et déroulement des opérations                  |
+| `src/SbcWorkspace.tsx`                  | Lecture des propositions et états du solveur             |
+| `src/lib/sbc-report.ts`                 | Validation des rapports locaux et présentation des coûts |
+| `src/lib/platform.ts`                   | Adresse, stockage et permissions Chrome                  |
+| `src/lib/api.ts`                        | HTTP, délais, image et validation des réponses           |
+| `scripts/generate-contract.mjs`         | Compilation du schéma Python partagé                     |
+| `src/generated/perception-validator.js` | Validateur généré, à ne pas modifier à la main           |
+| `src/style.css`, `src/tokens.css`       | Mise en page et couleurs                                 |
+| `src/*.test.ts*`, `src/lib/api.test.ts` | Tests de l'interface et du transport                     |
 
 Dans React, `connection` décrit le serveur, `selection` décrit le fichier et `result`
 associe un JSON à son image et sa source. Modifier l'adresse ou le fichier retire
@@ -124,8 +128,48 @@ connexion attendent au plus 5 secondes chacune, l'analyse 30 secondes côté cli
 **Annuler** abandonne l'attente et empêche d'afficher une réponse tardive ; cela ne garantit
 pas l'arrêt immédiat d'un calcul déjà commencé sur le serveur.
 
-À terminer pour #15 : inventaire, protections, conditions, achats, coûts et états du
-solveur, en consommant les véritables contrats de Rayan.
+## Espace Composition SBC
+
+Cet espace consomme le format JSON écrit par `run_solver` sur la branche de Rayan.
+Il s'ouvre avec **Composition SBC**, puis **Ouvrir un rapport JSON**. Le fichier est lu
+dans le navigateur, sans être envoyé au serveur ni enregistré dans le stockage Chrome.
+Taille maximale : 2 Mio. Un fichier invalide retire l'ancien résultat et affiche une erreur.
+
+Sur la branche du moteur, `python -m sbc_vision.sbc_engine solve --demo` écrit normalement
+`data/processed/solution.json`. Choisir ce rapport dans l'extension. Cette commande n'est
+pas fournie par notre branche frontend ; le moteur reste dans la PR #23, sans fusion ici.
+Un rapport OCR avec `ready: false` et une liste `issues` affiche une lecture à confirmer,
+sans réutiliser une éventuelle ancienne proposition.
+
+L'interface distingue :
+
+- les candidats du rapport et l'inventaire complet, qui n'est pas encore chargé ;
+- un exemplaire du club et une version proposée à l'achat ;
+- les achats, la valeur sacrifiée et leur somme économique ;
+- un prix inconnu et un prix nul ;
+- une solution faisable, optimale sur le pool connu, impossible sur ce pool ou inconnue ;
+- une vérification annoncée dans un fichier et une vérification actuelle par EA.
+
+Le schéma `contracts/sbc-report.schema.json` reprend `Challenge`, `SolverResult` et
+`Candidate` du commit `e244b8ecfa6bdbd8ad4a64f7a50929aa3c2ca75d` de Rayan. Une enveloppe
+de lecture décrit les champs de `run_solver` utilisés dans l'interface. Les métadonnées
+supplémentaires restent autorisées, mais ne sont pas exécutées. Le moteur Python n'est
+pas copié dans l'extension. Le validateur est compilé, comme celui de perception.
+
+Les contrôles frontend refusent notamment les cartes affectées absentes, protégées ou
+sans prix, les emplacements dupliqués, les quantités dépassées, les postes incompatibles
+et les coûts incohérents. Ils protègent l'affichage ; ils ne remplacent ni le vérificateur
+Python, ni les règles complètes, ni la relecture de la Web App.
+
+Le scénario fictif est préparé à la main depuis les fixtures de Rayan : **aucun solveur
+n'est exécuté dans le navigateur**. Il comprend des cartes supplémentaires pour montrer
+une protection et un prix inconnu. Une case de protection est modifiable uniquement
+dans cet exemple ; tout changement retire la composition et les coûts jusqu'à un nouveau
+calcul. Recharger l'exemple réinitialise ces choix. Pour un fichier importé, les protections
+restent en lecture seule et aucune modification du club réel n'est prétendue.
+
+À terminer pour #15 : routes d'inventaire et de propositions, modification persistante
+des protections, relecture et recalcul par le véritable moteur, puis intégration avec #16.
 
 Références : [réseau des extensions](https://developer.chrome.com/docs/extensions/develop/concepts/network-requests),
 [permissions optionnelles](https://developer.chrome.com/docs/extensions/reference/api/permissions).

@@ -1,0 +1,216 @@
+{
+  "description": "Exemple de visualisation fictif préparé à la main depuis les fixtures de Rayan, sans exécution du solveur. Comprend deux candidats non retenus pour illustrer protections et prix inconnu.",
+  "data_kind": "synthetic",
+  "challenge": {
+    "rules_version": "dynamic-v1",
+    "positions": [
+      "CAM",
+      "CM",
+      "ST"
+    ],
+    "market": "pc",
+    "budget": 2000,
+    "conditions": [
+      {
+        "metric": "rating",
+        "value": 82
+      },
+      {
+        "metric": "rare",
+        "value": 1
+      },
+      {
+        "metric": "nation",
+        "value": 2,
+        "target": 9003
+      },
+      {
+        "metric": "league",
+        "value": 2,
+        "target": 9002
+      }
+    ]
+  },
+  "price_reference_at": "2026-10-30T12:00:00+00:00",
+  "solution": {
+    "status": "optimal",
+    "assignments": [
+      {
+        "slot": 0,
+        "candidate_key": "market:900006"
+      },
+      {
+        "slot": 1,
+        "candidate_key": "club:demo-002"
+      },
+      {
+        "slot": 2,
+        "candidate_key": "market:900004"
+      }
+    ],
+    "purchase_cost": 1300,
+    "sacrifice_value": 800,
+    "total_cost": 2100,
+    "errors": []
+  },
+  "selected_candidates": [
+    {
+      "key": "club:demo-001",
+      "card_id": 900001,
+      "base_id": 900001,
+      "name": "Alex Exemple",
+      "rating": 83,
+      "positions": [
+        "CM",
+        "CAM"
+      ],
+      "nation_id": 9003,
+      "league_id": 9002,
+      "club_id": 9001,
+      "card_level": "GOLD",
+      "chemistry_kind": "unsupported",
+      "max_quantity": 1,
+      "is_rare": false,
+      "owned": true,
+      "protected": true,
+      "value": 800,
+      "source_url": "urn:sbc-vision:synthetic:900001",
+      "observed_at": "2026-10-30T12:00:00+00:00"
+    },
+    {
+      "key": "club:demo-002",
+      "card_id": 900001,
+      "base_id": 900001,
+      "name": "Alex Exemple",
+      "rating": 83,
+      "positions": [
+        "CM",
+        "CAM"
+      ],
+      "nation_id": 9003,
+      "league_id": 9002,
+      "club_id": 9001,
+      "card_level": "GOLD",
+      "chemistry_kind": "unsupported",
+      "max_quantity": 1,
+      "is_rare": false,
+      "owned": true,
+      "protected": false,
+      "value": 800,
+      "source_url": "urn:sbc-vision:synthetic:900001",
+      "observed_at": "2026-10-30T12:00:00+00:00"
+    },
+    {
+      "key": "market:900006",
+      "card_id": 900006,
+      "base_id": 900006,
+      "name": "Eli Test",
+      "rating": 82,
+      "positions": [
+        "CAM"
+      ],
+      "nation_id": 9003,
+      "league_id": 9002,
+      "club_id": 9010,
+      "card_level": "GOLD",
+      "chemistry_kind": "unsupported",
+      "max_quantity": 1,
+      "is_rare": false,
+      "owned": false,
+      "protected": false,
+      "value": 900,
+      "source_url": "urn:sbc-vision:synthetic:900006",
+      "observed_at": "2026-10-30T12:00:00+00:00"
+    },
+    {
+      "key": "market:900004",
+      "card_id": 900004,
+      "base_id": 900004,
+      "name": "Léa Fictive",
+      "rating": 83,
+      "positions": [
+        "ST"
+      ],
+      "nation_id": 9003,
+      "league_id": 9002,
+      "club_id": 9008,
+      "card_level": "GOLD",
+      "chemistry_kind": "unsupported",
+      "max_quantity": 1,
+      "is_rare": true,
+      "owned": false,
+      "protected": false,
+      "value": 400,
+      "source_url": "urn:sbc-vision:synthetic:900004",
+      "observed_at": "2026-10-30T12:00:00+00:00"
+    },
+    {
+      "key": "market:900002",
+      "card_id": 900002,
+      "base_id": 900001,
+      "name": "Alex Exemple",
+      "rating": 83,
+      "positions": [
+        "CM",
+        "CAM"
+      ],
+      "nation_id": 9003,
+      "league_id": 9002,
+      "club_id": 9001,
+      "card_level": "GOLD",
+      "chemistry_kind": "unsupported",
+      "max_quantity": 1,
+      "is_rare": true,
+      "owned": false,
+      "protected": false,
+      "value": null,
+      "source_url": "urn:sbc-vision:synthetic:900002",
+      "observed_at": "2026-10-30T12:00:00+00:00"
+    }
+  ],
+  "verification": {
+    "valid": true,
+    "checks": [
+      {
+        "metric": "rating",
+        "text": "Note individuelle minimale",
+        "op": "min",
+        "value": 82,
+        "actual": 82,
+        "passed": true
+      },
+      {
+        "metric": "rare",
+        "text": "Au moins un joueur rare",
+        "op": "min",
+        "value": 1,
+        "actual": 1,
+        "passed": true
+      },
+      {
+        "metric": "nation",
+        "text": "Joueurs de la nationalité 9003",
+        "op": "min",
+        "value": 2,
+        "actual": 3,
+        "passed": true
+      },
+      {
+        "metric": "league",
+        "text": "Joueurs du championnat 9002",
+        "op": "min",
+        "value": 2,
+        "actual": 3,
+        "passed": true
+      },
+      {
+        "metric": "budget",
+        "text": "Budget d’achat",
+        "op": "max",
+        "value": 2000,
+        "actual": 1300,
+        "passed": true
+      }
+    ]
+  }
+}
