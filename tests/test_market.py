@@ -1,9 +1,10 @@
-"""Tests hors ligne avec des cartes inventées, sans données de compte."""
+"""Tests hors ligne : cartes inventées et protocole enregistré avec valeurs anonymisées."""
 
 import json
 import sqlite3
 from copy import deepcopy
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta, timezone
+from pathlib import Path
 from unittest.mock import Mock
 
 import httpx
@@ -19,6 +20,7 @@ from sbc_vision.sbc_engine.players import (
     normalize,
     open_database,
     save_cards,
+    save_page,
 )
 
 
@@ -84,6 +86,42 @@ def test_invalid_name_aliases_in_an_export_do_not_enter_the_catalogue(
     with pytest.raises(ValueError, match="alias"):
         import_file(db, path)
     assert db.execute("SELECT COUNT(*) FROM cards").fetchone()[0] == 0
+
+
+@pytest.mark.parametrize(
+    "update",
+    [
+        {"club_id": -1},
+        {"card_level": "PLATINUM"},
+        {"item_score": True},
+        {"market_quantity": 0},
+        {"chemistry_kind": "unknown"},
+        {"observed_at": "2026-11-13T12:00:00"},
+    ],
+)
+def test_invalid_optional_export_data_rejects_the_whole_file(db, raw_card, tmp_path, update):
+    path = tmp_path / "catalogue.json"
+    path.write_text(json.dumps({"cards": [card(raw_card), {**card(raw_card, 900002), **update}]}))
+    with pytest.raises(ValueError):
+        import_file(db, path)
+    assert db.execute("SELECT COUNT(*) FROM cards").fetchone()[0] == 0
+    assert db.execute("SELECT COUNT(*) FROM prices").fetchone()[0] == 0
+
+
+def test_offline_export_preserves_original_dates_and_unknown_prices(db, tmp_path):
+    fixture = json.loads(
+        (Path(__file__).parents[1] / "data/fixtures/club.synthetic.json").read_text()
+    )
+    path = tmp_path / "catalogue.json"
+    path.write_text(json.dumps({"cards": fixture["catalogue"]}))
+    assert import_file(db, path) == 3
+    stored = {r["id"]: json.loads(r["data"]) for r in db.execute("SELECT id,data FROM cards")}
+    assert [stored[c["id"]]["observed_at"] for c in fixture["catalogue"]] == [
+        c["observed_at"] for c in fixture["catalogue"]
+    ]
+    assert stored[900002]["prices"]["pc"] is None
+    assert db.execute("SELECT COUNT(*) FROM prices").fetchone()[0] == 6
+    assert list_items(db) == []
 
 
 def test_versions_and_price_history_are_preserved(db, raw_card):
@@ -234,7 +272,13 @@ def test_old_page_index_is_migrated_without_losing_cards_or_prices(tmp_path, raw
     db.close()
     reopened = open_database(path)
     row = dict(reopened.execute("SELECT * FROM pages").fetchone())
-    assert row == {"quality": "all", "number": 1, "ids": "[900001]", "last_page": 4}
+    assert row == {
+        "quality": "all",
+        "number": 1,
+        "ids": "[900001]",
+        "last_page": 4,
+        "observed_at": None,
+    }
     assert reopened.execute("SELECT COUNT(*) FROM cards").fetchone()[0] == 1
     assert reopened.execute("SELECT COUNT(*) FROM prices").fetchone()[0] == 2
     reopened.close()
@@ -429,3 +473,114 @@ def test_lookup_cli_writes_a_report_without_confirming_inventory(
     )
     assert json.loads(output.read_text())["cards"][0]["candidate_ids"] == ids
     assert ("Version ambiguë" in capsys.readouterr().out) is (count == 2)
+
+
+@pytest.mark.parametrize(
+    "observed", [None, "2000-01-01T00:00:00+00:00", "2099-01-01T00:00:00+00:00"]
+)
+def test_stale_or_undated_page_is_rediscovered_without_losing_cached_cards(db, raw_card, observed):
+    save_cards(db, [card(raw_card)])
+    save_page(db, 1, [900001], 1)
+    db.execute("UPDATE pages SET observed_at=?", (observed,))
+    db.commit()
+    source = Mock()
+    source.page.return_value = ([900002], 1)
+    source.cards.return_value = [card(raw_card, 900002)]
+    assert import_catalog(db, source, pages=1) == 1
+    source.page.assert_called_once_with(1, quality="all")
+    source.cards.assert_called_once_with([900002])
+    assert db.execute("SELECT COUNT(*) FROM cards").fetchone()[0] == 2
+    assert db.execute("SELECT COUNT(*) FROM prices").fetchone()[0] == 4
+
+
+@pytest.mark.parametrize(
+    "age, offset, fresh", [(1, 14, True), (23, -12, True), (25, 14, False), (-48, 0, False)]
+)
+def test_card_cache_compares_instants_instead_of_timezone_strings(db, raw_card, age, offset, fresh):
+    observed = (datetime.now(UTC) - timedelta(hours=age)).astimezone(
+        timezone(timedelta(hours=offset))
+    )
+    save_cards(db, [{**card(raw_card), "observed_at": observed.isoformat()}])
+    source = Mock()
+    source.cards.return_value = [card(raw_card)]
+    assert import_catalog(db, source, ids=[900001]) == (0 if fresh else 1)
+    assert source.cards.called is not fresh
+    source.page.assert_not_called()
+
+
+def test_zero_cache_age_refreshes_both_index_and_card_data(db, raw_card):
+    save_cards(db, [card(raw_card)])
+    save_page(db, 1, [900001], 1)
+    source = Mock()
+    source.page.return_value = ([900001], 1)
+    source.cards.return_value = [card(raw_card)]
+    assert import_catalog(db, source, pages=1, max_age=0) == 1
+    source.page.assert_called_once_with(1, quality="all")
+    source.cards.assert_called_once_with([900001])
+
+
+@pytest.mark.parametrize("max_age", [-1, float("nan"), float("inf")])
+def test_invalid_cache_age_is_rejected_before_any_request(db, max_age):
+    source = Mock()
+    with pytest.raises(ValueError, match="cache finie"):
+        import_catalog(db, source, max_age=max_age)
+    source.page.assert_not_called()
+    source.cards.assert_not_called()
+
+
+def test_quality_page_cache_migration_keeps_prices_and_forces_rediscovery(tmp_path, raw_card):
+    path = tmp_path / "previous.sqlite3"
+    old = open_database(path)
+    save_cards(old, [card(raw_card)])
+    old.execute("DROP TABLE pages")
+    old.execute(
+        "CREATE TABLE pages (quality TEXT, number INTEGER, ids TEXT, last_page INTEGER, "
+        "PRIMARY KEY(quality, number))"
+    )
+    old.execute("INSERT INTO pages VALUES ('all',1,'[900001]',1)")
+    old.commit()
+    old.close()
+    db = open_database(path)
+    source = Mock()
+    source.page.return_value = ([900001], 1)
+    assert import_catalog(db, source, pages=1) == 0
+    source.page.assert_called_once_with(1, quality="all")
+    source.cards.assert_not_called()
+    assert db.execute("SELECT COUNT(*) FROM prices").fetchone()[0] == 2
+    db.close()
+
+
+def test_recorded_public_protocol_replays_offline_with_synthetic_values(db, monkeypatch):
+    fixture = json.loads(
+        (Path(__file__).parents[1] / "data/fixtures/futbin.recorded.synthetic.json").read_text()
+    )
+    assert fixture["data_kind"] == "sanitized_public_recording"
+    monkeypatch.setattr("sbc_vision.sbc_engine.players.time.sleep", lambda _: None)
+    requests = []
+
+    def handler(request):
+        requests.append(request)
+        if request.url.path == "/27/players":
+            assert dict(request.url.params) == {"page": "1", "search": "Exemple"}
+            return httpx.Response(200, text=fixture["index_html"])
+        assert request.url.path == "/siteapi/27/get-squad"
+        assert request.url.params.get_list("playerCardIds") == ["900001", "900002"]
+        return httpx.Response(200, json=fixture["cards_response"])
+
+    report = reading_report()
+    report["cards"][0]["reading"]["name"] = "Exemple"
+    with httpx.Client(base_url=BASE_URL, transport=httpx.MockTransport(handler)) as http:
+        source = Futbin(http)
+        result = import_readings(db, source, report)
+        assert result["imported"] == 2
+        assert result["cards"][0]["candidate_ids"] == [900001]
+        result = import_readings(db, source, result)
+        assert result["imported"] == 0 and len(requests) == 2
+    cards = {r["id"]: json.loads(r["data"]) for r in db.execute("SELECT id,data FROM cards")}
+    assert cards[900001]["positions"] == ["GK"]
+    assert cards[900001]["prices"] == {"ps": 800, "pc": 1000}
+    assert cards[900002]["prices"] == {"ps": 900, "pc": None}
+    assert cards[900001]["nation_name"] == "Pays fictif"
+    assert cards[900002]["chemistry_kind"] == "unsupported"
+    assert db.execute("SELECT COUNT(*) FROM prices").fetchone()[0] == 4
+    assert list_items(db) == []

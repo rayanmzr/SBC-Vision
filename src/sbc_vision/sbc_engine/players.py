@@ -1,6 +1,7 @@
 """Cartes : catalogue FUTBIN, prix SQLite et exemplaires du club."""
 
 import json
+import math
 import re
 import sqlite3
 import time
@@ -64,6 +65,11 @@ def import_file(db, path):
                 card_id=card["id"],
                 owned=False,
                 value=price,
+                club_id=card.get("club_id"),
+                card_level=card.get("card_level"),
+                item_score=card.get("item_score"),
+                chemistry_kind=card.get("chemistry_kind", "unsupported"),
+                max_quantity=card.get("market_quantity", 1),
                 **{
                     k: card[k]
                     for k in (
@@ -99,7 +105,7 @@ def open_database(path: str | Path) -> sqlite3.Connection:
     db.executescript("""
         CREATE TABLE IF NOT EXISTS pages (
             quality TEXT NOT NULL, number INTEGER NOT NULL, ids TEXT NOT NULL,
-            last_page INTEGER NOT NULL, PRIMARY KEY(quality, number)
+            last_page INTEGER NOT NULL, observed_at TEXT, PRIMARY KEY(quality, number)
         );
         CREATE TABLE IF NOT EXISTS cards (
             id INTEGER PRIMARY KEY, name TEXT NOT NULL, rating INTEGER NOT NULL,
@@ -124,6 +130,9 @@ def open_database(path: str | Path) -> sqlite3.Connection:
             )
             db.execute("INSERT INTO pages SELECT 'all', number, ids, last_page FROM pages_old")
             db.execute("DROP TABLE pages_old")
+    if "observed_at" not in {row[1] for row in db.execute("PRAGMA table_info(pages)")}:
+        # L'âge des anciens index est inconnu : ils seront relus, sans perdre les cartes.
+        db.execute("ALTER TABLE pages ADD COLUMN observed_at TEXT")
     db.execute("""
         CREATE TABLE IF NOT EXISTS club_items (
             instance_id TEXT PRIMARY KEY, card_id INTEGER NOT NULL REFERENCES cards(id),
@@ -141,8 +150,8 @@ def save_page(db: sqlite3.Connection, number: int, ids: list[int], last_page: in
     # Ce point de reprise permet de retrouver les cartes même si le téléchargement échoue.
     with db:
         db.execute(
-            "INSERT OR REPLACE INTO pages VALUES (?, ?, ?, ?)",
-            (quality, number, json.dumps(ids), last_page),
+            "INSERT OR REPLACE INTO pages VALUES (?, ?, ?, ?, ?)",
+            (quality, number, json.dumps(ids), last_page, datetime.now(UTC).isoformat()),
         )
 
 
@@ -280,19 +289,23 @@ def normalize(raw: dict, observed_at: str) -> dict:
 
 
 def import_catalog(db, source, pages=2, ids=None, refresh=False, max_age=24, *, quality="all"):
+    if pages < 1 or not math.isfinite(max_age) or max_age < 0:
+        raise ValueError("Pages positives et durée de cache finie, positive ou nulle.")
     if quality not in {"all", "gold", "silver", "bronze"} or (ids and quality != "all"):
         raise ValueError("Choisir une qualité valide ; les identifiants ciblés utilisent all.")
-    cutoff = (datetime.now(UTC) - timedelta(hours=max_age)).isoformat()
+    now = datetime.now(UTC)
+    cutoff = (now - timedelta(hours=max_age)).isoformat()
     # Les cartes encore fraîches sont réutilisées plutôt que téléchargées à nouveau.
     fresh = {
         row["id"]
         for row in db.execute(
-            "SELECT id FROM cards WHERE observed_at > ? AND "
+            "SELECT id FROM cards WHERE "
+            "julianday(observed_at) BETWEEN julianday(?) AND julianday(?) AND "
             "(? = 'all' OR json_extract(data, '$.card_level') = ?)",
-            (cutoff, quality, quality.upper()),
+            (cutoff, now.isoformat(), quality, quality.upper()),
         )
     }
-    if refresh:
+    if refresh or max_age == 0:
         fresh.clear()
     imported = 0
     previous_ids = None
@@ -302,9 +315,11 @@ def import_catalog(db, source, pages=2, ids=None, refresh=False, max_age=24, *, 
             page_ids = list(dict.fromkeys(ids))
         else:
             cached = db.execute(
-                "SELECT * FROM pages WHERE quality = ? AND number = ?", (quality, number)
+                "SELECT * FROM pages WHERE quality = ? AND number = ? "
+                "AND julianday(observed_at) BETWEEN julianday(?) AND julianday(?)",
+                (quality, number, cutoff, now.isoformat()),
             ).fetchone()
-            if cached and not refresh:
+            if cached and not refresh and max_age > 0:
                 page_ids, last_page = json.loads(cached["ids"]), cached["last_page"]
             else:
                 page_ids, last_page = source.page(number, quality=quality)

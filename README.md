@@ -25,11 +25,13 @@ La partie de Rayan est regroupée dans [sbc_engine](src/sbc_vision/sbc_engine/RE
 Python **3.11 ou 3.12**. Depuis la racine du dépôt :
 
 ```bash
-python3 -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
 python -m pip install -c requirements.lock -e '.[dev,data,solver,ocr]'
 uvicorn sbc_vision.api.main:app --reload
 ```
+
+Avec Python 3.12, remplacer `python3.11` par `python3.12`. Pour l'OCR, installer aussi Tesseract 5 : `brew install tesseract` sur macOS ou `sudo apt install tesseract-ocr` sur Ubuntu.
 
 - Santé : <http://127.0.0.1:8000/health>
 - Documentation API : <http://127.0.0.1:8000/docs>
@@ -76,7 +78,7 @@ L'API est exposée sur `127.0.0.1:8000`. Les modèles seront intégrés dans les
 ```text
 src/sbc_vision/      API, contrats et emplacements des briques Python
 contracts/          Deux schémas générés : perception et formats SBC
-data/fixtures/      Exemples synthétiques, sans compte réel
+data/fixtures/      Exemples synthétiques et protocole enregistré anonymisé, sans compte réel
 data/raw/           Captures locales, ignorées par Git
 docs/               Cadrage, architecture, données, protocole et équipe
 planning/           Backlog, jalons, responsables et suivi GitHub

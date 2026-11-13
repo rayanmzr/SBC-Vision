@@ -235,6 +235,10 @@ Le 6 novembre, un appel FUTBIN local a répondu HTTP 403. Le 12 novembre, l'actu
 
 `--quality` choisit l'index `all`, `gold`, `silver` ou `bronze` à partir des filtres publics FUTBIN. Les pages sont mises en cache par qualité et numéro ; les cartes et les prix restent communs. L'ancien index est conservé dans `all` lors de la migration. Un lot d'une autre qualité que celle demandée est refusé. Le filtre s'applique aux pages, pas à `--ids` ni à `--file`.
 
+Les index et les cartes expirent selon `--max-age` (24 heures par défaut). Une page expirée est relue pour découvrir les nouvelles versions ; les cartes encore fraîches ne sont pas téléchargées à nouveau. `--max-age 0` désactive les deux caches et `--refresh` force leur actualisation sur le périmètre demandé. Les fuseaux horaires sont comparés comme des instants ; une date future n'est pas considérée fraîche. Les anciennes pages sans date sont relues une fois après migration, en conservant les cartes et l'historique des prix.
+
+Les tests incluent des réponses publiques enregistrées, réduites et anonymisées dans `data/fixtures/futbin.recorded.synthetic.json`, en plus des cas entièrement fictifs. Le rejeu couvre la recherche, le lot de versions, les prix nuls et la réutilisation du cache sans réseau. Ce petit échantillon ne garantit pas la stabilité du point d'accès interne FUTBIN ; une erreur HTTP ou un format non reconnu arrête toujours l'import.
+
 L'essai étendu du 12 novembre contient 362 versions : 62 or, 150 argent et 150 bronze. Sur les sept conditions lues, `--budget 5000 --max-card-value 1000 --seconds 30` donne une proposition à 3 900 crédits dans le pool connu, avec cinq argent, six bronze, cinq ligues et un collectif standard calculé de 17. Le plafond retenu est de 550 crédits pour la carte la plus chère. Les prix ne garantissent pas une offre disponible ; la composition n'a été ni placée ni validée dans la Web App.
 
 ## Ordre de lecture pour expliquer le code
