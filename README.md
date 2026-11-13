@@ -2,46 +2,69 @@
 
 Assistant visuel de préparation des défis de création d'équipe (SBC) sur la **Web App EA FC 27**. Projet Computer Vision Epitech 2026-2027, sujet 2 : « Vision pour piloter une interface ».
 
+Le client prévu est une **extension Chrome avec interface React**, reliée à l'API Python pour la vision, l'OCR et le solveur.
+
 Le modèle transforme une capture en une liste JSON d'éléments et d'actions possibles. Un contrôleur exploite ce résultat pour inventorier le club, préparer une composition et vérifier les écrans. Le solveur cherche à réduire les dépenses et la valeur des cartes sacrifiées, en préservant les cartes protégées.
 
-**Avancement sur cette branche :** socle du dépôt et route de réception des captures avec
-validation et tests de transport. Le détecteur et l'OCR ne sont pas encore raccordés à
-l'API ; une analyse valide renvoie donc `503`, sans prédictions fictives. Voir le
-[guide de la première étape API](docs/API.md). Les développements non fusionnés des
-autres membres ne sont pas inclus dans cet état de `main`.
+**Avancement :** transport des captures par l’API, OCR local, import FUTBIN, inventaire SQLite et solveur dynamique. Le détecteur reste à raccorder ; le parcours sur la vraie Web App reste à vérifier. Voir le [guide API](docs/API.md).
 
 ## Équipe
 
-| Membre | Compte | Responsabilité principale | Document de travail |
-| --- | --- | --- | --- |
-| Saber Kasri | [@saberkasri](https://github.com/saberkasri) | Données, annotations, détection, entraînement, évaluation | [Vision](docs/roles/saber.md) |
-| Rayan Mazri | [@rayanmzr](https://github.com/rayanmzr) | OCR, inventaire, données FUTBIN, optimisation SBC | [OCR et solveur](docs/roles/rayan.md) |
-| Samy Allali | [@SamyALlali](https://github.com/SamyALlali) | Application, contrôleur, API, Docker, cloud, secours local | [Application et intégration](docs/roles/samy.md) |
+| Membre | Compte | Responsabilité principale |
+| --- | --- | --- |
+| Saber Kasri | [@saberkasri](https://github.com/saberkasri) | Données, annotations, détection, entraînement, évaluation |
+| Rayan Mazri | [@rayanmzr](https://github.com/rayanmzr) | OCR, inventaire, données FUTBIN, optimisation SBC |
+| Samy Allali | [@SamyALlali](https://github.com/SamyALlali) | Extension, contrôleur, API, Docker et cloud |
 
-Chaque membre prend en charge sa partie et participe aux revues des autres.
+La [répartition détaillée](docs/TEAM.md) précise les interfaces et livrables de chacun.
+
+La partie de Rayan est regroupée dans [sbc_engine](src/sbc_vision/sbc_engine/README.md) : catalogue FUTBIN, inventaire, OCR et optimisation. Une seule commande permet de tester les fonctions : `python -m sbc_vision.sbc_engine --help`.
 
 ## Démarrage local
 
 Python **3.11 ou 3.12**. Depuis la racine du dépôt :
 
 ```bash
-python3 -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
-python -m pip install -c requirements.lock -e '.[dev]'
+python -m pip install -c requirements.lock -e '.[dev,data,solver,ocr]'
 uvicorn sbc_vision.api.main:app --reload
 ```
+
+Avec Python 3.12, remplacer `python3.11` par `python3.12`. Pour l'OCR, installer aussi Tesseract 5 : `brew install tesseract` sur macOS ou `sudo apt install tesseract-ocr` sur Ubuntu.
 
 - Santé : <http://127.0.0.1:8000/health>
 - Documentation API : <http://127.0.0.1:8000/docs>
 - Capacités implémentées : <http://127.0.0.1:8000/api/v1/capabilities>
 - Schéma de perception : <http://127.0.0.1:8000/api/v1/contracts/perception>
-- Analyse : `POST /api/v1/perception/analyze` (PNG/JPEG binaire ; `503` avant raccordement).
+- Analyse : `POST /api/v1/perception/analyze` (PNG/JPEG ; `503` avant raccordement du détecteur).
 
 ```bash
 make check
 ```
 
 La commande lance le lint, les tests hors ligne et la vérification du schéma JSON.
+
+## Moteur SBC
+
+```bash
+# Import limité avec cache, si la source est accessible.
+python -m sbc_vision.sbc_engine import --pages 2
+# Compléter le pool avec les qualités utiles aux SBC.
+python -m sbc_vision.sbc_engine import --quality silver --pages 5
+python -m sbc_vision.sbc_engine import --quality bronze --pages 5
+# Démonstrations hors ligne avec des cartes fictives.
+python -m sbc_vision.sbc_engine club demo
+python -m sbc_vision.sbc_engine solve --demo
+```
+
+`python -m sbc_vision.sbc_engine demo` essaie le parcours image → OCR → inventaire → conditions → solveur dans un dossier local distinct, avec régions annotées et confirmations simulées. Le [guide](src/sbc_vision/sbc_engine/README.md) décrit les fichiers produits et les limites.
+
+Sur le petit défi fictif, la sélection simple coûte 2 600 crédits en valeur économique ; OR-Tools trouve 2 100 crédits, dont 1 300 d'achats et 800 de valeur sacrifiée. Les exemplaires protégés sont exclus et chaque proposition est vérifiée séparément. Le rapport reste dans `data/processed/solution.json`.
+
+Le [guide du moteur](src/sbc_vision/sbc_engine/README.md) explique les cinq fichiers et les commandes, dont `demo --complex` à onze joueurs et dix conditions. Les bases restent dans `data/processed/`, ignoré par Git. Les démos utilisent des bases distinctes des données réelles. FUTBIN a répondu HTTP 403 le 6 novembre ; le 12 novembre, un nouvel essai ciblé et deux pages ont fonctionné. Le cache et l'import de fichier restent disponibles.
+
+Le moteur reçoit les conditions de chaque capture : aucun nom de SBC n'est codé dans l'algorithme. Il prend en charge les compositions et l'Item Score, des contraintes minimum/maximum/exactes, la note à onze joueurs et un profil de collectif standard. Les lectures ou règles non prises en charge bloquent la proposition. Voir le [guide du moteur](src/sbc_vision/sbc_engine/README.md) pour les limites et les commandes OCR.
 
 ## Docker
 
@@ -55,12 +78,10 @@ L'API est exposée sur `127.0.0.1:8000`. Les modèles seront intégrés dans les
 
 ```text
 src/sbc_vision/      API, contrats et emplacements des briques Python
-frontend/           Périmètre de l'application React à construire
-contracts/          Schémas JSON générés et versionnés
-data/fixtures/      Exemples synthétiques, sans compte réel
+contracts/          Deux schémas générés : perception et formats SBC
+data/fixtures/      Exemples synthétiques et protocole enregistré anonymisé, sans compte réel
 data/raw/           Captures locales, ignorées par Git
-notebooks/          Exploration, entraînement et évaluation à produire
-docs/               Cadrage, architecture, données, protocole, décisions, rôles
+docs/               Cadrage, architecture, données, protocole et équipe
 planning/           Backlog, jalons, responsables et suivi GitHub
 scripts/            Export des contrats
 .github/            CI et modèles d'issues / pull requests
@@ -89,16 +110,23 @@ Les résultats ne sont pas encore mesurés. Le [protocole](docs/EVALUATION.md) p
 
 - [GitHub Project](https://github.com/users/rayanmzr/projects/5)
 - [Issues](https://github.com/rayanmzr/SBC-Vision/issues)
-- [Répartition des tâches](planning/ISSUES.md)
+- [Répartition des tâches](docs/TEAM.md)
 - [Feuille de route](planning/ROADMAP.md)
 - [Backlog source](planning/backlog.json)
 - [Note de cadrage](docs/cadrage/note-cadrage.pdf)
 - [Architecture et contrats](docs/ARCHITECTURE.md)
-- [Contribution](CONTRIBUTING.md)
+
+## Travail en équipe
+
+Choisir une issue, déplacer sa carte dans `In Progress`, créer une branche et faire des commits ciblés avec son compte. Ouvrir une PR liée à l'issue, faire relire par un membre puis fusionner après la CI. Une tâche est terminée quand ses critères sont remplis, ses limites documentées et ses changements intégrés.
+
+Documentation et commentaires en français, identifiants Python en anglais. Garder les dépendances nécessaires et le code réutilisable dans `src/`. Lancer `make check` avant un push ; après modification des formats, régénérer les deux schémas avec `python scripts/export_contracts.py`. Les métriques indiquent le split, le matériel et le run MLflow.
+
+Les tokens, cookies, captures privées, inventaires réels et poids lourds restent hors de Git. Pour un signalement sensible, contacter le propriétaire du dépôt par un canal privé. La connexion EA reste dans le navigateur de l'utilisateur et toute soumission exige sa confirmation. Voir les [consignes de données](docs/DATA.md).
 
 ## Données et budget
 
-La récupération des données FUTBIN a été testée sur 60 cartes, dont un appel JSON par lots. L'import complet reste à développer. Voir [DATA.md](docs/DATA.md) pour les champs, la provenance et les conditions d'utilisation.
+L'importeur FUTBIN découvre les identifiants, récupère les cartes par lots et conserve les prix dans SQLite. L'essai initial porte sur 60 versions de cartes ; le catalogue complet n'a pas encore été importé. Voir [DATA.md](docs/DATA.md) pour les champs, la provenance et les conditions d'utilisation.
 
 Le développement commence sur nos machines. Le cloud et le budget de calcul seront choisis en équipe.
 

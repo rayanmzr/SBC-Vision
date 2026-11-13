@@ -35,8 +35,37 @@ Même jeu de test, même ontologie harmonisée, même protocole et matériel ind
 
 La validité syntaxique du JSON ne mesure pas sa justesse. La preuve d'optimalité du solveur ne vaut que pour les candidats et les prix connus.
 
+`python -m sbc_vision.sbc_engine evaluate --reading RAPPORT --expected ANNOTATIONS` mesure le CER et l'exactitude des textes sur les régions annotées. Le bilan conserve les détails, les scores par champ, les régions absentes et les régions inattendues. Les textes attendus sont annotés manuellement, avec les mêmes identifiants de capture et de région. Le seuil de confiance est fixé sur la validation, sans ajustement sur le test. Le [guide du moteur](../src/sbc_vision/sbc_engine/README.md) précise le format et les conventions.
+
+`evaluate --demo` crée une petite image fictive pour contrôler le calcul. Ses scores ne sont pas des résultats sur EA FC ; les mesures sur le corpus réel restent à effectuer.
+
 ## MLflow et résultats
 
 Chaque entraînement enregistre commit Git, version du manifeste, paramètres, seed, métriques, environnement et artefacts utiles. Conserver un exemple réussi et plusieurs cas d'échec commentés. Pour l'explicabilité, comparer des visualisations de régions sensibles et documenter ce qui influence la détection.
 
 Les résultats seront ajoutés après les premières mesures, avec les liens vers les runs correspondants.
+
+Les explorations pourront être regroupées dans `notebooks/` : corpus et splits, baseline, entraînement, évaluation et cas synthétique du solveur. Les fonctions réutilisables restent dans `src/` ; retirer les sorties privées des notebooks avant commit.
+
+## Premier cas de solveur fictif
+
+La démo `python -m sbc_vision.sbc_engine solve --demo` compare les deux méthodes sur trois emplacements et des prix inventés. Elle vérifie un coût économique de 2 600 pour la sélection simple et de 2 100 pour CP-SAT. Une énumération exhaustive du petit pool confirme le résultat dans les tests. Ces valeurs servent à contrôler l'algorithme, pas à annoncer une performance sur les SBC EA FC.
+
+`demo --complex` ajoute onze joueurs et dix conditions combinées, avec un candidat moins cher qui viole les quotas. L'équipe vérifiée coûte 1 100 crédits dans ce jeu fictif. Des variantes rendent les règles incompatibles pour vérifier le refus d'une fausse solution.
+
+## Premier essai OCR réel — 12 novembre
+
+Trois captures et 26 champs annotés manuellement ont servi au diagnostic et aux corrections. Les régions sont fournies, sans évaluer le détecteur : noms, notes, postes, score de carte et conditions. Le seuil de confiance est resté à 0,75.
+
+| Mesure sur ces mêmes 26 champs | Avant correction | Après correction |
+| --- | --- | --- |
+| Erreurs / caractères attendus | 23 / 162 | 7 / 162 |
+| CER | 14,2 % | 4,3 % |
+| Champs exacts acceptés | 19 / 26 | 22 / 26 |
+| Champs inconnus | 5 / 26 | 2 / 26 |
+
+Ces chiffres décrivent le lot utilisé pour corriger le code, pas un test indépendant ni une performance générale sur EA FC. Des accents/icônes perturbent encore les noms et deux petits champs d'une carte restent incertains. L'écran de SBC est interprété, et le score de la fiche est lu ; l'inventaire complet et les règles réelles de collectif ne sont pas validés. Un lot séparé reste nécessaire avant la soutenance.
+
+Un quatrième écran, un SBC réel à sept conditions, a ensuite été annoté sur 18 régions (sept conditions et onze postes). Avant correction : 1 erreur sur 235 caractères, 17 champs exacts et un champ incertain. Après relecture de ce champ et adaptation des libellés : 0 erreur, 18 champs exacts et aucune lecture inconnue. Ce deuxième lot a lui aussi servi au développement, sans constituer un test indépendant. Le parseur produit les sept conditions ; le moteur les vérifie ensemble sur des joueurs fictifs et refuse les variantes qui violent les quotas. Sur le premier pool de 62 versions or, la résolution échouait faute de cartes argent et d'exemplaires confirmés du compte.
+
+Après extension du pool à 362 versions or/argent/bronze, une proposition est calculée pour ces sept conditions : 3 900 crédits d'achats, cinq argent, six bronze, cinq ligues, cinq joueurs d'un même pays, au plus trois d'une ligue et collectif standard estimé de 17. Le budget du diagnostic est explicitement porté de 2 000 à 5 000 crédits ; le minimum des onze prix du pool dépassait déjà 2 000, même sans contraintes. Le statut CP-SAT est `optimal` sur les données et règles de ce pool. Le vérificateur contrôle séparément la composition. Aucun inventaire réel n'est confirmé : tous les candidats retenus sont des achats suggérés. Le résultat reste à confronter à la Web App, sans aucune soumission automatisée.

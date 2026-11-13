@@ -4,7 +4,10 @@ import argparse
 import json
 from pathlib import Path
 
+from pydantic import TypeAdapter
+
 from sbc_vision.contracts.perception import PerceptionResponse
+from sbc_vision.sbc_engine.models import CardReading, Challenge, ClubItem, OcrInput, SolverResult
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -13,16 +16,24 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
-    target = ROOT / "contracts" / "perception.schema.json"
-    schema = PerceptionResponse.model_json_schema()
+    schemas = {
+        "perception": PerceptionResponse.model_json_schema(),
+        # Pydantic regroupe les formats SBC et leurs références dans un seul schéma.
+        "sbc": TypeAdapter(
+            CardReading | ClubItem | Challenge | OcrInput | SolverResult
+        ).json_schema(),
+    }
+    for name, schema in schemas.items():
+        target = ROOT / "contracts" / f"{name}.schema.json"
+        if args.check:
+            if not target.exists() or json.loads(target.read_text()) != schema:
+                raise SystemExit(f"Contrat périmé : {name}. Exécuter scripts/export_contracts.py")
+        else:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(json.dumps(schema, ensure_ascii=False, indent=2) + "\n")
+            print(target.relative_to(ROOT))
     if args.check:
-        if not target.exists() or json.loads(target.read_text()) != schema:
-            raise SystemExit("Contrat périmé : exécuter python scripts/export_contracts.py")
         print("Contrats à jour.")
-        return
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(json.dumps(schema, ensure_ascii=False, indent=2) + "\n")
-    print(target.relative_to(ROOT))
 
 
 if __name__ == "__main__":
