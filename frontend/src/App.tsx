@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import demoPayload from '../../data/fixtures/perception.synthetic.json';
 import demoImage from '../../data/fixtures/perception.synthetic.png';
 import SbcWorkspace from './SbcWorkspace';
+import { clearSessionApiKey, setSessionApiKey } from './lib/api-key';
 import ControllerWorkspace from './ControllerWorkspace';
 import { nativeLabAdapter } from './lib/lab-adapter';
 import { captureActiveTab, imagePointToViewport, type TabCapture } from './lib/tab-capture';
@@ -79,6 +80,8 @@ export default function App() {
     const [workspace, setWorkspace] = useState<'perception' | 'sbc' | 'controller'>('perception');
     const [controllerRunning, setControllerRunning] = useState(false);
     const [apiUrl, setApiUrl] = useState(DEFAULT_API_URL);
+    const [apiKey, setApiKey] = useState('');
+    const [apiSession, setApiSession] = useState(0);
     const [settingsReady, setSettingsReady] = useState(false);
     const [connection, setConnection] = useState<Connection | null>(null);
     const [selection, setSelection] = useState<Selection | null>(null);
@@ -108,6 +111,7 @@ export default function App() {
             mounted = false;
             active.current?.abort();
             active.current = null;
+            clearSessionApiKey();
         };
     }, []);
 
@@ -149,6 +153,7 @@ export default function App() {
         let normalized: string;
         try {
             normalized = normalizeApiUrl(apiUrl);
+            setSessionApiKey(normalized, apiKey);
         } catch (error) {
             setNotice(describeError(error, 'Adresse à corriger'));
             return false;
@@ -330,6 +335,9 @@ export default function App() {
                                 value={apiUrl}
                                 disabled={!!busy || !settingsReady}
                                 onChange={(event) => {
+                                    clearSessionApiKey();
+                                    setApiKey('');
+                                    setApiSession((value) => value + 1);
                                     setApiUrl(event.target.value);
                                     setConnection(null);
                                     setResult(null);
@@ -337,6 +345,29 @@ export default function App() {
                                 }}
                             />
                             <p className="field-hint">L’adresse est mémorisée sur cet appareil.</p>
+                            <label className="field-label api-key-label" htmlFor="api-key">
+                                Clé API (si demandée)
+                            </label>
+                            <input
+                                id="api-key"
+                                type="password"
+                                autoComplete="off"
+                                spellCheck={false}
+                                value={apiKey}
+                                disabled={!!busy || !settingsReady}
+                                onChange={(event) => {
+                                    clearSessionApiKey();
+                                    setApiKey(event.target.value);
+                                    setApiSession((value) => value + 1);
+                                    setConnection(null);
+                                    setResult(null);
+                                    setNotice(null);
+                                }}
+                            />
+                            <p className="field-hint">
+                                Fournie par l’hébergeur du projet. Elle reste en mémoire jusqu’à la
+                                fermeture de cette page.
+                            </p>
                             <button
                                 className="secondary-button full-width"
                                 onClick={connect}
@@ -640,7 +671,12 @@ export default function App() {
                 </div>
             </div>
             <div hidden={workspace !== 'sbc'}>
-                <SbcWorkspace apiUrl={apiUrl} connected={!!connection} onConnect={connect} />
+                <SbcWorkspace
+                    key={apiSession}
+                    apiUrl={apiUrl}
+                    connected={!!connection}
+                    onConnect={connect}
+                />
             </div>
             {workspace === 'controller' && (
                 <ControllerWorkspace

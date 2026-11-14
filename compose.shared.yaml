@@ -1,0 +1,9 @@
+# Préparation au partage : conserver le bind local, ajouter un proxy HTTPS au déploiement.
+services:
+  api:
+    environment:
+      SBC_ENV: production
+      SBC_ACCESS_MODE: shared
+    env_file:
+      - path: .env.shared
+        required: true

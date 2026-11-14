@@ -33,6 +33,12 @@ Le lien entre pixels de capture et coordonnées de clic reste à traiter dans #1
 
 ## Requête et réponse
 
+En mode partagé, les routes `/api/v1/*` exigent `Authorization: Bearer …` ; une clé
+absente ou incorrecte produit `401 authentication_required`. La santé et la documentation
+restent publiques. Le [guide de déploiement](DEPLOYMENT.md) décrit la génération de clé,
+les limites globales (`429`, délai de 30 secondes) et la connexion depuis l'extension.
+Les exemples ci-dessous utilisent le mode de développement local sans clé.
+
 Le corps est le **fichier binaire brut**, sans enveloppe JSON, base64 ou multipart.
 `Content-Type` vaut `image/png` ou `image/jpeg`. Le paramètre de requête `capture_id`
 est facultatif, non vide et limité à 128 caractères ; sinon l'API génère un UUID.

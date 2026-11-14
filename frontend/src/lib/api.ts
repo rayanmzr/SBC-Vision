@@ -1,5 +1,6 @@
 import validateSchema from '../generated/perception-validator.js';
 import { requestUrl } from './platform';
+import { sessionApiHeaders } from './api-key';
 
 export type ElementKind =
     'button' | 'input' | 'link' | 'menu' | 'checkbox' | 'card' | 'slot' | 'text';
@@ -81,8 +82,15 @@ export async function requestJson(
     const combined = AbortSignal.any([signal, timer.signal]);
     const timeoutId = setTimeout(() => timer.abort(), timeout);
     try {
+        const authorization = sessionApiHeaders(base);
+        const headers = Object.keys(authorization).length
+            ? new Headers(options.headers)
+            : options.headers;
+        if (headers instanceof Headers)
+            for (const [name, value] of Object.entries(authorization)) headers.set(name, value);
         const response = await fetch(requestUrl(base, path), {
             ...options,
+            headers,
             signal: combined,
             credentials: 'omit',
             redirect: 'error',

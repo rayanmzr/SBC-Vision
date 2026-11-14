@@ -5,8 +5,10 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Depends, FastAPI
+from fastapi.openapi.utils import get_openapi
 
 from sbc_vision import __version__
+from sbc_vision.api.access import AccessMiddleware, load_access_config
 from sbc_vision.api.perception import get_perception_pipeline
 from sbc_vision.api.perception import router as perception_router
 from sbc_vision.api.sbc_workspace import SbcConfig, get_sbc_config, sbc_available
@@ -18,6 +20,7 @@ from sbc_vision.perception.pipeline import PerceptionPipeline
 
 @asynccontextmanager
 async def lifespan(application: FastAPI):
+    application.state.access_config = load_access_config()
     mode = os.getenv("SBC_PERCEPTION_MODE", "disabled")
     if mode not in {"disabled", "lab-colors"}:
         raise RuntimeError("SBC_PERCEPTION_MODE doit valoir disabled ou lab-colors.")
@@ -27,6 +30,7 @@ async def lifespan(application: FastAPI):
     try:
         yield
     finally:
+        application.state.access_config = None
         if mode == "lab-colors":
             application.state.perception_pipeline = previous
 
@@ -43,6 +47,27 @@ app = FastAPI(
 )
 app.include_router(perception_router)
 app.include_router(sbc_router)
+app.add_middleware(AccessMiddleware)
+
+
+def protected_openapi():
+    if app.openapi_schema is None:
+        schema = get_openapi(title=app.title, version=app.version, routes=app.routes)
+        schema.setdefault("components", {}).setdefault("securitySchemes", {})["ApiKeyBearer"] = {
+            "type": "http",
+            "scheme": "bearer",
+            "description": "Clé du service partagé ; facultative en développement local sans clé.",
+        }
+        for path, methods in schema["paths"].items():
+            if path != "/health":
+                for operation in methods.values():
+                    if isinstance(operation, dict):
+                        operation["security"] = [{"ApiKeyBearer": []}]
+        app.openapi_schema = schema
+    return app.openapi_schema
+
+
+app.openapi = protected_openapi
 
 
 @app.get("/health", tags=["system"])

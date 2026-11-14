@@ -28,20 +28,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -c requirements.lock pillow
       - run: docker build -t sbc-vision:ci .
-      - name: Vérifier la santé du conteneur
-        run: |
-          docker run -d --name sbc-vision-ci -p 127.0.0.1:8000:8000 sbc-vision:ci
-          for attempt in $(seq 1 30); do
-            if curl --fail --silent http://127.0.0.1:8000/health; then
-              exit 0
-            fi
-            sleep 1
-          done
-          docker logs sbc-vision-ci
-          exit 1
-      - if: always()
-        run: docker rm -f sbc-vision-ci || true
+      - name: Vérifier accès, perception, solveur et persistance du conteneur
+        run: python scripts/smoke_docker.py --image sbc-vision:ci
 
   extension:
     runs-on: ubuntu-latest

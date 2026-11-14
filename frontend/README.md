@@ -21,6 +21,12 @@ le développement. Vite sert l'aperçu et produit les fichiers installables. Man
 décrit l'extension à Chrome. Le modèle de vision restera dans l'API Python.
 
 Le parcours est : image choisie → requête HTTP → API Python → JSON → affichage.
+
+Pour un serveur partagé, saisir **Clé API (si demandée)** avant de vérifier la
+connexion. La clé reste uniquement en mémoire pour l'adresse exacte de l'API ;
+changer de serveur ou fermer la page l'efface. La modifier invalide aussi la connexion
+et l'inventaire affiché. Les routes métier la reçoivent dans l'en-tête `Authorization`.
+Voir le [guide Docker et partage](../docs/DEPLOYMENT.md).
 Sans pipeline configuré, un PNG valide provoque une erreur `503 perception_unavailable`.
 Ce retour vérifie le transport de la capture et la gestion des erreurs, pas la vision.
 

@@ -87,7 +87,12 @@ Le moteur reçoit les conditions de chaque capture : aucun nom de SBC n'est cod�
 docker compose up --build
 ```
 
-L'API est exposée sur `127.0.0.1:8000`. Les modèles seront intégrés dans les prochaines étapes.
+L'API est exposée uniquement sur `127.0.0.1:8000`. L'image contient aussi OR-Tools
+et Tesseract ; les fonctions métier restent activées explicitement. Compose utilise
+le mode local sans clé. L'image seule utilise le mode production et exige une clé.
+Le [guide Docker et partage](docs/DEPLOYMENT.md) explique la démonstration fictive,
+la clé d'accès, les limites, la persistance et les vérifications. Aucun cloud n'est
+déployé par ces commandes.
 
 ## Organisation
 
