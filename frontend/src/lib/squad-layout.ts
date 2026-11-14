@@ -58,7 +58,7 @@ export function squadLayout(report: SolverReport) {
                     ? occupied.length === 1
                         ? 50
                         : 25 + occupied.indexOf(group) * 50
-                    : 16 + row * 24,
+                    : [18, 43, 68, 89.5][row],
                 player: {
                     id: String(assignment.slot),
                     name: card.name,

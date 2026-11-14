@@ -43,6 +43,9 @@ Les détails de la carte sélectionnée se déplient sous l'action principale. L
 des achats présente les mini-cartes, leurs versions, les quantités et les coûts du rapport.
 Le [compte rendu de l'audit A1](../docs/design/ASSETS_A1.md#audit-de-fidélité-a1)
 décrit les écarts corrigés et les cas vérifiés.
+La [passe de fidélité](../docs/design/ASSETS_A1.md#passe-de-fidélité--proportions-et-matières)
+resserre les proportions du terrain et reprend les cartes, les hachures et les cadres
+en SVG. Les décalages visuels des cartes ne modifient pas les affectations du rapport.
 
 Dans **Analyser**, le choix d'une image met son aperçu au premier plan. **Changer de capture**
 rouvre les sources et **Retirer** rétablit l'import. Après analyse, la liste et les rectangles

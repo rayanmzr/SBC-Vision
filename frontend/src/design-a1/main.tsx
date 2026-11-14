@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { StadiumBrand, StadiumIcon, StadiumPitch, type PitchPlacement } from './StadiumKit';
 import charcoal from './assets/charcoal-surface.png';
 import grass from './assets/pitch-grass.png';
-import gold from './assets/card-gold.png';
+import gold from './assets/card-gold-sketch.svg';
 import portrait from './assets/player-silhouette.svg';
 import mark from './assets/brand-mark.svg';
 import lines from './assets/pitch-lines.svg';
@@ -12,17 +12,17 @@ import './preview.css';
 
 // Données exclusivement fictives pour contrôler le rendu de onze cartes, sans appel API.
 const setup: [string, string, number, string, 'club' | 'purchase', number, number, number][] = [
-    ['demo-lw', 'Sacha Exemple', 83, 'LW', 'club', 800, 28, 16],
-    ['demo-st', 'Léa Fictive', 84, 'ST', 'club', 800, 50, 16],
-    ['demo-rw', 'Noa Exemple', 83, 'RW', 'club', 800, 72, 16],
-    ['demo-cm-l', 'Morgan Test', 82, 'CM', 'purchase', 1700, 25, 40],
-    ['demo-cm', 'Alex Exemple', 83, 'CM', 'club', 800, 50, 40],
-    ['demo-cm-r', 'Eli Test', 82, 'CM', 'purchase', 2500, 75, 40],
-    ['demo-lb', 'Inès Démo', 82, 'LB', 'club', 800, 15, 64],
-    ['demo-cb-l', 'Yanis Démo', 84, 'CB', 'club', 800, 38.5, 64],
-    ['demo-cb-r', 'Camille Exemple', 83, 'CB', 'club', 800, 61.5, 64],
-    ['demo-rb', 'Robin Test', 82, 'RB', 'club', 800, 85, 64],
-    ['demo-gk', 'Lou Fictive', 83, 'GK', 'club', 400, 50, 88],
+    ['demo-lw', 'Sacha Exemple', 83, 'LW', 'club', 800, 27, 18],
+    ['demo-st', 'Léa Fictive', 84, 'ST', 'club', 800, 50, 18],
+    ['demo-rw', 'Noa Exemple', 83, 'RW', 'club', 800, 73, 18],
+    ['demo-cm-l', 'Morgan Test', 82, 'CM', 'purchase', 1700, 27, 43],
+    ['demo-cm', 'Alex Exemple', 83, 'CM', 'club', 800, 50, 43],
+    ['demo-cm-r', 'Eli Test', 82, 'CM', 'purchase', 2500, 73, 43],
+    ['demo-lb', 'Inès Démo', 82, 'LB', 'club', 800, 15, 68],
+    ['demo-cb-l', 'Yanis Démo', 84, 'CB', 'club', 800, 38.5, 68],
+    ['demo-cb-r', 'Camille Exemple', 83, 'CB', 'club', 800, 61.5, 68],
+    ['demo-rb', 'Robin Test', 82, 'RB', 'club', 800, 85, 68],
+    ['demo-gk', 'Lou Fictive', 83, 'GK', 'club', 400, 50, 89.5],
 ];
 const placements: PitchPlacement[] = setup.map(
     ([id, name, rating, position, origin, value, x, y]) => ({
@@ -41,7 +41,7 @@ const numbers = new Intl.NumberFormat('fr-FR');
 const assets = [
     ['Fond anthracite', charcoal, 'charcoal-surface.png'],
     ['Texture du terrain', grass, 'pitch-grass.png'],
-    ['Carte dorée', gold, 'card-gold.png'],
+    ['Carte dorée', gold, 'card-gold-sketch.svg'],
     ['Silhouette générique', portrait, 'player-silhouette.svg'],
     ['Marque SBC Vision', mark, 'brand-mark.svg'],
     ['Lignes du terrain', lines, 'pitch-lines.svg'],
@@ -162,7 +162,6 @@ function KitPreview() {
                                         onClick={() => setShowPurchases((value) => !value)}
                                     >
                                         {showPurchases ? 'Masquer les achats' : 'Voir les achats'}
-                                        <StadiumIcon name="arrow" />
                                     </button>
                                 </div>
                                 <section

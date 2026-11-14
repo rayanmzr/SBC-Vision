@@ -2,10 +2,22 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, expect, it } from 'vitest';
 import fixture from '../../data/fixtures/sbc-report.synthetic.json';
+import eleven from '../../data/fixtures/sbc-report-a1.synthetic.json';
 import type { SolverReport } from './lib/sbc-report';
 import SbcSquadPreview from './SbcSquadPreview';
 
 afterEach(cleanup);
+
+it('conserve les affectations du rapport quand la mise en scène A1 décale les cartes', () => {
+    const report = structuredClone(eleven) as SolverReport;
+    const original = structuredClone(report);
+    render(<SbcSquadPreview report={report} />);
+    const keeper = screen.getByRole('button', { name: 'Lou Fictive, 83, GK, Club' });
+    fireEvent.click(keeper);
+    expect(keeper.getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByText('83 · Lou Fictive · GK')).toBeTruthy();
+    expect(report).toEqual(original);
+});
 
 it('montre les trois cartes retenues et les détails de la carte sélectionnée', () => {
     render(<SbcSquadPreview report={structuredClone(fixture) as SolverReport} />);

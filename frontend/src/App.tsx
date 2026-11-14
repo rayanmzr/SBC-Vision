@@ -271,9 +271,15 @@ export default function App() {
                         onClick={() => navigate('settings')}
                         disabled={!!busy || controllerRunning}
                         aria-label="Ouvrir les réglages de connexion"
+                        aria-describedby="header-api-state"
+                        title={
+                            connection ? 'API connectée · Réglages' : 'API à configurer · Réglages'
+                        }
                     >
                         <span className={`status-dot ${connection ? 'connected' : ''}`} />
-                        {connection ? 'API connectée' : 'API à configurer'}
+                        <span id="header-api-state">
+                            {connection ? 'API connectée' : 'API à configurer'}
+                        </span>
                     </button>
                     {isExtension() && (
                         <button
@@ -292,7 +298,7 @@ export default function App() {
                     {isExtension() &&
                         new URLSearchParams(location.search).get('view') === 'popup' && (
                             <button
-                                className="header-icon-button"
+                                className="header-icon-button header-close-button"
                                 type="button"
                                 aria-label="Fermer le popup"
                                 title="Fermer le popup"

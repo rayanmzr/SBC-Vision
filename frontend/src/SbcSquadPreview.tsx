@@ -116,7 +116,6 @@ export default function SbcSquadPreview({
                             : quantity
                               ? 'Voir les achats'
                               : 'Voir les détails'}
-                        <StadiumIcon name="arrow" />
                     </button>
                 </div>
             )}

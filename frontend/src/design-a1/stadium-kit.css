@@ -22,8 +22,11 @@
     box-sizing: border-box;
     width: min(440px, 100%);
     container-type: inline-size;
-    background: var(--stadium-surface) url('./assets/charcoal-surface.png') center / 600px;
-    background-blend-mode: luminosity;
+    background-color: var(--stadium-surface);
+    background-image: url('./assets/pencil-strokes.svg'), url('./assets/charcoal-surface.png');
+    background-position: center, center;
+    background-size: 180px, 600px;
+    background-blend-mode: screen, luminosity;
     color: var(--stadium-text);
     font:
         600 17px / 1.2 'Stadium Barlow',
@@ -63,7 +66,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 17px 9px 8px;
+    padding: 5px 17px 5px 14px;
     border-bottom: 1px solid #78826a;
     background: linear-gradient(115deg, #41443c33, #090b0a33);
 }
@@ -74,11 +77,11 @@
     line-height: 1;
 }
 .stadium-brand img {
-    width: 73px;
-    height: 43px;
+    width: 112px;
+    height: 45px;
 }
 .stadium-brand > span {
-    font-size: 40px;
+    font-size: 34px;
     font-weight: 800;
     font-style: italic;
     letter-spacing: -1px;
@@ -92,15 +95,16 @@
 .stadium-tabs {
     display: flex;
     gap: 3px;
-    margin: 9px 12px 0;
+    margin: 3px 12px 0;
 }
 .stadium-tabs a,
 .stadium-tabs > span {
     flex: 1;
     text-align: center;
-    padding: 8px 6px 10px;
+    padding: 6px 6px 7px;
     text-decoration: none;
     font-size: 21px;
+    font-style: italic;
     background: linear-gradient(150deg, #7b807580, #1b1e1b 78%);
     border-block: 1px solid #8a9582;
     clip-path: polygon(12% 0, 100% 0, 88% 100%, 0 100%);
@@ -119,42 +123,53 @@
     align-items: center;
     justify-content: space-between;
     gap: 7px;
-    padding: 15px 0 9px;
+    padding: 7px 12px 0;
 }
 .stadium-title-row h1 {
-    font-size: 31px;
+    font-size: 34px;
     font-weight: 800;
     font-style: italic;
-    letter-spacing: -0.6px;
+    letter-spacing: -0.3px;
+    line-height: 1;
 }
 .stadium-demo-label {
     color: #1a2318;
-    background: #d6d9d2;
+    background: linear-gradient(160deg, #f0f1ee, #b7bebb);
     border: 1px solid #f7f8ef;
     padding: 4px 7px;
-    font-size: 13px;
+    font-size: 15px;
+    font-style: italic;
     white-space: nowrap;
-    border-radius: 3px;
+    border-radius: 6px;
+    transform: skew(-10deg);
 }
 .stadium-pitch {
     position: relative;
     width: 100%;
-    aspect-ratio: 1.05;
-    margin-top: 14px;
+    aspect-ratio: 1.23;
+    margin-top: 22px;
     container-type: inline-size;
+}
+.stadium-pitch[data-full-squad='true'] {
+    width: calc(100% + 16px);
+    margin-inline: -8px;
 }
 .stadium-grass {
     position: absolute;
     inset: 0;
-    background: #214e1c url('./assets/pitch-grass.png') center / cover;
-    filter: brightness(1.65) saturate(0.98);
+    background:
+        linear-gradient(112deg, #c5ed3155, transparent 14% 88%, #0b150b55),
+        #214e1c url('./assets/pitch-grass.png') center / cover;
+    filter: brightness(1.6) saturate(0.85) hue-rotate(-12deg);
     clip-path: polygon(9% 2%, 91% 2%, 100% 100%, 0 100%);
 }
 .stadium-grass::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: repeating-linear-gradient(90deg, #a5b7730c 0 14%, transparent 14% 28%);
+    background:
+        url('./assets/pencil-strokes.svg') center/150px,
+        repeating-linear-gradient(90deg, #a5b7730c 0 14%, transparent 14% 28%);
 }
 .stadium-pitch-lines {
     position: absolute;
@@ -165,10 +180,10 @@
 .stadium-formation {
     position: absolute;
     z-index: 2;
-    top: -12px;
-    left: 2px;
-    min-width: 82px;
-    padding: 1px 10px 3px;
+    top: -14px;
+    left: 12px;
+    min-width: 96px;
+    padding: 0 10px 1px;
     font-weight: 800;
     font-style: italic;
     font-size: 24px;
@@ -188,7 +203,7 @@
     display: block;
     position: relative;
     width: 18.2cqw;
-    aspect-ratio: 100 / 130;
+    aspect-ratio: 100 / 108;
     background: transparent;
     border: 0;
     padding: 0;
@@ -217,20 +232,26 @@
 .stadium-pitch[data-dense='true'] .stadium-card {
     width: 16cqw;
 }
+.stadium-pitch[data-dense='true'] .stadium-card-rating {
+    font-size: 4.8cqw;
+}
+.stadium-pitch[data-dense='true'] .stadium-card-position {
+    font-size: 2.8cqw;
+}
 .stadium-card:hover:not([aria-pressed='true']) .stadium-card-gold {
     filter: brightness(1.1);
 }
 .stadium-card-portrait {
     position: absolute;
-    width: 55%;
-    height: 68%;
-    right: 8%;
-    bottom: 11%;
+    width: 54%;
+    height: 61%;
+    right: 9%;
+    bottom: 13%;
 }
 .stadium-card-rating {
     position: absolute;
     left: 17%;
-    top: 9%;
+    top: 10%;
     font-size: 5.5cqw;
     font-weight: 800;
     font-style: italic;
@@ -239,7 +260,7 @@
 .stadium-card-position {
     position: absolute;
     left: 18%;
-    top: 34%;
+    top: 36%;
     font-size: 3.2cqw;
     font-weight: 800;
     font-style: italic;
@@ -264,28 +285,30 @@
     display: flex;
     align-items: center;
     gap: 9px;
-    min-height: 42px;
-    padding: 4px 10px;
-    border: 1px solid #9ca78e;
+    min-height: 43px;
+    padding: 4px 10px 4px 24px;
+    border: 2px solid #b7bcae;
     background: linear-gradient(130deg, #858c7b50, #111a13);
     box-shadow: inset 0 1px #dce5cd50;
     border-radius: 8px;
     transform: skew(-10deg);
     width: calc(100% - 8px);
     margin-inline: 4px;
+    margin-top: 6px;
 }
 .stadium-selected > * {
     transform: skew(10deg);
 }
 .stadium-selected > img {
-    width: 26px;
+    width: 30px;
     height: 30px;
     filter: brightness(1.7);
 }
 .stadium-selected strong {
     flex: 1;
     min-width: 0;
-    font-size: 21px;
+    font-size: 23px;
+    line-height: 1.15;
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
@@ -293,39 +316,60 @@
 }
 .stadium-origin {
     color: #152015;
-    background: #ced4c7;
-    border-radius: 4px;
+    background: linear-gradient(150deg, #eef0ea, #afb7af);
+    border: 1px solid #f3f5eb;
+    border-radius: 8px;
     padding: 2px 8px 4px;
     font-size: 16px;
+    font-style: italic;
 }
 .stadium-origin-purchase {
     background: var(--stadium-lime);
 }
 .stadium-costs {
+    position: relative;
     display: grid;
     grid-template-columns: 1fr 1fr 1.05fr;
-    border: 1px solid #a0aa8d;
-    background: linear-gradient(150deg, #303b2d90, #131b14);
+    border: 0;
+    background: linear-gradient(140deg, #41493b88, #121912);
     margin-top: 7px;
-    border-radius: 5px;
+    clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
+}
+.stadium-costs::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('./assets/cost-frame.svg') center/100% 100% no-repeat;
+    pointer-events: none;
+    z-index: 1;
 }
 .stadium-costs > div {
+    position: relative;
     text-align: center;
-    padding: 4px 6px 6px;
+    padding: 4px 6px 5px;
 }
 .stadium-costs > div + div {
-    border-left: 1px solid #758063;
+    border-left: 0;
+}
+.stadium-costs > div:nth-child(2)::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 12%;
+    bottom: 12%;
+    border-left: 1px solid #929a87;
 }
 .stadium-costs span {
     display: block;
-    font-size: 16px;
+    font-size: 18px;
+    line-height: 1;
 }
 .stadium-costs strong {
     display: block;
-    font-size: 29px;
+    font-size: 30px;
     font-weight: 800;
     font-style: italic;
-    line-height: 1.03;
+    line-height: 1;
     letter-spacing: 0;
 }
 .stadium-costs .stadium-total {
@@ -359,8 +403,13 @@
 }
 .stadium-budget {
     border: 2px solid var(--stadium-lime);
-    padding: 2px 8px 3px;
-    border-radius: 5px;
+    padding: 3px 8px;
+    border-radius: 7px;
+    transform: skew(-8deg);
+    font-size: 18px;
+    font-weight: 800;
+    font-style: italic;
+    line-height: 1;
 }
 .stadium-purchases-caption {
     display: inline-flex;
@@ -374,8 +423,8 @@
 }
 .stadium-action-row {
     position: relative;
-    padding-inline: 20px;
-    margin-top: 10px;
+    padding-inline: 26px 10px;
+    margin-top: 8px;
 }
 .stadium-action-row::before,
 .stadium-action-row::after {
@@ -383,15 +432,21 @@
     position: absolute;
     top: 3px;
     bottom: 3px;
-    width: 9px;
-    background: var(--stadium-lime);
+    width: 20px;
+    background: linear-gradient(
+        90deg,
+        var(--stadium-lime) 0 6px,
+        transparent 6px 10px,
+        var(--stadium-lime) 10px 16px,
+        transparent 16px
+    );
     transform: skew(-24deg);
 }
 .stadium-action-row::before {
     left: 4px;
 }
 .stadium-action-row::after {
-    right: 4px;
+    display: none;
 }
 .stadium-cta {
     display: flex;
@@ -402,14 +457,16 @@
     min-height: 46px;
     border: 0;
     color: #152000;
-    background: var(--stadium-lime);
+    background:
+        url('./assets/action-frame.svg') center/100% 100% no-repeat,
+        linear-gradient(130deg, #e0ff53, #cbff15 65%);
     font-size: 28px !important;
     font-weight: 800 !important;
     font-style: italic !important;
     clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
 }
 .stadium-cta:hover {
-    background: #e0ff70;
+    filter: brightness(1.06);
 }
 .stadium-action-row:has(button:focus-visible) {
     outline: 2px solid var(--stadium-lime);
@@ -444,10 +501,11 @@
 }
 @container (max-width: 380px) {
     .stadium-brand > span {
-        font-size: 34px;
+        font-size: 30px;
     }
     .stadium-brand img {
-        width: 62px;
+        width: 88px;
+        height: 36px;
     }
     .stadium-title-row h1 {
         font-size: 27px;
@@ -458,6 +516,12 @@
     .stadium-demo-label {
         font-size: 12px;
         padding-inline: 5px;
+    }
+    .stadium-title-row {
+        padding-inline: 4px;
+    }
+    .stadium-budget {
+        font-size: 15px;
     }
     .stadium-selected strong {
         font-size: 18px;

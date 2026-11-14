@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import goldCard from './assets/card-gold.png';
+import goldCard from './assets/card-gold-sketch.svg';
 import silhouette from './assets/player-silhouette.svg';
 import pitchLines from './assets/pitch-lines.svg';
 import brandMark from './assets/brand-mark.svg';
@@ -18,7 +18,7 @@ export type PitchPlacement = { player: StadiumPlayer; x: number; y: number };
 export function StadiumBrand() {
     return (
         <span className="stadium-brand">
-            <img src={brandMark} alt="" width="76" height="49" />
+            <img src={brandMark} alt="" width="150" height="60" />
             <span>SBC Vision</span>
         </span>
     );
@@ -127,10 +127,21 @@ export function StadiumPitch({
     selectedId: string;
     onSelect: (id: string) => void;
 }) {
+    const fullSquad = placements.length === 11;
+    // Relief du croquis uniquement ; les coordonnées du rapport restent intactes.
+    const drawing = placements.map(({ player, x, y }) => {
+        const rowSize = placements.filter((item) => item.y === y).length;
+        const lift =
+            fullSquad && rowSize > 1
+                ? Math.max(0, 1 - Math.abs(x - 50) / 35) * (y >= 60 ? 3.5 : 2)
+                : 0;
+        return { player, x, y: y - lift };
+    });
     return (
         <section
             className="stadium-pitch"
             aria-label={`Composition ${formation}`}
+            data-full-squad={fullSquad}
             data-dense={placements.some(
                 ({ y }) => placements.filter((item) => item.y === y).length >= 5,
             )}
@@ -138,11 +149,16 @@ export function StadiumPitch({
             <div className="stadium-grass" />
             <img className="stadium-pitch-lines" src={pitchLines} alt="" />
             <span className="stadium-formation">{formation}</span>
-            {placements.map(({ player, x, y }) => (
+            {drawing.map(({ player, x, y }) => (
                 <div
                     className="stadium-placement"
                     key={player.id}
-                    style={{ '--player-x': `${x}%`, '--player-y': `${y}%` } as CSSProperties}
+                    style={
+                        {
+                            '--player-x': `${x}%`,
+                            '--player-y': `${y}%`,
+                        } as CSSProperties
+                    }
                 >
                     <StadiumCard
                         player={player}

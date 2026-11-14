@@ -1,5 +1,6 @@
 body:has(.stadium-app) {
     background: #101310;
+    min-width: 0;
 }
 .stadium-kit.stadium-app {
     --ink: #f1f3e9;
@@ -68,7 +69,7 @@ body:has(.stadium-app) {
     max-width: none;
     gap: 4px;
     margin: 0;
-    padding: 9px 14px 0;
+    padding: 3px 14px 0;
     border: 0;
     border-radius: 0;
     background: transparent;
@@ -86,6 +87,7 @@ body:has(.stadium-app) {
         'Arial Narrow',
         sans-serif;
     clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%);
+    font-style: italic;
 }
 .stadium-app .main-nav > button[aria-pressed='true'] {
     background: var(--stadium-lime);
@@ -723,6 +725,9 @@ body:has(.stadium-app) {
 .stadium-app .stadium-squad-visual .stadium-pitch {
     margin: 0;
 }
+.stadium-app .stadium-squad-visual .stadium-pitch[data-full-squad='true'] {
+    margin-inline: -8px;
+}
 .stadium-app .stadium-card,
 .stadium-app .stadium-formation {
     font-family: 'Stadium Barlow', 'Arial Narrow', sans-serif;
@@ -781,19 +786,28 @@ body:has(.stadium-app) {
         border-inline: 0;
     }
     .stadium-app .app-header {
-        padding: 10px 13px 9px 7px;
+        padding: 5px 13px 5px 13px;
         align-items: center;
     }
     .stadium-app .stadium-brand img {
-        width: 58px;
-        height: 38px;
+        width: 110px;
+        height: 44px;
     }
     .stadium-app .stadium-brand > span {
         font-size: 34px;
     }
     .stadium-app .phase-badge {
-        font-size: 10px;
-        padding: 5px 7px;
+        font-size: 0;
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        gap: 0;
+        justify-content: center;
+        border: 0;
+        background: transparent;
+    }
+    .stadium-app .header-actions:has(.header-close-button) .phase-badge {
+        display: none;
     }
     .stadium-app .header-actions .text-button {
         font-size: 10px;
@@ -803,7 +817,7 @@ body:has(.stadium-app) {
     }
     .stadium-app .main-nav > button {
         font-size: 21px;
-        padding-block: 9px 10px;
+        padding-block: 6px 7px;
     }
     .stadium-app .app-page {
         padding: 0 12px 14px;
@@ -864,10 +878,11 @@ body:has(.stadium-app) {
         font-size: 30px;
     }
     .stadium-app .stadium-brand img {
-        width: 51px;
+        width: 88px;
+        height: 36px;
     }
     .stadium-app .phase-badge {
-        font-size: 9px;
+        font-size: 0;
     }
     .stadium-app .main-nav > button {
         font-size: 20px;
@@ -887,13 +902,30 @@ body:has(.stadium-app) {
     }
 }
 
+@media (max-width: 340px) {
+    .stadium-app .app-header {
+        padding-inline: 10px;
+        gap: 8px;
+    }
+    .stadium-app .stadium-brand img {
+        width: 78px;
+        height: 32px;
+    }
+    .stadium-app .stadium-brand > span {
+        font-size: 28px;
+    }
+    .stadium-app .header-icon-button {
+        width: 28px;
+    }
+}
+
 /* La proposition reprend la composition verticale du croquis A1. */
 .stadium-app[data-workspace='sbc']:has(.squad-hero) .intro {
     display: none;
 }
 .stadium-app:has(.squad-hero) .sbc-workspace {
     gap: 10px;
-    padding-top: 10px;
+    padding-top: 5px;
 }
 .stadium-app .squad-hero-heading {
     display: flex;
@@ -901,31 +933,31 @@ body:has(.stadium-app) {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 8px;
-    padding: 5px 0 0;
+    padding: 2px 12px 0;
 }
 .stadium-app .squad-hero-heading h1 {
     font:
-        italic 800 32px/1.1 'Stadium Barlow',
+        italic 800 34px/1 'Stadium Barlow',
         sans-serif;
-    letter-spacing: -0.8px;
+    letter-spacing: -0.3px;
 }
 .stadium-app .stadium-demo-label {
     font:
-        italic 600 13px/1.2 'Stadium Barlow',
+        italic 600 15px/1.2 'Stadium Barlow',
         sans-serif;
 }
 .stadium-app .squad-hero .stadium-pitch {
-    aspect-ratio: 1.05;
+    aspect-ratio: 1.23;
 }
 .stadium-app .squad-hero .stadium-selected {
     border-radius: 8px;
-    border-color: #a7b398;
+    border-color: #c3c7b9;
     min-height: 43px;
-    background: linear-gradient(130deg, #747a6c80, #171c18);
+    background: linear-gradient(130deg, #888c8466, #171b18);
 }
 .stadium-app .squad-hero .stadium-selected strong {
     font:
-        600 20px/1.15 'Stadium Barlow',
+        600 23px/1.15 'Stadium Barlow',
         sans-serif;
 }
 .stadium-app .squad-hero .stadium-origin {
@@ -957,19 +989,19 @@ body:has(.stadium-app) {
     box-shadow: inset 0 1px #d3ddc42b;
 }
 .stadium-app .squad-hero .stadium-costs > div {
-    padding: 5px 6px 7px;
+    padding: 4px 6px 5px;
 }
 .stadium-app .squad-hero .stadium-costs span {
     font:
-        600 18px/1.15 'Stadium Barlow',
+        600 18px/1 'Stadium Barlow',
         sans-serif;
 }
 .stadium-app .squad-hero .stadium-costs strong {
     font:
-        italic 800 31px/1.05 'Stadium Barlow',
+        italic 800 30px/1 'Stadium Barlow',
         sans-serif;
     letter-spacing: 0;
-    font-size: clamp(13px, calc(44cqw / var(--amount-characters, 6)), 31px);
+    font-size: clamp(13px, calc(44cqw / var(--amount-characters, 6)), 30px);
     white-space: nowrap;
 }
 .stadium-app .squad-hero .stadium-budget-line {
@@ -985,9 +1017,10 @@ body:has(.stadium-app) {
     transform: skew(-8deg);
     padding: 3px 7px;
     border-radius: 7px;
-    font-size: 17px;
+    font-size: 18px;
     font-weight: 800;
     font-style: italic;
+    line-height: 1;
 }
 .stadium-app .squad-hero .stadium-cta {
     font-family: 'Stadium Barlow', sans-serif;
@@ -1131,10 +1164,10 @@ body:has(.stadium-app) {
         padding-inline: 12px;
     }
     .stadium-app .squad-hero-heading h1 {
-        font-size: 29px;
+        font-size: 34px;
     }
     .stadium-app .squad-hero .stadium-selected strong {
-        font-size: 20px;
+        font-size: 23px;
     }
     .stadium-app .report-json summary {
         font-size: 11px;
@@ -1142,7 +1175,13 @@ body:has(.stadium-app) {
 }
 @media (max-width: 380px) {
     .stadium-app .squad-hero-heading h1 {
-        font-size: 25px;
+        font-size: 27px;
+    }
+    .stadium-app .squad-hero-heading {
+        padding-inline: 4px;
+    }
+    .stadium-app .stadium-demo-label {
+        font-size: 13px;
     }
     .stadium-app .squad-hero .stadium-costs span {
         font-size: 16px;
@@ -1164,6 +1203,20 @@ body:has(.stadium-app) {
     }
     .stadium-app .squad-hero .stadium-cta {
         font-size: 24px !important;
+    }
+}
+@media (max-width: 340px) {
+    .stadium-app .squad-hero-heading {
+        gap: 6px;
+    }
+    .stadium-app .squad-hero-heading h1 {
+        font-size: 25px;
+    }
+    .stadium-app .stadium-demo-label {
+        font-size: 12px;
+    }
+    .stadium-app .squad-hero .stadium-selected {
+        padding-left: 14px;
     }
 }
 
@@ -1202,10 +1255,10 @@ body:has(.stadium-app) {
 .stadium-app .squad-empty-art i {
     display: block;
     width: 64px;
-    height: 86px;
+    height: 72px;
     background:
         linear-gradient(140deg, #d0ff2255, #4a5d3522),
-        url('./assets/card-gold.png') center/contain no-repeat;
+        url('./assets/card-gold-sketch.svg') center/contain no-repeat;
     mask: url('./assets/card-mask.svg') center/100% 100% no-repeat;
     opacity: 0.4;
     filter: saturate(0.2);
@@ -1269,7 +1322,7 @@ body:has(.stadium-app) {
     position: relative;
     display: block;
     width: 52px;
-    aspect-ratio: 100/130;
+    aspect-ratio: 100/108;
     flex-shrink: 0;
     filter: drop-shadow(0 2px 2px #0008);
     color: #171a10;

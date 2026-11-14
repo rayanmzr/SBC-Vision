@@ -3,9 +3,19 @@
   "reference": "../../../../docs/design/references/piste-a-board.png",
   "assets": [
     {
+      "file": "action-frame.svg",
+      "bytes": 180,
+      "sha256": "2c7f90bce0c19359da1a610a6721ec2eedc47a244b8ce15498d4107f5bf6384b"
+    },
+    {
       "file": "brand-mark.svg",
-      "bytes": 636,
-      "sha256": "03a6f0c8e6ed7820392b0112bad7e689b66affd6a40bac43648734d48ce3b344"
+      "bytes": 679,
+      "sha256": "f44e4cbb0329e15739a4a0c4af92d141d08f4cdeb3cb01e8c2377ea6f7b490c1"
+    },
+    {
+      "file": "card-gold-sketch.svg",
+      "bytes": 1247,
+      "sha256": "60760284ddfffd05a8d43d19958393f6ad62e9fcd68ae8b8f47dd52e61193032"
     },
     {
       "file": "card-gold.png",
@@ -18,8 +28,8 @@
     },
     {
       "file": "card-mask.svg",
-      "bytes": 206,
-      "sha256": "2d5eb2576bb73ff4cb3a486d1a6bf313b5dc0df8a4837d919747b00e2f63706f"
+      "bytes": 214,
+      "sha256": "bf08bcd9083e1fd97edaa94832fa2f9587c713ab749abe518167031d083a639d"
     },
     {
       "file": "charcoal-surface.png",
@@ -28,6 +38,11 @@
       "width": 1254,
       "height": 1254,
       "mode": "RGB"
+    },
+    {
+      "file": "cost-frame.svg",
+      "bytes": 282,
+      "sha256": "507cece9bfe7a2aa6a0ed7c91ebf5f14fbc473fbd7021c588d7caaca714c0f33"
     },
     {
       "file": "fonts/Barlow-ExtraBoldItalic.ttf",
@@ -53,6 +68,11 @@
       "file": "fonts/SOURCE.json",
       "bytes": 392,
       "sha256": "772162efa79e672a3bbeed4d755ef488a5c8f38ee8ed5f255e316c2d1df8630e"
+    },
+    {
+      "file": "pencil-strokes.svg",
+      "bytes": 717,
+      "sha256": "bd2c8eaaafd57234bb3dfac83bca57f689b827e07eda777545ad498945ce8168"
     },
     {
       "file": "pitch-grass.png",

@@ -63,7 +63,7 @@ cohérents avec les cartes, mais aucun solveur ni contrôle métier n'est exécu
 à comparer le rendu au dessin dans le même écran que les autres rapports. Le libellé
 de formation est déduit des postes du rapport lorsque les onze cartes le permettent.
 
-Vérifications : typage, formatage et 183 tests frontend, puis build ; parcours manuel en
+Vérifications : typage, formatage et 184 tests frontend, puis build ; parcours manuel en
 360 et 440 pixels avec l'API locale authentifiée, analyse du laboratoire et calcul CP-SAT
 sur les données fictives. L'overlay de détection garde les dimensions de l'image affichée.
 Le modèle entraîné pour la Web App EA reste à raccorder.
@@ -105,28 +105,63 @@ une direction graphique : les textes et les commandes sont des éléments HTML a
 et les cartes utilisent des silhouettes génériques. L'audit visuel ne raccorde pas le
 modèle EA ni le placement automatique des joueurs.
 
+## Passe de fidélité : proportions et matières
+
+La deuxième comparaison reprend les proportions de la colonne A1, plutôt que seulement
+ses couleurs. À 440 pixels, sur le scénario de onze cartes, le terrain passe d'environ
+416 × 396 à **432 × 351 pixels**. L'action principale termine vers **715 pixels** de
+hauteur, contre environ 790 auparavant. Le terrain déborde légèrement de la gouttière,
+comme dans le croquis, sans sortir du cadre.
+
+Les cartes sont plus larges et plus courtes, avec une pointe et un liseré vectoriels.
+Les rangées ont un léger décalage central pour retrouver le relief du dessin ; le gardien
+reste séparé des défenseurs. Ce relief est un calcul d'affichage : le rapport et ses
+affectations ne sont pas modifiés, et ces positions ne sont jamais des points de clic.
+
+Le symbole du logo occupe davantage de place, les onglets inactifs sont inclinés,
+le titre est plus large, et les badges utilisent un dégradé argenté. Les hachures sont
+communes au fond et au gazon. Le bandeau du joueur, les coûts et le bouton reprennent
+les cadres inclinés ; l'action principale a deux diagonales à gauche, sans flèche ajoutée.
+Le catalogue utilise les mêmes cartes et les mêmes proportions que l'application.
+
+Les captures de cette passe sont dans `artifacts/design/fidelity-a1/` (ignorées par Git).
+Vérifications : largeurs utiles de 327, 360, 440 et 1 280 pixels, trois et onze cartes,
+rangée de cinq cartes, noms longs et grands montants. La largeur minimale héritée de
+l'ancien thème a été retirée pour éviter les coupures dans une fenêtre étroite. La
+connexion API et l'alignement image/rectangles de l'analyse restent vérifiés.
+
 ## Les pièces du rendu
 
-Tous les assets consommés sont locaux, dans `frontend/src/design-a1/assets/`.
+Les assets utilisés et leurs références de travail sont locaux, dans
+`frontend/src/design-a1/assets/`.
 
 | Fichier | Rôle | Format |
 | --- | --- | --- |
 | `charcoal-surface.png` | Texture sombre du cadre et des panneaux | 1 254 × 1 254, opaque |
 | `pitch-grass.png` | Matière du terrain, éclaircie au rendu pour retrouver A1 | 1 122 × 1 402, opaque |
-| `card-gold.png` | Fond doré vierge, sans nom, note ni portrait | 1 093 × 1 439, alpha transparent |
+| `card-gold-sketch.svg` | Carte affichée : or, hachures et contour en écusson | Vectoriel |
+| `card-gold.png` | Ancienne matière dorée, conservée comme référence de travail | 1 093 × 1 439, alpha transparent |
 | `card-mask.svg` | Contour net et forme commune à la carte et à sa sélection | Vectoriel |
+| `pencil-strokes.svg` | Hachures communes au fond et au terrain | Vectoriel |
+| `cost-frame.svg` | Cadre incliné et traits clairs du bandeau des coûts | Vectoriel |
+| `action-frame.svg` | Contour clair du bouton principal incliné | Vectoriel |
 | `player-silhouette.svg` | Portrait générique de remplacement | Vectoriel |
 | `pitch-lines.svg` | Lignes blanches en perspective | Vectoriel |
 | `brand-mark.svg` | Marque originale : doubles diagonales et ballon | Vectoriel |
 | `fonts/BarlowCondensed-SemiBold.ttf` | Libellés et texte droit | Police locale |
 | `fonts/Barlow-ExtraBoldItalic.ttf` | Titres, notes, chiffres et marque | Police locale |
 
-Les trois matières ont été produites avec l'outil intégré `image_gen`, à partir de la
+Les trois matières PNG ont été produites avec l'outil intégré `image_gen`, à partir de la
 planche comme référence de style. Les requêtes exactes retenues sont conservées dans
 [generated-assets.json](prompts/generated-assets.json). Un essai de nettoyage de carte
 non retenu n'est pas intégré au dépôt. Les premières requêtes de matières mentionnent
 A3 ; ces matières communes ont été conservées, puis l'assemblage a été réalisé pour
 **A1**, conformément à la précision de l'utilisateur.
+
+La carte affichée est maintenant reconstruite en SVG à partir du dessin A1 : elle est
+plus large et moins haute, avec une pointe, un liseré et des hachures. Les nouveaux SVG
+sont des sources vectorielles écrites dans le dépôt. Le PNG doré d'origine n'est plus
+utilisé dans le rendu livré.
 
 Les SVG et les règles CSS sont des sources modifiables. Les icônes de sac, d'agrandissement,
 de capture et de flèche sont disponibles dans `StadiumIcon`. Aucun logo officiel EA ou
@@ -140,7 +175,7 @@ sont jointes dans `fonts/OFL.txt` et `fonts/OFL-Barlow.txt`.
 `assets/manifest.json` donne les dimensions, tailles et empreintes SHA-256 des fichiers.
 Les PNG de travail totalisent environ 6,7 Mo : ils gardent la matière du dessin en haute
 définition. La compression de livraison pourra se faire une fois le rendu validé.
-La carte possède un vrai canal alpha ; le masque SVG stabilise son contour à petite taille.
+La carte SVG possède un fond transparent ; le masque commun stabilise la sélection.
 
 ## Réutiliser le kit
 
@@ -150,7 +185,8 @@ Importer `design-a1/StadiumKit.tsx`, puis placer les composants sous un conteneu
 - `StadiumBrand` assemble le symbole et le nom en texte.
 - `StadiumCard` affiche une carte et sa sélection, avec un nom accessible au clavier.
 - `StadiumPitch` reçoit les joueurs, leurs coordonnées en pourcentage et le libellé de
-  formation. Il affiche les données reçues sans décider des placements du solveur.
+  formation. Il applique le relief graphique du croquis sans décider des affectations
+  du solveur ni modifier le rapport.
 - `stadium-kit.css` fournit les onglets, panneaux, coûts, bouton principal et états visuels.
 
 Les noms, notes, postes, origines et montants restent des textes HTML. La texture ne
@@ -158,7 +194,7 @@ contient aucune information métier. Les lignes du terrain restent vectorielles 
 carte utilise le même masque pour son fond et son contour de sélection. Cela permet de
 reproduire le style sans figer toute l'interface dans une capture d'écran.
 
-Palette principale : anthracite `#141b16`, vert citron `#d0ff22`, texte `#f6f5ed` et
+Palette principale : anthracite `#181b18`, vert citron `#d0ff22`, texte `#f6f5ed` et
 or `#f4da87`. Les principales valeurs sont centralisées dans les variables
 `--stadium-*`. Les polices sont servies avec le build : aucune requête Google Fonts
 n'est nécessaire à l'ouverture de l'extension.
