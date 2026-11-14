@@ -41,7 +41,10 @@ def test_real_pixels_determine_state_and_original_box(stage, scale):
     assert result.model_name == "lab-color-api-v1"
     assert result.elements[0].id == MARKERS[stage][0]
     assert result.elements[0].bbox.model_dump() == {
-        "x": 35 * scale, "y": 55 * scale, "width": 80 * scale, "height": 40 * scale,
+        "x": 35 * scale,
+        "y": 55 * scale,
+        "width": 80 * scale,
+        "height": 40 * scale,
     }
     assert result.elements[0].actions == ([] if stage == 2 else ["click"])
 
