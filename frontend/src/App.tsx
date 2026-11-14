@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import demoPayload from '../../data/fixtures/perception.synthetic.json';
 import demoImage from '../../data/fixtures/perception.synthetic.png';
 import SbcWorkspace from './SbcWorkspace';
-import ControllerPanel from './ControllerPanel';
+import ControllerWorkspace from './ControllerWorkspace';
 import { nativeLabAdapter } from './lib/lab-adapter';
 import { captureActiveTab, imagePointToViewport, type TabCapture } from './lib/tab-capture';
 import {
@@ -643,10 +643,12 @@ export default function App() {
                 <SbcWorkspace apiUrl={apiUrl} connected={!!connection} onConnect={connect} />
             </div>
             {workspace === 'controller' && (
-                <ControllerPanel
-                    adapter={nativeLabAdapter()}
+                <ControllerWorkspace
+                    makeAdapter={nativeLabAdapter}
                     native
                     enabled={isExtension()}
+                    apiUrl={apiUrl}
+                    beforeApiStart={connection ? undefined : connect}
                     onRunning={setControllerRunning}
                 />
             )}

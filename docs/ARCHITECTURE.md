@@ -49,6 +49,8 @@ Le popup de l'extension ajoute la capture manuelle et la conservation de son rep
 image/viewport, décrites dans le [guide de capture](TAB_CAPTURE.md).
 Un [laboratoire du contrôleur](LOCAL_CONTROLLER.md) teste les clics et la vérification
 après action avec une vision déterministe par couleurs et des cartes fictives.
+Le choix de source relie aussi cette boucle à la route de perception Python via le
+[pipeline HTTP du laboratoire](LAB_PERCEPTION_API.md), désactivé par défaut.
 L'inférence réelle, le scan du club et le contrôleur sur les données de l'API restent
 à raccorder. Les capacités `controller` et `live_actions_enabled` restent donc fausses.
 

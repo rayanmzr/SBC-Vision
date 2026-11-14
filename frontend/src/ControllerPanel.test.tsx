@@ -103,3 +103,30 @@ it('désactive le transport natif dans un aperçu web', () => {
     ).toBe(true);
     expect(transport.observe).not.toHaveBeenCalled();
 });
+
+it('attend la connexion API avant de commencer les captures et affiche un refus sans cliquer', async () => {
+    const transport = adapter();
+    const beforeStart = vi.fn(async () => false);
+    render(<ControllerPanel adapter={transport} beforeStart={beforeStart} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Observer le laboratoire' }));
+    await screen.findByText('Vérification impossible · Contrôleur arrêté');
+    expect(beforeStart).toHaveBeenCalledOnce();
+    expect(transport.observe).not.toHaveBeenCalled();
+    expect(transport.click).not.toHaveBeenCalled();
+});
+
+it('ignore une connexion confirmée après l’interruption du parcours', async () => {
+    const transport = adapter();
+    let connected!: (value: boolean) => void;
+    const beforeStart = () =>
+        new Promise<boolean>((resolve) => {
+            connected = resolve;
+        });
+    render(<ControllerPanel adapter={transport} beforeStart={beforeStart} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Observer le laboratoire' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Interrompre' }));
+    await screen.findByText('Parcours interrompu');
+    await act(async () => connected(true));
+    await screen.findByText('Parcours interrompu');
+    expect(transport.observe).not.toHaveBeenCalled();
+});

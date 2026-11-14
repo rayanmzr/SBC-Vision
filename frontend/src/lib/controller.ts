@@ -37,7 +37,10 @@ export function planLocalAction(frame: Frame, now = Date.now()): Action | null {
         frame.observedAt > now + 100
     )
         throw new Error('Observation périmée.');
-    if (data.model_name !== 'local-color-baseline-v1' || data.elements.length !== 1)
+    if (
+        !['local-color-baseline-v1', 'lab-color-api-v1'].includes(data.model_name) ||
+        data.elements.length !== 1
+    )
         throw new Error('État local absent ou ambigu.');
     const element = data.elements[0];
     if (element.confidence < 0.95) throw new Error('Confiance insuffisante.');
@@ -127,7 +130,7 @@ export async function runController(
         signal.throwIfAborted();
         emit({
             kind: 'capture',
-            message: 'Image analysée ; JSON local obtenu.',
+            message: 'Image analysée ; JSON de perception obtenu.',
             perception: frame.perception,
         });
         while (true) {

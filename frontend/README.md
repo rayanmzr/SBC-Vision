@@ -10,6 +10,9 @@ avec #16 : **le parcours de l'issue #15 n'est pas encore terminé**.
 L'espace **Contrôleur local** prépare le deuxième lot de #16. Il propose observation,
 simulation et clics vérifiés sur une page locale dédiée : [guide du laboratoire](../docs/LOCAL_CONTROLLER.md).
 Cette page se teste aussi sans API sur <http://127.0.0.1:5173/controller-lab.html>.
+Son sélecteur **Analyse des images** permet aussi le parcours par la vraie API Python,
+activée explicitement avec `SBC_PERCEPTION_MODE=lab-colors` : [guide HTTP du laboratoire](../docs/LAB_PERCEPTION_API.md).
+Ce mode reste limité aux repères colorés du test ; il n'active pas la reconnaissance EA.
 
 ## Comprendre ce premier lot
 

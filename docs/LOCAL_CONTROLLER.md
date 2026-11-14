@@ -1,4 +1,4 @@
-# Contrôleur local — deuxième lot SBV-016
+# Contrôleur local et raccordement HTTP — SBV-016
 
 Ce prototype relie une image, un JSON de perception, un clic et une nouvelle image.
 Il est limité à une page de laboratoire et à une carte fictive. Ce n'est pas encore
@@ -46,6 +46,47 @@ si sa position change pendant le parcours, l'actionneur refuse le clic. Sur une 
 fenêtre, le défilement vers les commandes peut masquer la scène : agrandir la fenêtre
 pour l'essai d'exécution. L'observation et la simulation restent sans effet sur la page.
 
+## Faire passer les images par Python
+
+Le sélecteur **Analyse des images** distingue désormais deux chemins. **Dans le
+navigateur** reste le mode initial : aucun envoi réseau. **API Python · Couleurs de
+test** transmet chaque nouvelle image à la route de perception existante, puis le
+contrôleur consomme exclusivement sa réponse JSON. Aucun échec ne déclenche de retour
+automatique au traitement navigateur.
+
+Dans un terminal depuis la racine du dépôt :
+
+```bash
+source .venv/bin/activate
+SBC_PERCEPTION_MODE=lab-colors \
+uvicorn sbc_vision.api.main:app --host 127.0.0.1 --port 8000
+```
+
+1. Garder Vite lancé et ouvrir la page de laboratoire.
+2. Choisir **Analyse des images → API Python · Couleurs de test**. Ce choix seul
+   n'envoie rien. Dans le popup Chrome, l'adresse est celle d'Analyse d'image ; les
+   permissions et la connexion sont vérifiées au lancement si nécessaire.
+3. Lancer observation, simulation ou exécution. Pour deux clics vérifiés, cinq images
+   passent par l'API : la première, deux confirmations avant clic et deux vérifications
+   après clic. Chaque requête contient le PNG binaire et un identifiant neuf.
+4. Ouvrir **Voir le journal JSON**. Les observations enregistrées portent
+   `model_name: lab-color-api-v1`, le modèle de test Python, au lieu de
+   `local-color-baseline-v1`, le traitement navigateur.
+5. Refaire les scénarios de budget et de divergence : ils emploient la même politique
+   de contrôle, quelle que soit la source choisie.
+
+Sans activation du pipeline, le serveur renvoie `503` et le contrôleur s'arrête sans
+cliquer. Un repère absent ou ambigu produit `422`. Un autre nom de pipeline, une autre
+capture ou des dimensions incompatibles sont refusés. Les erreurs ne sont jamais
+converties en résultats fictifs réussis. Voir le [guide du pipeline HTTP](LAB_PERCEPTION_API.md).
+
+Après la réponse HTTP, le contexte est à nouveau contrôlé. La date d'observation reste
+celle de la capture : un long calcul ne rajeunit pas une image ancienne. Les limites
+de huit secondes par opération et cinq secondes de fraîcheur continuent à s'appliquer.
+L'API ne reçoit ni URL de page ni métadonnées Chrome, et aucune de ces images ne part
+au solveur. Le détecteur de Saber et la politique du compte réel ne sont pas activés
+par ce raccordement ; seules les trois couleurs de laboratoire sont prises en charge.
+
 ## Ce que fait chaque brique
 
 | Fichier | Responsabilité |
@@ -55,6 +96,9 @@ pour l'essai d'exécution. L'observation et la simulation restent sans effet sur
 | `frontend/src/lib/controller.ts` | Choisit une action depuis le JSON, borne le parcours et vérifie les transitions |
 | `frontend/src/lib/lab-adapter.ts` | Capture/PNG et clic par coordonnées, via canevas ou API Chrome |
 | `frontend/src/ControllerPanel.tsx` | Modes, budget, interruption, résultat et journal JSON |
+| `frontend/src/ControllerWorkspace.tsx` | Choix de source et configuration du traitement des images |
+| `frontend/src/lib/lab-api.ts` | Envoi PNG et contrôle de la provenance des réponses HTTP |
+| `src/sbc_vision/perception/lab_colors.py` | Même protocole visuel exécuté dans le pipeline Python |
 
 La politique est volontairement une machine à états :
 
@@ -71,7 +115,9 @@ Plusieurs états, un repère masqué ou une forme incohérente provoquent un ref
 Le centre de la boîte est converti selon le [repère image/viewport](TAB_CAPTURE.md).
 Avant chaque clic, une seconde capture doit confirmer la cible, sa géométrie et ses
 éléments. Après le clic, une nouvelle capture doit contenir exactement l'état attendu.
-Chaque observation porte un identifiant neuf et les journaux conservent son JSON.
+Chaque observation porte un identifiant neuf. Le journal conserve les JSON de l'image
+initiale et des vérifications après action ; les confirmations avant clic sont aussi
+contrôlées, sans dupliquer ces états inchangés dans le journal.
 Ils ne contiennent pas le binaire des images et ne sont pas persistés.
 
 Le budget est un entier de 1 à 5 tentatives de clic. Le journal distingue les tentatives
@@ -114,11 +160,26 @@ test. Cela ne valide ni un clic système ni sa compatibilité avec EA. Voir les 
 Les tests vérifient le contrôleur, la localisation dans les pixels, l'actionneur injecté,
 les URL autorisées, l'interruption, les délais et l'interface avec des doublures Chrome.
 Le build produit aussi `dist/controller-lab.html` pour `pnpm run preview` sur le port 4173.
-L'accès au navigateur local étant indisponible pendant ce lot, le parcours complet dans
-un navigateur et la capture native du popup n'ont pas été observés ici.
 
-L'issue #16 reste ouverte jusqu'à cette validation native. Il reste ensuite à brancher
-les observations de l'API, les règles de navigation et les cibles issues de l'inventaire
+Le 14 novembre 2026, les parcours sur canevas ont été observés dans le navigateur,
+avec le traitement navigateur puis la vraie API Python :
+
+| Parcours | Résultat observé |
+| --- | --- |
+| Observation et simulation | Zéro clic, page inchangée |
+| Exécution avec budget 2 | Deux clics et deux transitions vérifiées |
+| Budget 1 | Un clic, sélection vérifiée, arrêt sans placement |
+| Clic sans effet | Un clic, divergence, aucun second clic |
+| Écran inattendu | Un clic, divergence malgré un état final visible |
+| Serveur sans pipeline | Erreur de perception, zéro clic, aucun traitement de remplacement |
+| Scène hors écran à 475 × 698 | Tentative refusée, zéro événement de clic confirmé |
+
+L'exécution API a été validée à 1150 × 950, avec scène et commandes visibles ensemble.
+Cela vérifie le parcours sur le canevas ; la capture native depuis le popup de Chrome
+installé reste à valider, notamment le zoom et les permissions.
+
+L'issue #16 reste ouverte jusqu'à cette validation native. Il reste ensuite à raccorder
+le détecteur/OCR réels, les règles de navigation et les cibles issues de l'inventaire
 et du solveur. Le laboratoire ne fournit pas une reconnaissance ou une autorisation
 d'action sur le compte réel. Les capacités HTTP `controller` et `live_actions_enabled`
 restent fausses : le prototype s'exécute uniquement côté navigateur, dans ce laboratoire.

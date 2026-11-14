@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import ControllerPanel from './ControllerPanel';
+import ControllerWorkspace from './ControllerWorkspace';
+import type { LabPerceiver } from './lib/lab-api';
 import { canvasLabAdapter } from './lib/lab-adapter';
 import { LAB_COLORS } from './lib/lab-vision';
 
@@ -20,7 +21,10 @@ export default function ControllerLab() {
         canvas.current = value;
         setNode(value);
     }, []);
-    const adapter = useMemo(() => (node ? canvasLabAdapter(node) : null), [node]);
+    const makeAdapter = useMemo(
+        () => (node ? (perceive?: LabPerceiver) => canvasLabAdapter(node, perceive) : null),
+        [node],
+    );
     useLayoutEffect(() => {
         const context = canvas.current?.getContext('2d');
         if (!context) return;
@@ -102,6 +106,10 @@ export default function ControllerLab() {
                         Ce statut explique le test. Le contrôleur déduit l’état depuis les pixels du
                         canevas, puis vérifie une nouvelle image.
                     </p>
+                    <p className="field-hint">
+                        Pour exécuter les clics, garde la scène et les commandes visibles ensemble.
+                        Agrandis la fenêtre si nécessaire.
+                    </p>
                     <label className="field-label">
                         Comportement de la page
                         <select
@@ -138,8 +146,12 @@ export default function ControllerLab() {
                         Retour à SBC Vision
                     </a>
                 </section>
-                {adapter && (
-                    <ControllerPanel key={generation} adapter={adapter} onRunning={setRunning} />
+                {makeAdapter && (
+                    <ControllerWorkspace
+                        key={generation}
+                        makeAdapter={makeAdapter}
+                        onRunning={setRunning}
+                    />
                 )}
             </div>
         </main>

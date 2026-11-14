@@ -1,5 +1,6 @@
 import { captureActiveTab, activeContext, sameContext, type Viewport } from './tab-capture';
 import { perceiveLabImage } from './lab-vision';
+import type { LabPerceiver } from './lab-api';
 import { planLocalAction, type ControllerAdapter, type Frame, type Action } from './controller';
 
 export function isLocalLabUrl(value: string): boolean {
@@ -59,7 +60,10 @@ function clickInLab(x: number, y: number, expected: Viewport, expiresAt: number)
     return true;
 }
 
-export function nativeLabAdapter(): ControllerAdapter {
+const browserPerceiver: LabPerceiver = (image, _dimensions, signal) =>
+    perceiveLabImage(image, signal);
+
+export function nativeLabAdapter(perceive: LabPerceiver = browserPerceiver): ControllerAdapter {
     return {
         observe: async (signal) => {
             const allowed = await activeContext(signal);
@@ -70,7 +74,9 @@ export function nativeLabAdapter(): ControllerAdapter {
             const capture = await captureActiveTab(signal);
             try {
                 if (!sameContext(allowed, capture.context)) throw new Error('L’onglet a changé.');
-                const perception = await perceiveLabImage(capture.file, signal);
+                const perception = await perceive(capture.file, capture, signal);
+                if (!sameContext(capture.context, await activeContext(signal)))
+                    throw new Error('Le contexte a changé pendant l’analyse. Refaire une capture.');
                 return {
                     geometry: {
                         width: capture.width,
@@ -79,7 +85,7 @@ export function nativeLabAdapter(): ControllerAdapter {
                     },
                     target: `${capture.context.tabId}:${capture.context.documentId}`,
                     perception,
-                    observedAt: Date.now(),
+                    observedAt: Date.parse(capture.capturedAt),
                 };
             } finally {
                 URL.revokeObjectURL(capture.url);
@@ -110,7 +116,10 @@ function assertAction(frame: Frame, action: Action) {
         throw new Error('Action différente du JSON observé.');
 }
 
-export function canvasLabAdapter(canvas: HTMLCanvasElement): ControllerAdapter {
+export function canvasLabAdapter(
+    canvas: HTMLCanvasElement,
+    perceive: LabPerceiver = browserPerceiver,
+): ControllerAdapter {
     const context = () => ({
         tabId: 0,
         windowId: 0,
@@ -140,7 +149,11 @@ export function canvasLabAdapter(canvas: HTMLCanvasElement): ControllerAdapter {
     return {
         observe: async (signal) => {
             signal.throwIfAborted();
+            // Les commandes peuvent modifier la mise en page avant le premier await.
+            await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+            signal.throwIfAborted();
             const before = target();
+            const observedAt = Date.now();
             const image = await new Promise<Blob>((resolve, reject) =>
                 canvas.toBlob(
                     (blob) =>
@@ -148,13 +161,17 @@ export function canvasLabAdapter(canvas: HTMLCanvasElement): ControllerAdapter {
                     'image/png',
                 ),
             );
-            const perception = await perceiveLabImage(image, signal);
+            const perception = await perceive(
+                image,
+                { width: canvas.width, height: canvas.height },
+                signal,
+            );
             if (before !== target()) throw new Error('Le canevas a bougé pendant la capture.');
             return {
                 geometry: { width: canvas.width, height: canvas.height, context: context() },
                 target: before,
                 perception,
-                observedAt: Date.now(),
+                observedAt,
             };
         },
         click: async (frame, action, signal) => {

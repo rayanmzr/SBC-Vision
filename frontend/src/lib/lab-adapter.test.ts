@@ -106,6 +106,22 @@ it('libère la capture aussi si la vision locale ne reconnaît pas l’écran', 
     await expect(nativeLabAdapter().observe(signal())).rejects.toThrow('ambigu');
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:captured');
 });
+
+it('refuse une analyse retournée après un changement de document et conserve la date de capture', async () => {
+    const changed = context();
+    changed.documentId = 'new-document';
+    vi.mocked(activeContext).mockResolvedValueOnce(context()).mockResolvedValueOnce(changed);
+    await expect(nativeLabAdapter().observe(signal())).rejects.toThrow('contexte a changé');
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:captured');
+    const older = new Date(Date.now() - 6000).toISOString();
+    vi.mocked(captureActiveTab).mockResolvedValueOnce({
+        ...(await captureActiveTab(signal())),
+        capturedAt: older,
+    });
+    const observed = await nativeLabAdapter().observe(signal());
+    expect(observed.observedAt).toBe(Date.parse(older));
+    expect(() => planLocalAction(observed)).toThrow('périmée');
+});
 it('envoie les coordonnées au document précis avec une durée de validité courte', async () => {
     const observed = frame();
     const action = planLocalAction(observed)!;

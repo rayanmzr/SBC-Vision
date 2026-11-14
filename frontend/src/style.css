@@ -726,6 +726,7 @@ input[type='url'] {
     margin-top: 14px;
 }
 .controller-panel select,
+.controller-source select,
 .lab-scene select,
 .controller-budget input {
     display: block;
@@ -808,7 +809,7 @@ html.controller-lab {
     align-items: start;
 }
 .lab-grid .controller-panel {
-    margin-top: 0;
+    margin-top: 14px;
 }
 .lab-scene h2 {
     font-size: 16px;

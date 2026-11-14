@@ -22,11 +22,15 @@ export default function ControllerPanel({
     enabled = true,
     native = false,
     onRunning,
+    beforeStart,
+    perceptionLabel = 'Vision locale par couleurs',
 }: {
     adapter: ControllerAdapter;
     enabled?: boolean;
     native?: boolean;
     onRunning?: (running: boolean) => void;
+    beforeStart?: () => Promise<boolean>;
+    perceptionLabel?: string;
 }) {
     const [mode, setMode] = useState<Mode>('observation');
     const [budget, setBudget] = useState('2');
@@ -58,16 +62,41 @@ export default function ControllerPanel({
         onRunning?.(true);
         setResult(null);
         setEntries([]);
-        const outcome = await runController(
-            adapter,
-            mode,
-            Number(budget),
-            controller.signal,
-            (log) => {
-                if (alive.current && active.current === controller) setEntries(log);
-            },
-        );
+        let allowed = true;
+        let abortPreparation: (() => void) | undefined;
+        try {
+            if (beforeStart) {
+                const cancelled = new Promise<boolean>((resolve) => {
+                    abortPreparation = () => resolve(false);
+                    controller.signal.addEventListener('abort', abortPreparation, { once: true });
+                });
+                allowed = await Promise.race([beforeStart(), cancelled]);
+            }
+        } catch {
+            allowed = false;
+        } finally {
+            if (abortPreparation) controller.signal.removeEventListener('abort', abortPreparation);
+        }
+        const outcome: RunResult =
+            !allowed && !controller.signal.aborted
+                ? {
+                      mode,
+                      status: 'failed',
+                      clicks: 0,
+                      attempts: 0,
+                      entries: [
+                          {
+                              kind: 'error',
+                              message:
+                                  'Connexion API non confirmée. Vérifier l’adresse et les permissions dans Analyse d’image.',
+                          },
+                      ],
+                  }
+                : await runController(adapter, mode, Number(budget), controller.signal, (log) => {
+                      if (alive.current && active.current === controller) setEntries(log);
+                  });
         if (alive.current && active.current === controller) {
+            setEntries(outcome.entries);
             setResult(outcome);
             setRunning(false);
             onRunning?.(false);
@@ -79,7 +108,7 @@ export default function ControllerPanel({
         <section className="panel controller-panel" aria-label="Contrôleur du laboratoire">
             <h3>Observer, décider, vérifier</h3>
             <p className="field-hint">
-                Vision locale par couleurs · Scénario fictif à deux clics · Aucun appel au solveur
+                {perceptionLabel} · Scénario fictif à deux clics · Aucun appel au solveur
             </p>
             {native && (
                 <p className="field-hint">
