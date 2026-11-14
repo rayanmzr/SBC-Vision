@@ -105,6 +105,7 @@ it('retire l’ancien résultat si la capture échoue, sans lui substituer une i
     fireEvent.click(screen.getByRole('button', { name: /Voir un exemple synthétique/ }));
     expect(screen.getByText('2 éléments')).toBeTruthy();
     vi.mocked(captureActiveTab).mockRejectedValueOnce(new Error('L’onglet a changé.'));
+    fireEvent.click(screen.getByRole('button', { name: 'Changer de capture' }));
     fireEvent.click(screen.getByRole('button', { name: 'Capturer l’onglet actif' }));
     await screen.findByText('Capture impossible');
     expect(screen.queryByText('2 éléments')).toBeNull();
@@ -129,7 +130,11 @@ it('affiche le centre en pixels CSS à partir du JSON, en mode observation sans 
             ),
     );
     fireEvent.click(screen.getByRole('button', { name: /Envoyer à l’API/ }));
+    fireEvent.click(
+        await screen.findByRole('button', { name: 'Afficher l’élément 1 : Rechercher' }),
+    );
     await screen.findByText('Centre dans la page : x 95.0 · y 50.0 px CSS · observation');
+    fireEvent.click(screen.getByRole('button', { name: 'Afficher l’élément 2 : Vérifier' }));
     expect(
         screen.getByText('Centre dans la page : x 540.0 · y 332.0 px CSS · observation'),
     ).toBeTruthy();

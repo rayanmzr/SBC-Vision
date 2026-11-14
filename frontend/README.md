@@ -39,6 +39,14 @@ Après calcul, **Sources et inventaire** retrouve le club et le budget. Le terra
 les coûts et **Voir les achats** passent au premier plan ; conditions, protections et
 vérification restent dépliables. Le scénario **Maquette A1 · 11 cartes** compare le rendu
 au croquis avec un rapport graphique préparé à la main, sans exécution du solveur.
+
+Dans **Analyser**, le choix d'une image met son aperçu au premier plan. **Changer de capture**
+rouvre les sources et **Retirer** rétablit l'import. Après analyse, la liste et les rectangles
+partagent une sélection locale ; les coordonnées du repère et le JSON se déplient à la demande.
+L'envoi reste manuel. **Réglages** regroupe la connexion dans un formulaire validable avec
+Entrée ; **Effacer la clé** invalide la session sans appel réseau. Les informations de session
+et le laboratoire du contrôleur restent accessibles dans des panneaux dépliables.
+
 Sans pipeline configuré, un PNG valide provoque une erreur `503 perception_unavailable`.
 Ce retour vérifie le transport de la capture et la gestion des erreurs, pas la vision.
 
@@ -90,6 +98,8 @@ nécessaire pour ce premier lot.
 | `public/manifest.json`                  | Déclaration MV3, popup et permissions                       |
 | `src/main.tsx`                          | Démarrage de React et taille propre au popup                |
 | `src/App.tsx`                           | Interface et déroulement des opérations                     |
+| `src/PerceptionWorkspace.tsx`           | Capture, aperçu et inspection locale des éléments détectés  |
+| `src/ApiSettings.tsx`                   | Formulaire de connexion et informations de session          |
 | `src/SbcWorkspace.tsx`                  | Lecture des propositions et états du solveur                |
 | `src/SbcApiPanel.tsx`                   | Inventaire serveur, protections et calcul                   |
 | `src/lib/sbc-api.ts`                    | Contrats et appels JSON du moteur SBC                       |

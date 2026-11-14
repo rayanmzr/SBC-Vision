@@ -30,7 +30,12 @@ et **Réglages**.
 
 - **Analyser** : capture d'onglet ou choix d'un fichier, envoi manuel, affichage de l'image,
   des rectangles de détection, des éléments et du JSON. La connexion se configure dans
-  Réglages. Une capture est conservée lorsqu'on change de page.
+  Réglages. Une capture est conservée lorsqu'on change de page. Après le choix d'une
+  image, l'aperçu passe au premier plan ; **Changer de capture** retrouve les sources
+  et **Retirer** rétablit l'écran d'import. Les étapes Capture, Analyse et Lecture
+  suivent l'état réel du parcours. Sélectionner un élément dans la liste ou son rectangle
+  synchronise leur surbrillance, sans déclencher de clic dans l'onglet. Les coordonnées
+  du repère et le JSON se déplient à la demande.
 - **Équipe** : inventaire, protections, conditions, propositions et achats. Le terrain
   utilise les cartes et les postes du rapport validé, de 1 à 11 cartes. Les petits défis
   à trois cartes ont une présentation plus compacte. Pour les postes inconnus, les
@@ -43,6 +48,9 @@ et **Réglages**.
 - **Réglages** : adresse API, clé masquée en mémoire, vérification de connexion et état
   du modèle. Les messages d'erreur apparaissent sur la page en cours. Modifier le serveur
   ou la clé invalide la connexion et les données reçues, comme avant le changement visuel.
+  La connexion utilise un formulaire validable avec Entrée. **Effacer la clé** retire
+  la clé de la session et invalide la connexion sans requête supplémentaire. Les informations
+  de session et l'accès au laboratoire se déplient dans deux panneaux secondaires.
 
 Le **Contrôleur local** reste accessible depuis Réglages, avec la même apparence dans
 l'extension. La page séparée `controller-lab.html` conserve sa scène de laboratoire.
@@ -55,7 +63,7 @@ cohérents avec les cartes, mais aucun solveur ni contrôle métier n'est exécu
 à comparer le rendu au dessin dans le même écran que les autres rapports. Le libellé
 de formation est déduit des postes du rapport lorsque les onze cartes le permettent.
 
-Vérifications : typage, formatage et 178 tests frontend, puis build ; parcours manuel en
+Vérifications : typage, formatage et 181 tests frontend, puis build ; parcours manuel en
 360 et 440 pixels avec l'API locale authentifiée, analyse du laboratoire et calcul CP-SAT
 sur les données fictives. L'overlay de détection garde les dimensions de l'image affichée.
 Le modèle entraîné pour la Web App EA reste à raccorder.

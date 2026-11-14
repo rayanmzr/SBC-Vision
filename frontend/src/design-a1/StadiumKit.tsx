@@ -24,7 +24,11 @@ export function StadiumBrand() {
     );
 }
 
-export function StadiumIcon({ name }: { name: 'bag' | 'expand' | 'scan' | 'arrow' }) {
+export function StadiumIcon({
+    name,
+}: {
+    name: 'bag' | 'expand' | 'scan' | 'arrow' | 'image' | 'server' | 'lock';
+}) {
     return (
         <svg
             viewBox="0 0 24 24"
@@ -42,6 +46,26 @@ export function StadiumIcon({ name }: { name: 'bag' | 'expand' | 'scan' | 'arrow
             {name === 'expand' && <path d="M14 4h6v6m0-6L10 14m-1-9H4v15h15v-5" />}
             {name === 'scan' && <path d="M8 3H3v5m13-5h5v5m0 8v5h-5M3 16v5h5M7 12h10" />}
             {name === 'arrow' && <path d="m9 5 7 7-7 7" />}
+            {name === 'image' && (
+                <>
+                    <rect x="3" y="3" width="18" height="18" rx="1" />
+                    <circle cx="8" cy="8" r="1.5" />
+                    <path d="m3 17 6-6 4 4 3-3 5 5" />
+                </>
+            )}
+            {name === 'server' && (
+                <>
+                    <rect x="3" y="3" width="18" height="7" rx="1" />
+                    <rect x="3" y="14" width="18" height="7" rx="1" />
+                    <path d="M7 6h1m-1 11h1m4-11h5m-5 11h5" />
+                </>
+            )}
+            {name === 'lock' && (
+                <>
+                    <rect x="5" y="10" width="14" height="11" rx="1" />
+                    <path d="M8 10V6a4 4 0 0 1 8 0v4m-4 4v3" />
+                </>
+            )}
         </svg>
     );
 }

@@ -3,11 +3,15 @@ import demoPayload from '../../data/fixtures/perception.synthetic.json';
 import demoImage from '../../data/fixtures/perception.synthetic.png';
 import SbcWorkspace from './SbcWorkspace';
 import ApiSettings from './ApiSettings';
-import { StadiumBrand, StadiumIcon } from './design-a1/StadiumKit';
+import PerceptionWorkspace, {
+    type CaptureSelection as Selection,
+    type PerceptionResult as Result,
+} from './PerceptionWorkspace';
+import { StadiumBrand } from './design-a1/StadiumKit';
 import { clearSessionApiKey, setSessionApiKey } from './lib/api-key';
 import ControllerWorkspace from './ControllerWorkspace';
 import { nativeLabAdapter } from './lib/lab-adapter';
-import { captureActiveTab, imagePointToViewport, type TabCapture } from './lib/tab-capture';
+import { captureActiveTab } from './lib/tab-capture';
 import {
     analyzeImage,
     ApiError,
@@ -15,8 +19,6 @@ import {
     readImage,
     validatePerception,
     type Connection,
-    type ElementKind,
-    type Perception,
 } from './lib/api';
 import {
     authorizeApi,
@@ -28,35 +30,7 @@ import {
     saveApiUrl,
 } from './lib/platform';
 
-type Selection = { file: File; url: string; width: number; height: number; tab?: TabCapture };
-type Result = { data: Perception; source: 'api' | 'synthetic'; imageUrl: string };
 type Notice = { title: string; message: string; code?: string };
-const KIND_LABELS: Record<ElementKind, string> = {
-    button: 'Bouton',
-    input: 'Champ',
-    link: 'Lien',
-    menu: 'Menu',
-    checkbox: 'Case à cocher',
-    card: 'Carte',
-    slot: 'Emplacement',
-    text: 'Texte',
-};
-const ACTION_LABELS = { click: 'Clic', fill: 'Saisie', select: 'Sélection', scroll: 'Défilement' };
-
-function FrameIcon() {
-    return (
-        <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            aria-hidden="true"
-        >
-            <path d="M8 3H3v5M16 3h5v5M21 16v5h-5M8 21H3v-5" />
-            <path d="m7.5 12 3 3 6-6" />
-        </svg>
-    );
-}
 
 function describeError(error: unknown, context: string): Notice {
     if (error instanceof ApiError && error.code === 'perception_unavailable') {
@@ -93,7 +67,6 @@ export default function App() {
     const [notice, setNotice] = useState<Notice | null>(null);
     const [busy, setBusy] = useState<'connection' | 'image' | 'capture' | 'analysis' | null>(null);
     const active = useRef<AbortController | null>(null);
-    const fileInput = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         let mounted = true;
@@ -243,8 +216,6 @@ export default function App() {
         });
     }
 
-    const preview = result?.imageUrl ?? selection?.url;
-    const synthetic = result?.source === 'synthetic';
     const page = {
         perception: {
             kicker: 'VISION & LECTURE',
@@ -395,277 +366,22 @@ export default function App() {
                     />
                 </div>
                 <div hidden={workspace !== 'perception'}>
-                    <div className="analysis-connection-bar">
-                        <span>
-                            <span className={`status-dot ${connection ? 'connected' : ''}`} />
-                            {connection
-                                ? 'Serveur connecté'
-                                : 'Connecte le serveur pour lancer une analyse.'}
-                        </span>
-                        <button
-                            className="text-button"
-                            onClick={() => navigate('settings')}
-                            disabled={!!busy}
-                        >
-                            Réglages API <StadiumIcon name="arrow" />
-                        </button>
-                    </div>
-                    <div className="app-grid">
-                        <aside className="controls">
-                            <section className="panel" aria-labelledby="image-title">
-                                <div className="section-heading">
-                                    <span className="step">01</span>
-                                    <h3 id="image-title">Choisir une capture</h3>
-                                </div>
-                                <button
-                                    className="secondary-button full-width tab-capture-button"
-                                    onClick={captureTab}
-                                    disabled={!isExtension() || !!busy}
-                                >
-                                    {busy === 'capture'
-                                        ? 'Capture en cours…'
-                                        : 'Capturer l’onglet actif'}
-                                </button>
-                                <p className="field-hint capture-hint">
-                                    {isExtension()
-                                        ? 'Capture la zone visible, puis choisis de l’envoyer pour analyse.'
-                                        : 'La capture d’onglet est disponible dans le popup Chrome.'}
-                                </p>
-                                <input
-                                    ref={fileInput}
-                                    id="capture-file"
-                                    className="visually-hidden"
-                                    type="file"
-                                    accept="image/png,image/jpeg"
-                                    aria-label="Choisir une image PNG ou JPEG"
-                                    onChange={chooseFile}
-                                    disabled={!!busy}
-                                />
-                                <button
-                                    className="file-picker"
-                                    onClick={() => fileInput.current?.click()}
-                                    disabled={!!busy}
-                                >
-                                    <span className="file-icon">
-                                        <FrameIcon />
-                                    </span>
-                                    <strong>
-                                        {selection ? 'Changer l’image' : 'Choisir une image'}
-                                    </strong>
-                                    <span>PNG ou JPEG · 5 Mio maximum</span>
-                                </button>
-                                {selection && (
-                                    <div className="file-info">
-                                        <strong>{selection.file.name}</strong>
-                                        <span>
-                                            {selection.width} × {selection.height} px ·{' '}
-                                            {(selection.file.size / 1024).toFixed(1)} Kio
-                                        </span>
-                                    </div>
-                                )}
-                                {selection?.tab && (
-                                    <div className="capture-context" role="status">
-                                        <strong>Capture locale de l’onglet</strong>
-                                        <span>
-                                            {new URL(selection.tab.context.viewport.href).origin}
-                                        </span>
-                                        <span>
-                                            Zone visible : {selection.tab.context.viewport.width} ×{' '}
-                                            {selection.tab.context.viewport.height} px CSS
-                                        </span>
-                                        <span>
-                                            Échelle image/page :{' '}
-                                            {(
-                                                selection.width /
-                                                selection.tab.context.viewport.width
-                                            ).toFixed(2)}
-                                            ×
-                                        </span>
-                                        <span>Aucun clic effectué.</span>
-                                    </div>
-                                )}
-                                <div className="stadium-action-row">
-                                    <button
-                                        className="primary-button full-width"
-                                        onClick={analyze}
-                                        disabled={!selection || !connection || !!busy}
-                                    >
-                                        {busy === 'analysis'
-                                            ? 'Analyse en cours…'
-                                            : 'Envoyer à l’API'}
-                                        <span aria-hidden="true">↗</span>
-                                    </button>
-                                </div>
-                                <p className="field-hint">
-                                    L’envoi commence uniquement avec ce bouton.
-                                </p>
-                                <div className="example-choice">
-                                    <span>Pour découvrir l’affichage</span>
-                                    <button
-                                        className="text-button"
-                                        onClick={showExample}
-                                        disabled={!!busy}
-                                    >
-                                        Voir un exemple synthétique →
-                                    </button>
-                                </div>
-                            </section>
-                        </aside>
-
-                        <section className="panel results-panel" aria-labelledby="results-title">
-                            <div className="section-heading result-heading">
-                                <span className="step">02</span>
-                                <h3 id="results-title">Examiner le résultat</h3>
-                                {result && (
-                                    <span
-                                        className={`source-badge ${synthetic ? 'synthetic' : ''}`}
-                                    >
-                                        {synthetic ? 'EXEMPLE FICTIF' : 'RÉPONSE API'}
-                                    </span>
-                                )}
-                            </div>
-                            {synthetic && (
-                                <div className="synthetic-notice">
-                                    <strong>Exemple synthétique · Données fictives</strong>
-                                    <p>
-                                        Cette image et ces rectangles ont été préparés pour le
-                                        développement. Ils ne sont pas issus d’une analyse par le
-                                        modèle.
-                                    </p>
-                                </div>
-                            )}
-
-                            {preview ? (
-                                <div className="image-preview">
-                                    <img
-                                        src={preview}
-                                        alt={
-                                            synthetic
-                                                ? 'Interface synthétique utilisée pour tester les échanges'
-                                                : 'Capture choisie pour l’analyse'
-                                        }
-                                    />
-                                    {result && (
-                                        <svg
-                                            className="box-overlay"
-                                            viewBox={`0 0 ${result.data.image.width} ${result.data.image.height}`}
-                                            aria-label="Localisation des éléments détectés"
-                                            role="img"
-                                        >
-                                            {result.data.elements.map((element, index) => (
-                                                <g key={element.id}>
-                                                    <rect
-                                                        x={element.bbox.x}
-                                                        y={element.bbox.y}
-                                                        width={element.bbox.width}
-                                                        height={element.bbox.height}
-                                                        vectorEffect="non-scaling-stroke"
-                                                    >
-                                                        <title>
-                                                            {KIND_LABELS[element.kind]} :{' '}
-                                                            {element.text ?? element.id}
-                                                        </title>
-                                                    </rect>
-                                                    <text
-                                                        x={element.bbox.x + 4}
-                                                        y={Math.max(18, element.bbox.y - 7)}
-                                                    >
-                                                        {index + 1}
-                                                    </text>
-                                                </g>
-                                            ))}
-                                        </svg>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="empty-state">
-                                    <div className="empty-illustration">
-                                        <FrameIcon />
-                                    </div>
-                                    <h4>Les éléments apparaîtront ici</h4>
-                                    <p>
-                                        Choisis une capture pour afficher son aperçu, puis envoie-la
-                                        au serveur pour obtenir son JSON.
-                                    </p>
-                                    <div className="flow-label">
-                                        <span>IMAGE</span>
-                                        <i>→</i>
-                                        <span>API VISION</span>
-                                        <i>→</i>
-                                        <span>JSON</span>
-                                    </div>
-                                </div>
-                            )}
-
-                            {result && (
-                                <div className="result-content">
-                                    <div className="result-summary">
-                                        <h4>
-                                            {result.data.elements.length} élément
-                                            {result.data.elements.length !== 1 ? 's' : ''}
-                                        </h4>
-                                        <span>
-                                            {result.data.image.width} × {result.data.image.height}{' '}
-                                            px
-                                        </span>
-                                    </div>
-                                    {result.data.elements.length === 0 && (
-                                        <p className="empty-detection">
-                                            L’analyse a réussi, mais aucun élément n’a été détecté.
-                                        </p>
-                                    )}
-                                    <ol className="element-list">
-                                        {result.data.elements.map((element, index) => (
-                                            <li key={element.id}>
-                                                <span className="element-number">{index + 1}</span>
-                                                <div className="element-description">
-                                                    <div>
-                                                        <span className="kind-label">
-                                                            {KIND_LABELS[element.kind]}
-                                                        </span>
-                                                        <strong>
-                                                            {element.text || element.id}
-                                                        </strong>
-                                                    </div>
-                                                    <small>
-                                                        x {element.bbox.x} · y {element.bbox.y} ·{' '}
-                                                        {element.bbox.width} × {element.bbox.height}{' '}
-                                                        px
-                                                    </small>
-                                                    {selection?.tab && !synthetic && (
-                                                        <ViewportPoint
-                                                            capture={selection.tab}
-                                                            box={element.bbox}
-                                                        />
-                                                    )}
-                                                    <span className="element-actions">
-                                                        {(element.actions ?? [])
-                                                            .map((action) => ACTION_LABELS[action])
-                                                            .join(' · ') || 'Lecture seule'}
-                                                    </span>
-                                                </div>
-                                                <span
-                                                    className="confidence"
-                                                    title="Score de confiance annoncé par le pipeline"
-                                                >
-                                                    {Math.round(element.confidence * 100)} %
-                                                </span>
-                                            </li>
-                                        ))}
-                                    </ol>
-                                    <details className="json-details">
-                                        <summary>
-                                            Voir le JSON {synthetic ? 'de l’exemple' : 'reçu'}
-                                        </summary>
-                                        <pre>{JSON.stringify(result.data, null, 2)}</pre>
-                                    </details>
-                                    <p className="model-caption">
-                                        Source : {result.data.model_name}
-                                    </p>
-                                </div>
-                            )}
-                        </section>
-                    </div>
+                    <PerceptionWorkspace
+                        selection={selection}
+                        result={result}
+                        connected={!!connection}
+                        busy={busy}
+                        onChoose={chooseFile}
+                        onCapture={captureTab}
+                        onAnalyze={analyze}
+                        onExample={showExample}
+                        onSettings={() => navigate('settings')}
+                        onClear={() => {
+                            setSelection(null);
+                            setResult(null);
+                            setNotice(null);
+                        }}
+                    />
                 </div>
                 <div hidden={workspace !== 'sbc'}>
                     <SbcWorkspace
@@ -708,21 +424,5 @@ export default function App() {
                 </footer>
             </div>
         </main>
-    );
-}
-
-function ViewportPoint({
-    capture,
-    box,
-}: {
-    capture: TabCapture;
-    box: Perception['elements'][number]['bbox'];
-}) {
-    const point = imagePointToViewport(capture, box);
-    return (
-        <small>
-            Centre dans la page : x {point.x.toFixed(1)} · y {point.y.toFixed(1)} px CSS ·
-            observation
-        </small>
     );
 }

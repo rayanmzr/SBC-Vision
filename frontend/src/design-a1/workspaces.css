@@ -1,0 +1,883 @@
+/* Les espaces de lecture et de connexion partagent la finition du terrain A1. */
+.stadium-app .analysis-workspace {
+    width: 100%;
+    min-width: 0;
+}
+.stadium-app .analysis-stage-rail {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-block: 1px solid #75846580;
+    margin-bottom: 14px;
+    background: #1b2318aa;
+}
+.stadium-app .analysis-stage-rail > span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 4px;
+    color: #aab69a;
+    font:
+        600 16px/1.2 'Stadium Barlow',
+        sans-serif;
+}
+.stadium-app .analysis-stage-rail b {
+    font-size: 12px;
+    font-weight: 600;
+    color: #a5b295;
+}
+.stadium-app .analysis-stage-rail [data-current='true'] {
+    color: var(--stadium-lime);
+    background: #d0ff220a;
+    box-shadow: inset 0 -2px var(--stadium-lime);
+}
+.stadium-app .analysis-stage-rail [data-complete='true'] {
+    color: #e8efde;
+}
+.stadium-app .analysis-stage-rail [data-current='true'] b {
+    color: var(--stadium-lime);
+}
+.stadium-app .analysis-layout {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    align-items: start;
+    gap: 18px;
+}
+.stadium-app .analysis-workspace[data-has-preview='true'] .analysis-layout {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 880px;
+    margin-inline: auto;
+}
+.stadium-app .analysis-acquisition {
+    min-width: 0;
+}
+.stadium-app .capture-source-panel .section-heading {
+    align-items: center;
+    margin-bottom: 20px;
+}
+.stadium-app .capture-subtitle {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 4px;
+}
+.stadium-app .capture-tab-action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 68px;
+    border: 1px solid #7f9366;
+    border-radius: 2px;
+    padding: 11px;
+    background: linear-gradient(135deg, #4a5e3266, #1b2819);
+    color: #edf5e0;
+    text-align: left;
+}
+.stadium-app .capture-tab-action > svg:first-child {
+    width: 24px;
+    height: 24px;
+    color: var(--stadium-lime);
+}
+.stadium-app .capture-tab-action > svg:last-child {
+    margin-left: auto;
+    width: 17px;
+    height: 17px;
+}
+.stadium-app .capture-tab-action strong {
+    display: block;
+    font-size: 12px;
+}
+.stadium-app .capture-tab-action small {
+    display: block;
+    margin-top: 3px;
+    font-size: 11px;
+    color: #c2d2af;
+}
+.stadium-app .capture-tab-action:hover:not(:disabled) {
+    background: #344829;
+}
+.stadium-app .capture-source-panel .capture-hint {
+    font-size: 11px;
+    margin-block: 9px 17px;
+}
+.stadium-app .capture-separator {
+    position: relative;
+    text-align: center;
+    color: #b5c5a4;
+    font-size: 11px;
+    margin-block: 14px;
+}
+.stadium-app .capture-separator::before {
+    content: '';
+    position: absolute;
+    inset: 50% 0 auto;
+    border-top: 1px solid #526343;
+}
+.stadium-app .capture-separator span {
+    position: relative;
+    background: #1c251a;
+    padding-inline: 9px;
+}
+.stadium-app .capture-source-panel .file-picker {
+    padding-block: 20px;
+    border-style: dashed;
+    gap: 5px;
+}
+.stadium-app .capture-source-panel .file-icon {
+    width: 34px;
+    height: 34px;
+}
+.stadium-app .capture-source-panel .example-choice {
+    margin-top: 17px;
+    padding-top: 13px;
+    gap: 7px;
+}
+.stadium-app .capture-source-panel .example-choice > span {
+    font-size: 11px;
+}
+.stadium-app .capture-source-panel .example-choice .text-button {
+    font-size: 12px;
+}
+.stadium-app .capture-submit-placeholder .primary-button {
+    font-size: 21px;
+}
+.stadium-app .capture-submit-placeholder .field-hint {
+    font-size: 11px;
+}
+.stadium-app .analysis-canvas-panel {
+    min-width: 0;
+    border: 1px solid #8e9b795c;
+    background: linear-gradient(145deg, #31392ae8, #10170f);
+    padding: 18px;
+    border-radius: 3px;
+    box-shadow:
+        inset 0 1px #d4dec72e,
+        0 2px 0 #070d09;
+}
+.stadium-app .analysis-empty {
+    text-align: center;
+    min-height: 445px;
+    padding: 25px 20px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.stadium-app .scan-stage {
+    position: relative;
+    width: min(260px, 100%);
+    aspect-ratio: 1.45;
+    margin: 0 auto 30px;
+}
+.stadium-app .scan-stage-field {
+    position: absolute;
+    inset: 18px 22px 4px;
+    background:
+        linear-gradient(125deg, #879c5b19, #0b1a0ac9),
+        url('./assets/pitch-grass.png') center/cover;
+    border: 1px solid #829669;
+    transform: perspective(500px) rotateX(12deg) rotateZ(-5deg);
+    box-shadow: 0 10px 25px #0004;
+}
+.stadium-app .scan-stage-field::before {
+    content: '';
+    position: absolute;
+    inset: 13%;
+    border: 1px solid #e0edbd70;
+}
+.stadium-app .scan-stage-field::after {
+    content: '';
+    position: absolute;
+    inset: 32% 35%;
+    border: 1px solid #e0edbd70;
+    border-radius: 50%;
+}
+.stadium-app .scan-stage-card {
+    position: absolute;
+    inset: 30% 32% 18%;
+    display: grid;
+    place-items: center;
+    background: #182016e8;
+    border: 1px solid #b9ce91;
+    transform: rotate(-5deg);
+}
+.stadium-app .scan-stage-card svg {
+    width: 35px;
+    height: 35px;
+    color: #e5f1c6;
+}
+.stadium-app .scan-stage-corners {
+    position: absolute;
+    inset: 9px 9px 0;
+    border: 1px solid #d0ff2240;
+    clip-path: polygon(
+        0 0,
+        20% 0,
+        20% 5%,
+        5% 5%,
+        5% 20%,
+        0 20%,
+        0 0,
+        100% 0,
+        100% 20%,
+        95% 20%,
+        95% 5%,
+        80% 5%,
+        80% 0,
+        100% 0,
+        100% 100%,
+        80% 100%,
+        80% 95%,
+        95% 95%,
+        95% 80%,
+        100% 80%,
+        100% 100%,
+        0 100%,
+        0 80%,
+        5% 80%,
+        5% 95%,
+        20% 95%,
+        20% 100%,
+        0 100%
+    );
+}
+.stadium-app .scan-stage-caption {
+    position: absolute;
+    right: 14px;
+    top: 0;
+    color: #c4dca0;
+    font:
+        600 10px/1 'Stadium Barlow',
+        sans-serif;
+    letter-spacing: 1.5px;
+}
+.stadium-app .analysis-empty-eyebrow {
+    color: var(--stadium-lime);
+    font-size: 11px;
+    letter-spacing: 1.8px;
+    margin-bottom: 9px;
+}
+.stadium-app .analysis-empty h3 {
+    font-size: 25px;
+}
+.stadium-app .analysis-empty > p {
+    max-width: 320px;
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+}
+.stadium-app .analysis-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 23px;
+    color: #b8ca9e;
+    font-size: 11px;
+    letter-spacing: 0.6px;
+}
+.stadium-app .analysis-flow svg {
+    width: 12px;
+    height: 12px;
+    color: #d0ff2270;
+}
+.stadium-app .analysis-source-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 12px;
+}
+.stadium-app .analysis-source-toolbar > .report-input-toggle {
+    flex: 1;
+}
+.stadium-app .analysis-source-toolbar > .text-button {
+    color: #c6d1b6;
+    font-size: 11px;
+}
+.stadium-app .analysis-preview-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+.stadium-app .analysis-preview-heading h3 {
+    font-size: 23px;
+}
+.stadium-app .analysis-preview-heading .source-badge {
+    margin-left: 0;
+}
+.stadium-app .capture-file-strip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px;
+    background: #111a10;
+    border: 1px solid #5b6e4588;
+    border-left: 2px solid var(--stadium-lime);
+    margin-bottom: 14px;
+}
+.stadium-app .capture-file-strip > svg {
+    color: #cde4a8;
+    width: 21px;
+    height: 21px;
+}
+.stadium-app .capture-file-strip > div {
+    min-width: 0;
+}
+.stadium-app .capture-file-strip strong {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+.stadium-app .capture-file-strip span {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 3px;
+}
+.stadium-app .analysis-canvas-panel .image-preview {
+    border-color: #718263;
+    background: #10170d;
+}
+.stadium-app .analysis-canvas-panel .synthetic-notice {
+    margin-bottom: 14px;
+}
+.stadium-app .analysis-canvas-panel .synthetic-notice strong {
+    font-size: 12px;
+}
+.stadium-app .analysis-canvas-panel .synthetic-notice p {
+    font-size: 11px;
+}
+.stadium-app .capture-ready {
+    margin-top: 17px;
+}
+.stadium-app .capture-ready > span {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #d6eab9;
+    font-size: 12px;
+}
+.stadium-app .capture-ready > span > svg {
+    width: 16px;
+    height: 16px;
+    color: var(--stadium-lime);
+}
+.stadium-app .capture-ready > p {
+    margin-top: 7px;
+    font-size: 12px;
+    color: var(--muted);
+}
+.stadium-app .capture-ready .stadium-action-row {
+    margin-top: 17px;
+}
+.stadium-app .capture-ready > .field-hint {
+    text-align: center;
+    font-size: 11px;
+}
+.stadium-app .capture-origin {
+    margin-top: 16px;
+    font-size: 11px;
+    color: #c4d8a7;
+}
+.stadium-app .capture-origin summary {
+    cursor: pointer;
+    padding-block: 7px;
+}
+.stadium-app .capture-origin .capture-context {
+    font-size: 11px;
+}
+.stadium-app .analysis-inspect-hint {
+    color: #abbc98;
+    font-size: 11px;
+    margin-top: -3px;
+    margin-bottom: 11px;
+}
+.stadium-app .analysis-element-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 7px;
+}
+.stadium-app .analysis-element-button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    color: var(--ink);
+    background: #172112;
+    border: 1px solid #526341;
+    border-radius: 2px;
+    padding: 11px;
+}
+.stadium-app .analysis-element-button:hover {
+    background: #26351e;
+}
+.stadium-app .analysis-element-button[aria-pressed='true'] {
+    border-color: #b6d47a;
+    background: linear-gradient(110deg, #a5c64520, #182314);
+    box-shadow: inset 2px 0 var(--stadium-lime);
+}
+.stadium-app .analysis-element-button .element-number {
+    width: 26px;
+    height: 30px;
+    font:
+        italic 800 16px/1 'Stadium Barlow',
+        sans-serif;
+    border: 1px solid #647e43;
+}
+.stadium-app .analysis-element-copy {
+    display: block;
+    flex: 1;
+    min-width: 0;
+}
+.stadium-app .analysis-element-copy .kind-label {
+    display: inline-block;
+    font-size: 11px;
+    padding: 1px 4px;
+    margin-bottom: 4px;
+}
+.stadium-app .analysis-element-copy strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+.stadium-app .analysis-element-copy small {
+    display: block;
+    font-size: 11px;
+    color: #becfaa;
+    margin-top: 5px;
+}
+.stadium-app .analysis-element-button .confidence {
+    font-size: 11px;
+    margin-left: 0;
+}
+.stadium-app .analysis-coordinates {
+    margin-top: 13px;
+    padding-block: 8px;
+    border-block: 1px solid #52634177;
+    color: #b8c7a4;
+    font-size: 11px;
+}
+.stadium-app .analysis-coordinates summary {
+    cursor: pointer;
+}
+.stadium-app .analysis-coordinates p,
+.stadium-app .analysis-coordinates small {
+    display: block;
+    margin-top: 8px;
+    color: #d2e0bd;
+}
+.stadium-app .analysis-canvas-panel .json-details {
+    margin-top: 12px;
+}
+.stadium-app .analysis-canvas-panel .model-caption {
+    font-size: 11px;
+}
+.stadium-app .analysis-canvas-panel .box-overlay {
+    pointer-events: none;
+}
+.stadium-app .analysis-canvas-panel .detected-box rect {
+    pointer-events: auto;
+    cursor: pointer;
+    fill: #3b694510;
+    stroke: #466b4e;
+    stroke-width: 1.5;
+}
+.stadium-app .analysis-canvas-panel .detected-box.selected rect {
+    fill: #b0d83a24;
+    stroke: #719a16;
+    stroke-width: 2.5;
+}
+.stadium-app .analysis-canvas-panel .detected-box text {
+    pointer-events: none;
+    font-size: 26px;
+    fill: #223910;
+}
+.stadium-app .analysis-canvas-panel .detected-box rect:focus-visible {
+    outline: 2px solid #263b0b;
+    stroke-width: 3;
+}
+.stadium-app .settings-server-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 21px;
+}
+.stadium-app .settings-server-icon {
+    display: grid;
+    place-items: center;
+    width: 39px;
+    height: 43px;
+    background: linear-gradient(140deg, #9baa6f25, #192411);
+    border: 1px solid #829361;
+    color: var(--stadium-lime);
+    transform: skew(-7deg);
+}
+.stadium-app .settings-server-icon svg {
+    width: 22px;
+    height: 22px;
+    transform: skew(7deg);
+}
+.stadium-app .settings-section-label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: #bacba3;
+    margin-bottom: 4px;
+}
+.stadium-app .settings-server-heading h3 {
+    font-size: 25px;
+}
+.stadium-app .settings-state-tag {
+    margin-left: auto;
+    background: #e1e7d5;
+    color: #29331d;
+    padding: 4px 6px;
+    border-radius: 2px;
+    font:
+        italic 600 13px/1.1 'Stadium Barlow',
+        sans-serif;
+    white-space: nowrap;
+}
+.stadium-app .settings-state-tag.is-connected {
+    background: var(--stadium-lime);
+}
+.stadium-app .settings-server-address {
+    padding: 11px 12px;
+    margin-bottom: 22px;
+    border-block: 1px solid #71835a99;
+    background: #15200f;
+}
+.stadium-app .settings-server-address > span {
+    display: block;
+    font-size: 11px;
+    color: #a8bd8b;
+    letter-spacing: 1.3px;
+    margin-bottom: 5px;
+}
+.stadium-app .settings-server-address strong {
+    display: block;
+    font:
+        600 22px/1.2 'Stadium Barlow',
+        sans-serif;
+    overflow-wrap: anywhere;
+    color: #e8f1d8;
+}
+.stadium-app .settings-field-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 9px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.stadium-app .settings-field-heading .field-label {
+    margin: 0;
+    font-size: 12px;
+}
+.stadium-app .settings-field-heading > span {
+    color: #a9bc8c;
+    font:
+        600 12px/1 'Stadium Barlow',
+        sans-serif;
+}
+.stadium-app .settings-input-frame {
+    display: flex;
+    align-items: center;
+    border: 1px solid #71825a;
+    background: #0d160e;
+    min-width: 0;
+}
+.stadium-app .settings-input-frame > svg {
+    width: 17px;
+    height: 17px;
+    color: #a3b98a;
+    margin-left: 11px;
+}
+.stadium-app .settings-input-frame > input {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding-left: 9px;
+    font-size: 12px;
+}
+.stadium-app .settings-input-frame:focus-within {
+    outline: 2px solid var(--stadium-lime);
+    outline-offset: 2px;
+}
+.stadium-app .settings-input-frame > input:focus-visible {
+    outline: none;
+}
+.stadium-app .settings-connection-form > .field-hint {
+    font-size: 11px;
+    margin-top: 7px;
+}
+.stadium-app .settings-field-heading.api-key-label {
+    margin-top: 20px;
+}
+.stadium-app .settings-key-help {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 9px;
+    margin-top: 7px;
+}
+.stadium-app .settings-key-help .field-hint {
+    margin: 0;
+    font-size: 11px;
+}
+.stadium-app .settings-key-help .text-button {
+    font-size: 11px;
+}
+.stadium-app .settings-connection-form .stadium-action-row {
+    margin-top: 21px;
+}
+.stadium-app .settings-connection-result {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    margin-top: 17px;
+    color: #cfddb9;
+    font-size: 11px;
+}
+.stadium-app .settings-model-state {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0 0;
+    margin-top: 14px;
+    border-top: 1px solid #7c815c77;
+    color: #ddce9b;
+}
+.stadium-app .settings-model-state > svg {
+    color: #dccb86;
+    width: 21px;
+    height: 21px;
+}
+.stadium-app .settings-model-state strong {
+    display: block;
+    font-size: 12px;
+}
+.stadium-app .settings-model-state p {
+    color: #c2bda0;
+    font-size: 11px;
+    margin-top: 4px;
+    line-height: 1.5;
+}
+.stadium-app .settings-model-state.ready,
+.stadium-app .settings-model-state.ready > svg {
+    color: #d7f6aa;
+}
+.stadium-app .settings-disclosure {
+    border-block: 1px solid #8b9b704d;
+    background: #1b2316c0;
+}
+.stadium-app .settings-disclosure summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 14px 12px;
+    list-style: none;
+}
+.stadium-app .settings-disclosure summary::-webkit-details-marker {
+    display: none;
+}
+.stadium-app .settings-small-icon {
+    display: grid;
+    place-items: center;
+    width: 31px;
+    height: 34px;
+    color: #c5db9e;
+    background: #27371d;
+    border: 1px solid #5e7548;
+}
+.stadium-app .settings-small-icon svg {
+    width: 17px;
+    height: 17px;
+}
+.stadium-app .settings-disclosure summary strong {
+    display: block;
+    font:
+        600 20px/1.1 'Stadium Barlow',
+        sans-serif;
+    color: #edf2e4;
+}
+.stadium-app .settings-disclosure summary small {
+    display: block;
+    font-size: 11px;
+    color: #aabe94;
+    margin-top: 4px;
+}
+.stadium-app .settings-chevron {
+    margin-left: auto;
+    color: #c5df9a;
+}
+.stadium-app .settings-chevron svg {
+    width: 16px;
+    height: 16px;
+}
+.stadium-app .settings-disclosure[open] .settings-chevron {
+    transform: rotate(90deg);
+}
+.stadium-app .settings-disclosure-body {
+    border-top: 1px solid #5d734344;
+    padding: 0 13px 14px;
+}
+.stadium-app .settings-disclosure-body > p {
+    font-size: 12px;
+    color: var(--muted);
+    padding-top: 13px;
+}
+.stadium-app .settings-disclosure .settings-retention {
+    margin-bottom: 0;
+}
+.stadium-app .settings-disclosure .settings-retention > div {
+    font-size: 11px;
+    padding-block: 10px;
+}
+.stadium-app .settings-disclosure .field-hint {
+    font-size: 11px;
+}
+.stadium-app .settings-footnote {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #afc098;
+    margin: 0;
+}
+.stadium-app .settings-footnote > svg {
+    width: 13px;
+    height: 13px;
+}
+.stadium-app[data-workspace='perception']:has(.analysis-workspace[data-has-preview='true'])
+    .intro
+    > p {
+    display: none;
+}
+.stadium-app[data-workspace='perception']:has(.analysis-workspace[data-has-preview='true']) .intro {
+    padding-block: 17px;
+}
+@media (max-width: 720px) {
+    .stadium-app .analysis-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 17px;
+    }
+    .stadium-app .capture-source-panel {
+        padding: 17px;
+    }
+    .stadium-app .analysis-empty {
+        min-height: 300px;
+        padding: 22px 8px;
+    }
+    .stadium-app .scan-stage {
+        width: 190px;
+        margin-bottom: 22px;
+    }
+    .stadium-app .analysis-empty h3 {
+        font-size: 23px;
+    }
+    .stadium-app .analysis-acquisition[hidden] {
+        display: none;
+    }
+    .stadium-app .analysis-canvas-panel {
+        padding: 14px;
+    }
+    .stadium-app .analysis-stage-rail > span {
+        padding-block: 8px;
+        font-size: 16px;
+    }
+    .stadium-app .capture-source-panel .section-heading {
+        margin-bottom: 16px;
+    }
+    .stadium-app .capture-source-panel .file-picker {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        padding-block: 17px;
+    }
+    .stadium-app .capture-source-panel .file-picker > span:last-child {
+        width: 100%;
+    }
+    .stadium-app .capture-source-panel .file-icon {
+        width: 26px;
+        height: 26px;
+        margin: 0;
+    }
+    .stadium-app .capture-source-panel .file-icon svg {
+        width: 16px;
+        height: 16px;
+    }
+    .stadium-app .capture-source-panel .example-choice {
+        align-items: center;
+    }
+    .stadium-app .capture-submit-placeholder .primary-button {
+        min-height: 39px;
+    }
+    .stadium-app .capture-tab-action small {
+        font-size: 11px;
+    }
+    .stadium-app .settings-workspace {
+        gap: 15px;
+    }
+    .stadium-app .settings-workspace .settings-server {
+        padding: 18px 16px;
+    }
+    .stadium-app .settings-workspace .settings-side {
+        gap: 12px;
+    }
+    .stadium-app .settings-server-heading {
+        gap: 10px;
+        margin-bottom: 17px;
+    }
+    .stadium-app .settings-server-heading h3 {
+        font-size: 24px;
+    }
+    .stadium-app .settings-server-address {
+        padding: 10px 11px;
+        margin-bottom: 18px;
+    }
+}
+@media (max-width: 380px) {
+    .stadium-app .settings-section-label {
+        font-size: 11px;
+        letter-spacing: 1px;
+    }
+    .stadium-app .settings-server-heading h3 {
+        font-size: 22px;
+    }
+    .stadium-app .settings-state-tag {
+        font-size: 12px;
+    }
+    .stadium-app .settings-server-icon {
+        width: 32px;
+        height: 38px;
+    }
+    .stadium-app .capture-tab-action strong {
+        font-size: 12px;
+    }
+    .stadium-app .analysis-element-copy strong {
+        font-size: 12px;
+    }
+    .stadium-app .analysis-preview-heading h3 {
+        font-size: 22px;
+    }
+}
+@media (pointer: coarse) {
+    .stadium-app .settings-input-frame > input {
+        font-size: 16px;
+    }
+    .stadium-app .analysis-element-button {
+        min-height: 58px;
+    }
+}

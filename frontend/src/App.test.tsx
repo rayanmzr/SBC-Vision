@@ -93,6 +93,7 @@ it('affiche la vraie erreur du pipeline après connexion et envoi manuel', async
 it('invalide la connexion et le résultat quand l’adresse API change', async () => {
     render(<App />);
     await connectAndChoose();
+    fireEvent.click(screen.getByRole('button', { name: 'Changer de capture' }));
     fireEvent.click(screen.getByRole('button', { name: /Voir un exemple synthétique/ }));
     await openSettings();
     fireEvent.change(screen.getByLabelText('Adresse du serveur'), {
@@ -215,4 +216,54 @@ it('montre une erreur d’authentification directement dans Réglages', async ()
     expect(screen.queryByText('API connectée')).toBeNull();
     openAnalysis();
     expect(screen.queryByRole('alert')).toBeNull();
+});
+
+it('relie la sélection d’un élément à son repère, sans contacter l’API', () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /Voir un exemple synthétique/ }));
+    const first = screen.getByRole('button', { name: 'Afficher l’élément 1 : Rechercher' });
+    const second = screen.getByRole('button', { name: 'Afficher l’élément 2 : Vérifier' });
+    expect(first.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(second);
+    expect(second.getAttribute('aria-pressed')).toBe('true');
+    expect(
+        screen
+            .getByRole('button', { name: 'Afficher le repère 2 : Vérifier' })
+            .getAttribute('aria-pressed'),
+    ).toBe('true');
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Afficher le repère 1 : Rechercher' }), {
+        key: 'Enter',
+    });
+    expect(first.getAttribute('aria-pressed')).toBe('true');
+    expect(fetch).not.toHaveBeenCalled();
+});
+
+it('retire la capture en mémoire sans envoyer d’image au serveur', async () => {
+    render(<App />);
+    await connectAndChoose();
+    const calls = vi.mocked(fetch).mock.calls.length;
+    expect(screen.queryByRole('button', { name: /Choisir une image PNG ou JPEG ·/ })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Retirer' }));
+    expect(screen.queryByText('capture.png')).toBeNull();
+    expect(screen.getByRole('button', { name: /Choisir une image PNG ou JPEG ·/ })).toBeTruthy();
+    expect(fetch).toHaveBeenCalledTimes(calls);
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:synthetic-test');
+});
+
+it('efface explicitement la clé sans lancer une nouvelle connexion', async () => {
+    render(<App />);
+    await openSettings();
+    fireEvent.change(screen.getByLabelText('Clé API (si demandée)'), {
+        target: { value: 'session-key-for-local-tests-123456789' },
+    });
+    fireEvent.submit(
+        screen.getByRole('button', { name: 'Vérifier la connexion' }).closest('form')!,
+    );
+    await screen.findByText('Serveur joignable · v0.1.0');
+    const calls = vi.mocked(fetch).mock.calls.length;
+    fireEvent.click(screen.getByRole('button', { name: 'Effacer la clé' }));
+    expect((screen.getByLabelText('Clé API (si demandée)') as HTMLInputElement).value).toBe('');
+    expect(sessionApiHeaders('http://127.0.0.1:8000')).toEqual({});
+    expect(screen.queryByText('API connectée')).toBeNull();
+    expect(fetch).toHaveBeenCalledTimes(calls);
 });
