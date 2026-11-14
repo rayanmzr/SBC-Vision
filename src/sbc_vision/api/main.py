@@ -30,6 +30,7 @@ async def lifespan(application: FastAPI):
         if mode == "lab-colors":
             application.state.perception_pipeline = previous
 
+
 app = FastAPI(
     lifespan=lifespan,
     title="SBC Vision",
@@ -67,7 +68,9 @@ def capabilities(
         "perception_mode": (
             "lab-colors"
             if isinstance(pipeline, LabColorPipeline)
-            else "custom" if pipeline else "disabled"
+            else "custom"
+            if pipeline
+            else "disabled"
         ),
         "ocr": False,
         "inventory": engine,
