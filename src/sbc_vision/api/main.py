@@ -1,17 +1,37 @@
 """API : santé, contrats et transport des captures vers le pipeline de perception."""
 
 import os
+from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Depends, FastAPI
 
 from sbc_vision import __version__
+from sbc_vision.api.perception import get_perception_pipeline
 from sbc_vision.api.perception import router as perception_router
 from sbc_vision.api.sbc_workspace import SbcConfig, get_sbc_config, sbc_available
 from sbc_vision.api.sbc_workspace import router as sbc_router
 from sbc_vision.contracts.perception import PerceptionResponse
+from sbc_vision.perception.lab_colors import LabColorPipeline
+from sbc_vision.perception.pipeline import PerceptionPipeline
+
+
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    mode = os.getenv("SBC_PERCEPTION_MODE", "disabled")
+    if mode not in {"disabled", "lab-colors"}:
+        raise RuntimeError("SBC_PERCEPTION_MODE doit valoir disabled ou lab-colors.")
+    previous = getattr(application.state, "perception_pipeline", None)
+    if mode == "lab-colors":
+        application.state.perception_pipeline = LabColorPipeline()
+    try:
+        yield
+    finally:
+        if mode == "lab-colors":
+            application.state.perception_pipeline = previous
 
 app = FastAPI(
+    lifespan=lifespan,
     title="SBC Vision",
     version=__version__,
     description=(
@@ -38,11 +58,17 @@ def health() -> dict[str, str | bool]:
 @app.get("/api/v1/capabilities", tags=["system"])
 def capabilities(
     config: Annotated[SbcConfig | None, Depends(get_sbc_config)],
+    pipeline: Annotated[PerceptionPipeline | None, Depends(get_perception_pipeline)],
 ) -> dict[str, bool | str]:
     engine = sbc_available(config)
     return {
         "stage": "foundation",
-        "perception": False,
+        "perception": pipeline is not None,
+        "perception_mode": (
+            "lab-colors"
+            if isinstance(pipeline, LabColorPipeline)
+            else "custom" if pipeline else "disabled"
+        ),
         "ocr": False,
         "inventory": engine,
         "solver": engine,
