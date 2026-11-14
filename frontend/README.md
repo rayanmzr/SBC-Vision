@@ -27,6 +27,11 @@ connexion. La clé reste uniquement en mémoire pour l'adresse exacte de l'API ;
 changer de serveur ou fermer la page l'efface. La modifier invalide aussi la connexion
 et l'inventaire affiché. Les routes métier la reçoivent dans l'en-tête `Authorization`.
 Voir le [guide Docker et partage](../docs/DEPLOYMENT.md).
+
+Le [kit graphique A1 — Stade](../docs/design/ASSETS_A1.md) prépare le visuel retenu :
+assets séparés, polices locales et aperçu de onze cartes sur
+<http://127.0.0.1:5173/design-assets.html>. Cet aperçu utilise uniquement des données
+fictives et conserve le point d'entrée du popup fonctionnel.
 Sans pipeline configuré, un PNG valide provoque une erreur `503 perception_unavailable`.
 Ce retour vérifie le transport de la capture et la gestion des erreurs, pas la vision.
 

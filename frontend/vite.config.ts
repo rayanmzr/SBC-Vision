@@ -17,7 +17,9 @@ export default defineConfig({
     preview: { port: 4173, strictPort: true, proxy },
     build: {
         target: 'chrome120',
-        rolldownOptions: { input: { app: 'index.html', lab: 'controller-lab.html' } },
+        rolldownOptions: {
+            input: { app: 'index.html', lab: 'controller-lab.html', design: 'design-assets.html' },
+        },
     },
     test: { environment: 'node', restoreMocks: true },
 });

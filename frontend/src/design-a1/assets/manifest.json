@@ -1,0 +1,76 @@
+{
+  "direction": "A1 — Stade",
+  "reference": "../../../../docs/design/references/piste-a-board.png",
+  "assets": [
+    {
+      "file": "brand-mark.svg",
+      "bytes": 459,
+      "sha256": "deee0efdc49663fb30839f2943ce84fca1e6743403361ec06cf4a2fdb3921573"
+    },
+    {
+      "file": "card-gold.png",
+      "bytes": 2178330,
+      "sha256": "9d0b1ef0d3d580360581a0b2cb3ece6fa888586ff2fe98f9d8fdbd06fc05a206",
+      "width": 1093,
+      "height": 1439,
+      "mode": "RGBA",
+      "alpha_extrema": [0, 255]
+    },
+    {
+      "file": "card-mask.svg",
+      "bytes": 206,
+      "sha256": "2d5eb2576bb73ff4cb3a486d1a6bf313b5dc0df8a4837d919747b00e2f63706f"
+    },
+    {
+      "file": "charcoal-surface.png",
+      "bytes": 2076338,
+      "sha256": "97a59d40ab763ea5cd8550c880f978908f8175ba2a301bd0071158ec6c74f49b",
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB"
+    },
+    {
+      "file": "fonts/Barlow-ExtraBoldItalic.ttf",
+      "bytes": 113112,
+      "sha256": "5a78d6f6b7281ac38af2479d87209712457a91478019f9542abfd78fe8bdb332"
+    },
+    {
+      "file": "fonts/BarlowCondensed-SemiBold.ttf",
+      "bytes": 109428,
+      "sha256": "7b619d14bc2327509a9ef32b0890f709626f7ecc9ff61191c2a4314c5499d2d9"
+    },
+    {
+      "file": "fonts/OFL-Barlow.txt",
+      "bytes": 4377,
+      "sha256": "186d750eb496a4c17a76385f82be6aea2ac1cf2de074a811d63786cf374ea73f"
+    },
+    {
+      "file": "fonts/OFL.txt",
+      "bytes": 4377,
+      "sha256": "186d750eb496a4c17a76385f82be6aea2ac1cf2de074a811d63786cf374ea73f"
+    },
+    {
+      "file": "fonts/SOURCE.json",
+      "bytes": 392,
+      "sha256": "772162efa79e672a3bbeed4d755ef488a5c8f38ee8ed5f255e316c2d1df8630e"
+    },
+    {
+      "file": "pitch-grass.png",
+      "bytes": 2425405,
+      "sha256": "c1e745788f86c4ef1eef43e7c3c1c3e23d132bdde90134d3a6450317f435ffec",
+      "width": 1122,
+      "height": 1402,
+      "mode": "RGB"
+    },
+    {
+      "file": "pitch-lines.svg",
+      "bytes": 600,
+      "sha256": "c1fdd8ec739699a6afc8abd241ac823a88d784877951b5b45f2007232bbd066f"
+    },
+    {
+      "file": "player-silhouette.svg",
+      "bytes": 390,
+      "sha256": "6dc0a7b008d9f209b815f1cbcbe3edaadf9a714b7058ffa14eee24ac46e4a56c"
+    }
+  ]
+}

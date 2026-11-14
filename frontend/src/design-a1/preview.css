@@ -1,0 +1,212 @@
+body:has(#design-root) {
+    margin: 0;
+    background: #f0f1eb;
+    color: #20271c;
+    font:
+        14px/1.5 system-ui,
+        sans-serif;
+}
+.design-preview {
+    padding: 30px;
+    max-width: 1130px;
+    margin: auto;
+}
+.design-preview * {
+    box-sizing: border-box;
+}
+.design-preview-header {
+    display: flex;
+    gap: 24px;
+    align-items: end;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+.design-preview-header h1 {
+    font-size: 36px;
+    letter-spacing: -1.5px;
+    margin: 5px 0;
+}
+.design-preview-header p {
+    margin: 0;
+    max-width: 500px;
+    color: #5c6758;
+}
+.design-preview-header a {
+    color: #324728;
+    text-underline-offset: 4px;
+    font-size: 13px;
+    white-space: nowrap;
+}
+.design-preview .design-kicker {
+    font-size: 11px;
+    letter-spacing: 1.7px;
+    font-weight: 700;
+    color: #546642;
+    margin: 0;
+}
+.design-preview-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 480px) minmax(0, 1fr);
+    gap: 60px;
+    align-items: start;
+}
+.design-preview-stage {
+    min-width: 0;
+}
+.design-preview-frame {
+    width: 100%;
+    margin: auto;
+    box-shadow: 0 12px 35px #14270a20;
+}
+.design-preview-controls {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0 auto 13px;
+    max-width: 440px;
+    flex-wrap: wrap;
+}
+.design-preview-controls span {
+    margin-right: auto;
+    font-size: 12px;
+    color: #65715e;
+}
+.design-preview-controls button {
+    border: 1px solid #b7c0ae;
+    background: transparent;
+    padding: 6px 9px;
+    border-radius: 4px;
+    color: #36472d;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+}
+.design-preview-controls button[aria-pressed='true'] {
+    color: #f7f8f4;
+    background: #344b2a;
+}
+.design-preview-controls a {
+    font-size: 12px;
+    color: #344b2a;
+    margin-left: 6px;
+}
+.design-preview-caption {
+    max-width: 440px;
+    margin: 13px auto 0;
+    color: #66735e;
+    font-size: 12px;
+}
+.design-assets-catalogue {
+    padding-top: 40px;
+}
+.design-assets-catalogue h2 {
+    font-size: 25px;
+    letter-spacing: -0.7px;
+    margin: 6px 0 9px;
+}
+.design-assets-catalogue > p:not(.design-kicker) {
+    color: #62705a;
+    font-size: 13px;
+    margin-top: 0;
+}
+.design-assets-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 15px;
+    margin-top: 22px;
+}
+.design-asset {
+    min-width: 0;
+    color: #293b20;
+    text-decoration: none;
+}
+.design-asset-image {
+    display: grid;
+    place-items: center;
+    height: 120px;
+    background: #192216;
+    border: 1px solid #b5c1a9;
+    overflow: hidden;
+}
+.design-asset-image img {
+    max-width: 100%;
+    max-height: 110px;
+    object-fit: contain;
+}
+.design-asset:nth-child(-n + 2) img {
+    width: 100%;
+    height: 120px;
+    max-height: none;
+    object-fit: cover;
+}
+.design-asset > strong {
+    display: block;
+    font-size: 12px;
+    margin-top: 6px;
+}
+.design-asset > span {
+    display: block;
+    color: #6b775f;
+    font-size: 10px;
+    overflow-wrap: anywhere;
+    margin-top: 2px;
+}
+.design-font-sample {
+    margin-top: 27px;
+    border-top: 1px solid #b9c4af;
+    padding-top: 18px;
+}
+.design-font-sample > span {
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    color: #6b775f;
+}
+.design-font-sample > strong {
+    display: block;
+    font:
+        italic 800 27px/1.2 'Stadium Barlow',
+        sans-serif;
+    margin-top: 5px;
+}
+.design-font-sample > p {
+    font-size: 12px;
+    color: #6b775f;
+}
+.design-popup {
+    padding: 0;
+    margin: 0;
+}
+.design-popup .design-preview-layout {
+    display: block;
+}
+.design-popup .design-preview-frame {
+    margin: 0;
+    box-shadow: none;
+}
+@media (max-width: 850px) {
+    .design-preview-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 25px;
+    }
+    .design-assets-catalogue {
+        max-width: 440px;
+        margin: auto;
+        padding-top: 0;
+    }
+    .design-preview-header {
+        align-items: start;
+        flex-direction: column;
+        gap: 12px;
+    }
+}
+@media (max-width: 500px) {
+    .design-preview:not(.design-popup) {
+        padding: 22px 10px;
+    }
+    .design-preview-header {
+        padding-inline: 5px;
+    }
+    .design-preview-header h1 {
+        font-size: 30px;
+    }
+}
