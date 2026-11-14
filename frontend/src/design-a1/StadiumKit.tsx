@@ -27,7 +27,7 @@ export function StadiumBrand() {
 export function StadiumIcon({
     name,
 }: {
-    name: 'bag' | 'expand' | 'scan' | 'arrow' | 'image' | 'server' | 'lock';
+    name: 'bag' | 'expand' | 'close' | 'scan' | 'arrow' | 'image' | 'server' | 'lock';
 }) {
     return (
         <svg
@@ -44,6 +44,7 @@ export function StadiumIcon({
                 </>
             )}
             {name === 'expand' && <path d="M14 4h6v6m0-6L10 14m-1-9H4v15h15v-5" />}
+            {name === 'close' && <path d="m5 5 14 14M19 5 5 19" />}
             {name === 'scan' && <path d="M8 3H3v5m13-5h5v5m0 8v5h-5M3 16v5h5M7 12h10" />}
             {name === 'arrow' && <path d="m9 5 7 7-7 7" />}
             {name === 'image' && (
@@ -88,6 +89,19 @@ export function StadiumCard({
             onClick={onSelect}
         >
             <span className="stadium-card-outline" />
+            <StadiumCardFace player={player} />
+        </button>
+    );
+}
+
+// Illustration seule pour les achats ; elle ne crée pas de faux bouton.
+export function StadiumCardFace({
+    player,
+}: {
+    player: Pick<StadiumPlayer, 'rating' | 'position' | 'origin'>;
+}) {
+    return (
+        <>
             <img className="stadium-card-gold" src={goldCard} alt="" draggable="false" />
             <img className="stadium-card-portrait" src={silhouette} alt="" draggable="false" />
             <strong className="stadium-card-rating">{player.rating}</strong>
@@ -97,7 +111,7 @@ export function StadiumCard({
                     <StadiumIcon name="bag" />
                 </span>
             )}
-        </button>
+        </>
     );
 }
 
@@ -114,7 +128,13 @@ export function StadiumPitch({
     onSelect: (id: string) => void;
 }) {
     return (
-        <section className="stadium-pitch" aria-label={`Composition ${formation}`}>
+        <section
+            className="stadium-pitch"
+            aria-label={`Composition ${formation}`}
+            data-dense={placements.some(
+                ({ y }) => placements.filter((item) => item.y === y).length >= 5,
+            )}
+        >
             <div className="stadium-grass" />
             <img className="stadium-pitch-lines" src={pitchLines} alt="" />
             <span className="stadium-formation">{formation}</span>

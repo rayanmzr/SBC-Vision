@@ -7,7 +7,7 @@ import PerceptionWorkspace, {
     type CaptureSelection as Selection,
     type PerceptionResult as Result,
 } from './PerceptionWorkspace';
-import { StadiumBrand } from './design-a1/StadiumKit';
+import { StadiumBrand, StadiumIcon } from './design-a1/StadiumKit';
 import { clearSessionApiKey, setSessionApiKey } from './lib/api-key';
 import ControllerWorkspace from './ControllerWorkspace';
 import { nativeLabAdapter } from './lib/lab-adapter';
@@ -277,16 +277,31 @@ export default function App() {
                     </button>
                     {isExtension() && (
                         <button
-                            className="text-button"
+                            className="header-icon-button"
+                            aria-label="Ouvrir dans un onglet"
+                            title="Ouvrir dans un onglet"
                             onClick={() =>
                                 openWorkspace().catch((error) =>
                                     setNotice(describeError(error, 'Ouverture impossible')),
                                 )
                             }
                         >
-                            Ouvrir dans un onglet ↗
+                            <StadiumIcon name="expand" />
                         </button>
                     )}
+                    {isExtension() &&
+                        new URLSearchParams(location.search).get('view') === 'popup' && (
+                            <button
+                                className="header-icon-button"
+                                type="button"
+                                aria-label="Fermer le popup"
+                                title="Fermer le popup"
+                                disabled={!!busy || controllerRunning}
+                                onClick={() => window.close()}
+                            >
+                                <StadiumIcon name="close" />
+                            </button>
+                        )}
                 </div>
             </header>
             <nav className="workspace-nav main-nav" aria-label="Espace de travail">

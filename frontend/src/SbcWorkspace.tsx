@@ -9,6 +9,7 @@ import {
 } from 'react';
 import SbcApiPanel from './SbcApiPanel';
 import SbcSquadPreview from './SbcSquadPreview';
+import { StadiumCardFace, StadiumIcon } from './design-a1/StadiumKit';
 import { squadLayout } from './lib/squad-layout';
 import { DEFAULT_API_URL } from './lib/platform';
 import type { ApiProposal } from './lib/sbc-api';
@@ -192,7 +193,27 @@ export default function SbcWorkspace({
               : 'Rapport importé';
 
     return (
-        <section className="sbc-workspace" aria-label="Rapport de composition SBC">
+        <section
+            className="sbc-workspace"
+            aria-label="Rapport de composition SBC"
+            data-report-state={
+                dirty ? 'dirty' : (report?.solution.status ?? parsed?.kind ?? 'empty')
+            }
+        >
+            {hasHero && report && (
+                <SbcSquadPreview
+                    key={document!.name + JSON.stringify(report.solution.assignments)}
+                    report={report}
+                    sourceLabel={sourceLabel}
+                    shoppingOpen={shoppingOpen}
+                    onShopping={() => setShoppingOpen((value) => !value)}
+                />
+            )}
+            {hasHero && report && (
+                <div id="report-shopping-content" hidden={!shoppingOpen}>
+                    <ShoppingReport report={report} />
+                </div>
+            )}
             <div className="report-input-area">
                 {hasHero && (
                     <button
@@ -295,6 +316,11 @@ export default function SbcWorkspace({
             )}
             {!document && !error && source !== 'api' && (
                 <div className="panel report-empty">
+                    <div className="squad-empty-art" aria-hidden="true">
+                        <i />
+                        <i />
+                        <i />
+                    </div>
                     <h3>Du JSON à la composition proposée</h3>
                     <p>
                         Ouvre une proposition exportée par le moteur ou explore l’exemple fictif
@@ -307,20 +333,6 @@ export default function SbcWorkspace({
             )}
             {document && (
                 <>
-                    {hasHero && report && (
-                        <SbcSquadPreview
-                            key={document.name + JSON.stringify(report.solution.assignments)}
-                            report={report}
-                            sourceLabel={sourceLabel}
-                            shoppingOpen={shoppingOpen}
-                            onShopping={() => setShoppingOpen((value) => !value)}
-                        />
-                    )}
-                    {hasHero && report && (
-                        <div id="report-shopping-content" hidden={!shoppingOpen}>
-                            <ShoppingReport report={report} />
-                        </div>
-                    )}
                     <ReportFold
                         title={
                             document.source === 'synthetic'
@@ -407,7 +419,7 @@ export default function SbcWorkspace({
                                     ) : null}
                                 </div>
                             </ReportFold>
-                            {!hasHero && (
+                            {!hasHero && showComposition && (
                                 <div className="cost-grid" aria-label="Coûts du rapport">
                                     <Cost
                                         label="Achats suggérés"
@@ -679,17 +691,36 @@ function ReportFold({
 }
 
 function ShoppingReport({ report }: { report: SolverReport }) {
+    const items = purchases(report);
+    const quantity = items.reduce((total, item) => total + item.quantity, 0);
     return (
         <section className="panel report-shopping" aria-labelledby="shopping-title">
-            <h3 id="shopping-title">Achats suggérés</h3>
+            <header className="shopping-heading">
+                <span className="shopping-heading-icon">
+                    <StadiumIcon name="bag" />
+                </span>
+                <h3 id="shopping-title">Achats suggérés</h3>
+                <span className="kind-label">
+                    {quantity} {quantity === 1 ? 'carte' : 'cartes'}
+                </span>
+            </header>
             <p className="field-hint">
                 Prix du rapport uniquement : ils ne garantissent pas une offre disponible.
             </p>
-            {purchases(report).length ? (
+            {items.length ? (
                 <ul>
-                    {purchases(report).map(({ card, quantity }) => (
+                    {items.map(({ card, quantity }) => (
                         <li key={card.key}>
-                            <div>
+                            <span className="shopping-card" aria-hidden="true">
+                                <StadiumCardFace
+                                    player={{
+                                        rating: card.rating,
+                                        position: card.positions[0] ?? '—',
+                                        origin: 'purchase',
+                                    }}
+                                />
+                            </span>
+                            <div className="shopping-player">
                                 <strong>
                                     {quantity} × {card.name}
                                 </strong>
@@ -708,6 +739,12 @@ function ShoppingReport({ report }: { report: SolverReport }) {
                 <p className="report-placeholder">
                     Tous les exemplaires proposés proviennent du club.
                 </p>
+            )}
+            {!!items.length && (
+                <div className="shopping-total">
+                    <span>Total des achats du rapport</span>
+                    <strong>{credits(report.solution.purchase_cost)}</strong>
+                </div>
             )}
         </section>
     );

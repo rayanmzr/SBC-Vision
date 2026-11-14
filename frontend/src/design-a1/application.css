@@ -1,5 +1,5 @@
 body:has(.stadium-app) {
-    background: #0c120d;
+    background: #101310;
 }
 .stadium-kit.stadium-app {
     --ink: #f1f3e9;
@@ -25,6 +25,29 @@ body:has(.stadium-app) {
 }
 .stadium-app .header-actions {
     gap: 6px;
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+}
+.stadium-app .header-icon-button {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 32px;
+    padding: 4px;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    background: transparent;
+    color: #edf0e6;
+}
+.stadium-app .header-icon-button svg {
+    width: 21px;
+    height: 21px;
+}
+.stadium-app .header-icon-button:hover {
+    color: var(--stadium-lime);
+    background: #ffffff0a;
+    border-color: #79836c;
 }
 .stadium-app .phase-badge {
     display: inline-flex;
@@ -56,7 +79,7 @@ body:has(.stadium-app) {
     border: 0;
     border-block: 1px solid #879279;
     border-radius: 0;
-    background: linear-gradient(150deg, #68716480, #1b211c 78%);
+    background: linear-gradient(150deg, #7b807580, #1b1e1b 78%);
     color: #f2f4e9;
     font:
         600 22px/1.15 'Stadium Barlow',
@@ -70,6 +93,17 @@ body:has(.stadium-app) {
     font-weight: 800;
     font-style: italic;
     box-shadow: none;
+}
+.stadium-app .main-nav > button:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 3px #f6f5ed;
+}
+.stadium-app :is(.primary-button, .stadium-cta):focus-visible {
+    box-shadow: inset 0 0 0 3px #172311;
+}
+.stadium-app .stadium-action-row:has(button:disabled)::before,
+.stadium-app .stadium-action-row:has(button:disabled)::after {
+    opacity: 0.4;
 }
 .stadium-app .app-page {
     padding: 0 22px 14px;
@@ -110,7 +144,7 @@ body:has(.stadium-app) {
     margin-bottom: 0;
 }
 .stadium-app .panel {
-    background: linear-gradient(140deg, #32382ce0, #121913ed);
+    background: linear-gradient(140deg, #363b32e0, #151915ed);
     border: 1px solid #8e9b795c;
     border-radius: 3px;
     box-shadow:
@@ -884,16 +918,15 @@ body:has(.stadium-app) {
     aspect-ratio: 1.05;
 }
 .stadium-app .squad-hero .stadium-selected {
-    border-radius: 0;
+    border-radius: 8px;
     border-color: #a7b398;
     min-height: 43px;
-    background: linear-gradient(130deg, #6b74665c, #172019);
+    background: linear-gradient(130deg, #747a6c80, #171c18);
 }
 .stadium-app .squad-hero .stadium-selected strong {
     font:
         600 20px/1.15 'Stadium Barlow',
         sans-serif;
-    overflow-wrap: anywhere;
 }
 .stadium-app .squad-hero .stadium-origin {
     font:
@@ -906,9 +939,17 @@ body:has(.stadium-app) {
     font-size: 24px;
 }
 .stadium-app .squad-hero .squad-card-detail {
-    margin-top: 5px;
-    font-size: 10px;
+    margin-top: 12px;
+    font-size: 11px;
     color: #c9d3be;
+}
+.stadium-app .squad-card-detail summary {
+    cursor: pointer;
+    padding-block: 5px;
+}
+.stadium-app .squad-card-detail p {
+    margin-top: 5px;
+    padding-left: 12px;
 }
 .stadium-app .squad-hero .stadium-costs {
     margin-top: 8px;
@@ -927,31 +968,26 @@ body:has(.stadium-app) {
     font:
         italic 800 31px/1.05 'Stadium Barlow',
         sans-serif;
-    letter-spacing: -0.7px;
-}
-.stadium-app .squad-hero .stadium-total {
-    position: relative;
-    background: linear-gradient(115deg, transparent 8%, #b6e62620 8% 91%, transparent 91%);
-}
-.stadium-app .squad-hero .stadium-total::after {
-    content: '';
-    position: absolute;
-    left: 7%;
-    right: 8%;
-    bottom: 0;
-    height: 2px;
-    background: var(--stadium-lime);
-    transform: skew(-15deg);
+    letter-spacing: 0;
+    font-size: clamp(13px, calc(44cqw / var(--amount-characters, 6)), 31px);
+    white-space: nowrap;
 }
 .stadium-app .squad-hero .stadium-budget-line {
     font:
         600 16px/1.2 'Stadium Barlow',
         sans-serif;
+    flex-wrap: wrap;
+}
+.stadium-app .squad-hero .stadium-purchases-caption {
+    margin-left: auto;
 }
 .stadium-app .squad-hero .stadium-budget {
     transform: skew(-8deg);
     padding: 3px 7px;
-    border-radius: 3px;
+    border-radius: 7px;
+    font-size: 17px;
+    font-weight: 800;
+    font-style: italic;
 }
 .stadium-app .squad-hero .stadium-cta {
     font-family: 'Stadium Barlow', sans-serif;
@@ -959,7 +995,7 @@ body:has(.stadium-app) {
 }
 .stadium-app .squad-hero-caption {
     text-align: center;
-    font-size: 10px;
+    font-size: 11px;
     color: #afbea0;
     margin-top: 9px;
 }
@@ -1112,7 +1148,7 @@ body:has(.stadium-app) {
         font-size: 16px;
     }
     .stadium-app .squad-hero .stadium-costs strong {
-        font-size: 26px;
+        font-size: clamp(13px, calc(44cqw / var(--amount-characters, 6)), 26px);
     }
     .stadium-app .squad-hero .stadium-selected strong {
         font-size: 18px;
@@ -1120,10 +1156,258 @@ body:has(.stadium-app) {
     .stadium-app .squad-hero .stadium-budget-line {
         font-size: 14px;
     }
+    .stadium-app .squad-hero .stadium-budget {
+        font-size: 15px;
+    }
     .stadium-app .squad-hero .stadium-origin {
         font-size: 14px;
     }
     .stadium-app .squad-hero .stadium-cta {
         font-size: 24px !important;
+    }
+}
+
+/* Éléments secondaires contrôlés lors de l'audit A1. */
+.stadium-app
+    .sbc-workspace:has(.squad-hero)
+    > :is(.report-input-area, .report-fold, .report-json, #report-shopping-content) {
+    width: 100%;
+    max-width: 650px;
+    margin-inline: auto;
+}
+.stadium-app .squad-empty-state {
+    text-align: center;
+    padding: 20px 10px 14px;
+}
+.stadium-app .squad-empty-state h4 {
+    color: var(--stadium-text);
+    font:
+        600 25px/1.2 'Stadium Barlow',
+        sans-serif;
+    margin: 0;
+}
+.stadium-app .squad-empty-state p {
+    max-width: 370px;
+    margin: 9px auto 0;
+    font-size: 12px;
+    color: var(--muted);
+}
+.stadium-app .squad-empty-art {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 115px;
+    margin: 0 auto 15px;
+}
+.stadium-app .squad-empty-art i {
+    display: block;
+    width: 64px;
+    height: 86px;
+    background:
+        linear-gradient(140deg, #d0ff2255, #4a5d3522),
+        url('./assets/card-gold.png') center/contain no-repeat;
+    mask: url('./assets/card-mask.svg') center/100% 100% no-repeat;
+    opacity: 0.4;
+    filter: saturate(0.2);
+    transform: rotate(-14deg) translateX(12px);
+}
+.stadium-app .squad-empty-art i:nth-child(2) {
+    transform: translateY(-7px);
+    opacity: 0.65;
+    z-index: 1;
+}
+.stadium-app .squad-empty-art i:nth-child(3) {
+    transform: rotate(14deg) translateX(-12px);
+}
+.stadium-app .report-examples {
+    padding: 15px;
+    border: 1px solid #77826566;
+    background: linear-gradient(140deg, #333b2d99, #151a13);
+}
+.stadium-app .report-toolbar {
+    border-left: 3px solid var(--stadium-lime);
+}
+.stadium-app .sbc-workspace[data-report-state='infeasible'] .report-state {
+    border-left: 3px solid #e49d82;
+}
+.stadium-app
+    .sbc-workspace:is(
+        [data-report-state='unknown'],
+        [data-report-state='uncertain'],
+        [data-report-state='dirty']
+    )
+    .report-state {
+    border-left: 3px solid #d6c37e;
+}
+.stadium-app .shopping-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.stadium-app .shopping-heading h3 {
+    flex: 1;
+}
+.stadium-app .shopping-heading-icon {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 35px;
+    border: 1px solid #7c9656;
+    background: #29371d;
+    color: var(--stadium-lime);
+}
+.stadium-app .shopping-heading-icon svg {
+    width: 21px;
+    height: 21px;
+}
+.stadium-app .report-shopping li {
+    align-items: center;
+    gap: 12px;
+    padding-block: 14px;
+}
+.stadium-app .shopping-card {
+    position: relative;
+    display: block;
+    width: 52px;
+    aspect-ratio: 100/130;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 2px #0008);
+    color: #171a10;
+}
+.stadium-app .shopping-card .stadium-card-rating {
+    color: #171a10;
+    font:
+        italic 800 17px/1 'Stadium Barlow',
+        sans-serif;
+}
+.stadium-app .shopping-card .stadium-card-position {
+    font:
+        italic 800 10px/1 'Stadium Barlow',
+        sans-serif;
+}
+.stadium-app .shopping-card .stadium-card-purchase {
+    display: none;
+}
+.stadium-app .shopping-player {
+    flex: 1;
+    min-width: 0;
+}
+.stadium-app .shopping-player strong {
+    font:
+        600 19px/1.2 'Stadium Barlow',
+        sans-serif;
+}
+.stadium-app .report-shopping small {
+    font-size: 11px;
+}
+.stadium-app .shopping-price {
+    min-width: 0;
+    max-width: 42%;
+}
+.stadium-app .shopping-price > strong {
+    color: #e3f6c6;
+}
+.stadium-app .shopping-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 15px;
+    padding: 11px 12px;
+    background: #d0ff220b;
+    border: 1px solid #91ac5066;
+}
+.stadium-app .shopping-total > span {
+    font-size: 12px;
+    color: #c2d2b0;
+}
+.stadium-app .shopping-total > strong {
+    color: var(--stadium-lime);
+    font:
+        italic 800 23px/1.1 'Stadium Barlow',
+        sans-serif;
+    text-align: right;
+}
+.stadium-app .controller-workspace {
+    display: grid;
+    grid-template-columns: minmax(230px, 0.7fr) minmax(0, 1.3fr);
+    align-items: start;
+    gap: 18px;
+}
+.stadium-app .controller-source {
+    border-left: 3px solid var(--stadium-lime);
+}
+.stadium-app .controller-workspace .controller-panel {
+    margin-top: 0;
+}
+.stadium-app .controller-source select,
+.stadium-app .controller-panel select {
+    margin-top: 10px;
+}
+.stadium-app .controller-panel > h3 {
+    margin-bottom: 8px;
+}
+.stadium-app .controller-panel > .field-label {
+    display: block;
+    margin-top: 20px;
+}
+.stadium-app .controller-budget input {
+    max-width: 100px;
+    margin-top: 8px;
+    display: block;
+}
+.stadium-app .controller-buttons {
+    flex-direction: column;
+    gap: 9px;
+    margin-block: 18px 10px;
+}
+.stadium-app .controller-buttons > button {
+    width: 100%;
+    margin-top: 0;
+}
+.stadium-app .controller-panel a {
+    color: var(--stadium-lime);
+    text-underline-offset: 3px;
+}
+@media (max-width: 720px) {
+    .stadium-app .controller-workspace {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+    .stadium-app .shopping-card {
+        width: 44px;
+    }
+    .stadium-app .shopping-player strong {
+        font-size: 18px;
+    }
+}
+@media (max-width: 480px) {
+    .stadium-app .header-actions:has(.header-icon-button) .phase-badge {
+        width: 28px;
+        height: 28px;
+        font-size: 0;
+        gap: 0;
+        padding: 0;
+        justify-content: center;
+    }
+}
+@media (max-width: 380px) {
+    .stadium-app .report-shopping li {
+        flex-wrap: wrap;
+        column-gap: 9px;
+    }
+    .stadium-app .shopping-player {
+        flex-basis: calc(100% - 60px);
+    }
+    .stadium-app .shopping-price {
+        flex-basis: 100%;
+        max-width: 100%;
+        margin-left: 53px;
+        text-align: left;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .stadium-app .spinner {
+        animation: none;
     }
 }

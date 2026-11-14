@@ -35,10 +35,14 @@ Le catalogue des assets et sa maquette de onze cartes restent disponibles sur
 Le terrain de l'application affiche les cartes retenues du rapport reçu, sans remplir
 les emplacements avec les onze joueurs de la maquette. La liste des postes reste
 accessible pour les rapports qui ne se prêtent pas à un affichage sur le terrain.
-Après calcul, **Sources et inventaire** retrouve le club et le budget. Le terrain,
+Après calcul, **Sources et inventaire**, sous la proposition, retrouve le club et le budget. Le terrain,
 les coûts et **Voir les achats** passent au premier plan ; conditions, protections et
 vérification restent dépliables. Le scénario **Maquette A1 · 11 cartes** compare le rendu
 au croquis avec un rapport graphique préparé à la main, sans exécution du solveur.
+Les détails de la carte sélectionnée se déplient sous l'action principale. Le panneau
+des achats présente les mini-cartes, leurs versions, les quantités et les coûts du rapport.
+Le [compte rendu de l'audit A1](../docs/design/ASSETS_A1.md#audit-de-fidélité-a1)
+décrit les écarts corrigés et les cas vérifiés.
 
 Dans **Analyser**, le choix d'une image met son aperçu au premier plan. **Changer de capture**
 rouvre les sources et **Retirer** rétablit l'import. Après analyse, la liste et les rectangles
@@ -86,6 +90,9 @@ pnpm run build
 2. Choisir **Charger l'extension non empaquetée**, puis le dossier `frontend/dist`.
 3. Ouvrir SBC Vision depuis le menu des extensions.
 4. Le popup fait 440 px de large. **Ouvrir dans un onglet** offre davantage de place.
+
+L'en-tête utilise une icône pour ouvrir cet onglet et propose une fermeture explicite
+dans le popup uniquement. L'épinglage de l'extension se règle dans Chrome.
 
 Après modification, reconstruire puis recharger l'extension. La vérification de l'aperçu
 ne remplace pas celle des autorisations dans Chrome installé. Aucun compte EA n'est

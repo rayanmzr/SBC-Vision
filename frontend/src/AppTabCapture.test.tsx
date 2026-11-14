@@ -37,7 +37,8 @@ const captured = (): TabCapture => ({
 beforeEach(() => {
     localStorage.clear();
     vi.stubGlobal('chrome', {
-        runtime: { id: 'test' },
+        runtime: { id: 'test', getURL: vi.fn(() => 'chrome-extension://test/index.html') },
+        tabs: { create: vi.fn(async () => ({ id: 1 })) },
         storage: { local: { get: vi.fn(async () => ({})), set: vi.fn(async () => {}) } },
     });
     URL.revokeObjectURL = vi.fn();
@@ -79,6 +80,31 @@ async function ready() {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Analyser' }));
 }
+
+it('ouvre l’espace de travail et ferme uniquement le popup sur demande', async () => {
+    const initialUrl = location.href;
+    const close = vi.spyOn(window, 'close').mockImplementation(() => {});
+    history.replaceState({}, '', '?view=popup');
+    try {
+        await ready();
+        expect(close).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole('button', { name: 'Ouvrir dans un onglet' }));
+        expect(chrome.tabs.create).toHaveBeenCalledWith({
+            url: 'chrome-extension://test/index.html',
+        });
+        expect(close).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole('button', { name: 'Fermer le popup' }));
+        expect(close).toHaveBeenCalledTimes(1);
+    } finally {
+        history.replaceState({}, '', initialUrl);
+        close.mockRestore();
+    }
+});
+
+it('ne propose pas de fermer le popup depuis l’onglet de travail', async () => {
+    await ready();
+    expect(screen.queryByRole('button', { name: 'Fermer le popup' })).toBeNull();
+});
 
 it('conserve la capture en mémoire et attend le bouton d’envoi avant de contacter la perception', async () => {
     await ready();

@@ -63,10 +63,47 @@ cohérents avec les cartes, mais aucun solveur ni contrôle métier n'est exécu
 à comparer le rendu au dessin dans le même écran que les autres rapports. Le libellé
 de formation est déduit des postes du rapport lorsque les onze cartes le permettent.
 
-Vérifications : typage, formatage et 181 tests frontend, puis build ; parcours manuel en
+Vérifications : typage, formatage et 183 tests frontend, puis build ; parcours manuel en
 360 et 440 pixels avec l'API locale authentifiée, analyse du laboratoire et calcul CP-SAT
 sur les données fictives. L'overlay de détection garde les dimensions de l'image affichée.
 Le modèle entraîné pour la Web App EA reste à raccorder.
+
+## Audit de fidélité A1
+
+La comparaison porte sur la colonne **A1 — Stade** de la planche, avec le scénario
+**Maquette A1 · 11 cartes** dans l'application. Le dessin décrit Équipe ; les autres
+pages sont jugées sur la cohérence des couleurs, des matières, des caractères, des
+commandes et des états. Les données de contrôle sont fictives.
+
+| Écart observé | Correction appliquée |
+| --- | --- |
+| En-tête trop haut et marque ressemblant à un globe filaire | Hauteur de ligne corrigée ; ballon à panneaux pleins et doubles diagonales conservées. |
+| Lien textuel encombrant dans le popup | Icône d'ouverture dans un onglet et fermeture explicite limitée au popup ; aucun bouton d'épinglage factice. |
+| Fond et panneaux trop uniformément verts | Fond anthracite en mode luminosité et panneaux plus neutres ; vert conservé pour le terrain et les actions. |
+| Sources placées avant la proposition | Terrain dès le haut, puis joueur, coûts, budget et achats ; sources disponibles ensuite, avec l'inventaire API conservé. |
+| Cartes trop discrètes et survol confondu avec une sélection | Cartes agrandies, contour de sélection renforcé ; survol par éclaircissement. Taille réduite sur les rangées de cinq cartes. |
+| Lignes du terrain mal ajustées à son ratio affiché | SVG adapté à la surface réelle du terrain. |
+| Bandeau du joueur rectangulaire et métadonnées intercalées avant les coûts | Bandeau incliné et arrondi ; nom complet, version et valeur disponibles dans les détails de la carte. |
+| Total insuffisamment mis en valeur | Cadre citron incliné, budget plus lisible et typographie des montants adaptée à leur longueur. |
+| Achats présentés comme une liste de texte générique | Mini-cartes non interactives, versions, quantités, prix par carte et total du rapport. |
+| Écrans de départ peu travaillés | Illustration de cartes pour l'inventaire vide et l'import de rapport ; sources fictives encadrées. |
+| Coûts absents affichés comme trois cases vides | Pas de bandeau de coûts sans composition ; états sans solution, incertains et à recalculer explicitement distingués. |
+| Contours de focus coupés sur les boutons inclinés | Focus intérieur sur les onglets et actions ; cadre extérieur du CTA réservé au clavier. |
+| Laboratoire intégré moins cohérent en plein écran | Deux colonnes alignées, champs et actions regroupés ; retour à une colonne sur petit écran. |
+
+Contrôles manuels : 360, 440 et 1 280 pixels, onze cartes et petite équipe de trois
+cartes, achats dépliés, import local, nom long, montants dépassant le milliard, états
+sans solution et lecture incertaine. Aucun débordement horizontal sur les vues contrôlées.
+Le parcours avec l'API locale vérifie aussi le calcul CP-SAT, la conservation du budget
+et de l'inventaire après réouverture des sources, et l'alignement image/rectangles après
+analyse manuelle. Les captures locales sont dans `artifacts/design/audit-a1/` (ignorées
+par Git).
+
+Les commandes d'ouverture et de fermeture du popup sont couvertes par les tests de
+l'extension. L'épinglage de l'extension appartient à Chrome. Le dessin au crayon reste
+une direction graphique : les textes et les commandes sont des éléments HTML accessibles,
+et les cartes utilisent des silhouettes génériques. L'audit visuel ne raccorde pas le
+modèle EA ni le placement automatique des joueurs.
 
 ## Les pièces du rendu
 

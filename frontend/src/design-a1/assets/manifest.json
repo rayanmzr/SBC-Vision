@@ -4,8 +4,8 @@
   "assets": [
     {
       "file": "brand-mark.svg",
-      "bytes": 459,
-      "sha256": "deee0efdc49663fb30839f2943ce84fca1e6743403361ec06cf4a2fdb3921573"
+      "bytes": 636,
+      "sha256": "03a6f0c8e6ed7820392b0112bad7e689b66affd6a40bac43648734d48ce3b344"
     },
     {
       "file": "card-gold.png",
@@ -64,8 +64,8 @@
     },
     {
       "file": "pitch-lines.svg",
-      "bytes": 600,
-      "sha256": "c1fdd8ec739699a6afc8abd241ac823a88d784877951b5b45f2007232bbd066f"
+      "bytes": 627,
+      "sha256": "6edaba9ba7343553268d228bc4929a6998eb8186be84ee2a9cab8494ae5db952"
     },
     {
       "file": "player-silhouette.svg",

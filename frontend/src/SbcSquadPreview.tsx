@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { StadiumPitch } from './design-a1/StadiumKit';
 import type { SolverReport } from './lib/sbc-report';
 import { credits } from './lib/sbc-report';
@@ -28,7 +28,9 @@ export default function SbcSquadPreview({
     const shopping = purchases(report);
     const quantity = shopping.reduce((total, item) => total + item.quantity, 0);
     const amount = (value: number | null | undefined) =>
-        value == null ? '—' : value.toLocaleString('fr-FR');
+        value == null ? '—' : value.toLocaleString('fr-FR').replaceAll('\u202f', '\u00a0');
+    const amountStyle = (value: number | null | undefined) =>
+        ({ '--amount-characters': amount(value).length }) as CSSProperties;
     const selected =
         placements.find(({ player }) => player.id === chosen)?.player ??
         placements.find(({ player }) => player.origin === 'club' && player.position === 'CM')
@@ -52,7 +54,7 @@ export default function SbcSquadPreview({
                 />
                 <div className="stadium-selected" aria-live="polite">
                     <img src={portrait} alt="" />
-                    <strong>
+                    <strong title={`${selected.rating} · ${selected.name} · ${selected.position}`}>
                         {selected.rating} · {selected.name} · {selected.position}
                     </strong>
                     <span
@@ -61,15 +63,13 @@ export default function SbcSquadPreview({
                         {selected.origin === 'club' ? 'Club' : 'Achat'}
                     </span>
                 </div>
-                <p className="squad-card-detail">
-                    Version {candidate.card_id} · {credits(candidate.value)}
-                </p>
             </div>
             <div className="stadium-costs" role="group" aria-label="Coûts du rapport, en crédits">
                 <div>
                     <span>Achats</span>
                     <strong
                         aria-label={`Achats suggérés : ${credits(report.solution.purchase_cost)}`}
+                        style={amountStyle(report.solution.purchase_cost)}
                     >
                         {amount(report.solution.purchase_cost)}
                     </strong>
@@ -78,6 +78,7 @@ export default function SbcSquadPreview({
                     <span>Valeur club</span>
                     <strong
                         aria-label={`Valeur des cartes utilisées : ${credits(report.solution.sacrifice_value)}`}
+                        style={amountStyle(report.solution.sacrifice_value)}
                     >
                         {amount(report.solution.sacrifice_value)}
                     </strong>
@@ -86,6 +87,7 @@ export default function SbcSquadPreview({
                     <span>Total</span>
                     <strong
                         aria-label={`Coût économique total : ${credits(report.solution.total_cost)}`}
+                        style={amountStyle(report.solution.total_cost)}
                     >
                         {amount(report.solution.total_cost)}
                     </strong>
@@ -97,7 +99,7 @@ export default function SbcSquadPreview({
                 </span>
                 <span className="stadium-purchases-caption">
                     <StadiumIcon name="bag" />
-                    {quantity} {quantity === 1 ? 'achat' : 'achats'}
+                    Achats : {quantity} {quantity === 1 ? 'joueur' : 'joueurs'}
                 </span>
             </div>
             {onShopping && (
@@ -118,6 +120,15 @@ export default function SbcSquadPreview({
                     </button>
                 </div>
             )}
+            <details className="squad-card-detail">
+                <summary>Détails de la carte sélectionnée</summary>
+                <p>
+                    {selected.name} · {selected.rating} · {selected.position}
+                </p>
+                <p>
+                    Version {candidate.card_id} · {credits(candidate.value)}
+                </p>
+            </details>
             <p className="squad-hero-caption">
                 Coûts en crédits · Disposition illustrative · Aucune validation EA
             </p>

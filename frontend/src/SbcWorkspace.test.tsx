@@ -69,7 +69,9 @@ it.each([
         target: { value: scenario },
     });
     expect(screen.getByRole('heading', { name: message })).toBeTruthy();
+    expect(screen.getByText('Exemple synthétique · Aucun calcul exécuté')).toBeTruthy();
     expect(screen.queryByRole('heading', { name: 'Achats suggérés' })).toBeNull();
+    expect(screen.queryByLabelText('Coûts du rapport')).toBeNull();
 });
 
 it('place l’équipe et les coûts au premier plan et déplie les achats sur demande', () => {

@@ -156,6 +156,17 @@ export default function SbcApiPanel({
                 </button>
             </div>
             <p className="field-hint">Serveur configuré : {apiUrl}</p>
+            {!workspace && !operation && !error && (
+                <div className="squad-empty-state">
+                    <div className="squad-empty-art" aria-hidden="true">
+                        <i />
+                        <i />
+                        <i />
+                    </div>
+                    <h4>Votre club commence ici</h4>
+                    <p>Charge les cartes du serveur pour préparer une proposition.</p>
+                </div>
+            )}
             {error && (
                 <div className="notice" role="alert">
                     <strong>État à recharger</strong>
