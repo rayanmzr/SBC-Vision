@@ -70,12 +70,14 @@ afterEach(() => {
 });
 async function ready() {
     render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: 'Réglages' }));
     await waitFor(() =>
         expect(
             (screen.getByRole('button', { name: 'Vérifier la connexion' }) as HTMLButtonElement)
                 .disabled,
         ).toBe(false),
     );
+    fireEvent.click(screen.getByRole('button', { name: 'Analyser' }));
 }
 
 it('conserve la capture en mémoire et attend le bouton d’envoi avant de contacter la perception', async () => {
@@ -85,8 +87,10 @@ it('conserve la capture en mémoire et attend le bouton d’envoi avant de conta
     expect(screen.getByText('https://example.test')).toBeTruthy();
     expect(screen.getByText(/Zone visible : 640 × 360 px CSS/)).toBeTruthy();
     expect(fetch).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Réglages' }));
     fireEvent.click(screen.getByRole('button', { name: 'Vérifier la connexion' }));
     await screen.findByText('Serveur joignable · v0.1.0');
+    fireEvent.click(screen.getByRole('button', { name: 'Analyser' }));
     fireEvent.click(screen.getByRole('button', { name: /Envoyer à l’API/ }));
     await screen.findByText('La vision reste à raccorder');
     const calls = vi.mocked(fetch).mock.calls;
@@ -111,8 +115,10 @@ it('affiche le centre en pixels CSS à partir du JSON, en mode observation sans 
     await ready();
     fireEvent.click(screen.getByRole('button', { name: 'Capturer l’onglet actif' }));
     await screen.findByText('Capture locale de l’onglet');
+    fireEvent.click(screen.getByRole('button', { name: 'Réglages' }));
     fireEvent.click(screen.getByRole('button', { name: 'Vérifier la connexion' }));
     await screen.findByText('Serveur joignable · v0.1.0');
+    fireEvent.click(screen.getByRole('button', { name: 'Analyser' }));
     vi.mocked(fetch).mockImplementationOnce(
         async (url) =>
             new Response(

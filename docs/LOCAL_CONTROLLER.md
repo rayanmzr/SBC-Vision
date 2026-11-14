@@ -64,7 +64,7 @@ uvicorn sbc_vision.api.main:app --host 127.0.0.1 --port 8000
 
 1. Garder Vite lancé et ouvrir la page de laboratoire.
 2. Choisir **Analyse des images → API Python · Couleurs de test**. Ce choix seul
-   n'envoie rien. Dans le popup Chrome, l'adresse est celle d'Analyse d'image ; les
+   n'envoie rien. Dans le popup Chrome, l'adresse est celle configurée dans Réglages ; les
    permissions et la connexion sont vérifiées au lancement si nécessaire.
 3. Lancer observation, simulation ou exécution. Pour deux clics vérifiés, cinq images
    passent par l'API : la première, deux confirmations avant clic et deux vérifications
@@ -130,14 +130,14 @@ soumission, d'achat et d'échange n'existent pas dans cette politique.
 
 ## Adaptateur Chrome : procédure encore à valider manuellement
 
-Le même contrôleur est disponible dans **Contrôleur local** du popup de l'extension.
+Le même contrôleur est disponible dans **Réglages → Contrôleur local** du popup de l'extension.
 Dans ce mode, les pixels viennent de `captureVisibleTab`, avec les contrôles du premier
 lot. Les rectangles sont détectés dans la capture de l'onglet entier, pas dans un
 export isolé du canevas.
 
 1. Construire avec `pnpm run check`, puis recharger `frontend/dist` dans Chrome.
 2. Ouvrir la page de laboratoire locale, puis le popup SBC Vision depuis son icône.
-3. Choisir **Contrôleur local**. Tester d'abord observation et simulation, puis
+3. Choisir **Réglages → Contrôleur local**. Tester d'abord observation et simulation, puis
    l'exécution à deux clics sur les seules cartes fictives.
 4. Vérifier les coordonnées à 100 % puis 125 % de zoom et, si disponible, sur Retina.
 5. Répéter les scénarios sans changement et écran inattendu ; aucun second clic ne doit

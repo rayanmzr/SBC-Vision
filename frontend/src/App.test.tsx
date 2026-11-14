@@ -41,15 +41,23 @@ afterEach(() => {
     vi.unstubAllGlobals();
 });
 
-async function connectAndChoose() {
+async function openSettings() {
+    fireEvent.click(screen.getByRole('button', { name: 'Réglages' }));
     await waitFor(() =>
         expect(
             (screen.getByRole('button', { name: 'Vérifier la connexion' }) as HTMLButtonElement)
                 .disabled,
         ).toBe(false),
     );
+}
+function openAnalysis() {
+    fireEvent.click(screen.getByRole('button', { name: 'Analyser' }));
+}
+async function connectAndChoose() {
+    await openSettings();
     fireEvent.click(screen.getByRole('button', { name: 'Vérifier la connexion' }));
     await screen.findByText('Serveur joignable · v0.1.0');
+    openAnalysis();
     fireEvent.change(screen.getByLabelText('Choisir une image PNG ou JPEG'), {
         target: { files: [new File(['pixels'], 'capture.png', { type: 'image/png' })] },
     });
@@ -58,12 +66,8 @@ async function connectAndChoose() {
 
 it('attend un geste utilisateur et présente explicitement la fixture', async () => {
     render(<App />);
-    await waitFor(() =>
-        expect(
-            (screen.getByRole('button', { name: 'Vérifier la connexion' }) as HTMLButtonElement)
-                .disabled,
-        ).toBe(false),
-    );
+    await openSettings();
+    openAnalysis();
     expect(fetch).not.toHaveBeenCalled();
     expect(
         (screen.getByRole('button', { name: /Envoyer à l’API/ }) as HTMLButtonElement).disabled,
@@ -90,11 +94,13 @@ it('invalide la connexion et le résultat quand l’adresse API change', async (
     render(<App />);
     await connectAndChoose();
     fireEvent.click(screen.getByRole('button', { name: /Voir un exemple synthétique/ }));
+    await openSettings();
     fireEvent.change(screen.getByLabelText('Adresse du serveur'), {
         target: { value: 'https://other.example.org' },
     });
     expect(screen.queryByText('2 éléments')).toBeNull();
     expect(screen.queryByText('Serveur joignable · v0.1.0')).toBeNull();
+    openAnalysis();
     expect(
         (screen.getByRole('button', { name: /Envoyer à l’API/ }) as HTMLButtonElement).disabled,
     ).toBe(true);
@@ -103,6 +109,7 @@ it('invalide la connexion et le résultat quand l’adresse API change', async (
 it('transmet la clé en mémoire et l’efface quand le serveur change', async () => {
     const key = 'session-key-for-local-tests-123456789';
     const { unmount } = render(<App />);
+    await openSettings();
     const input = screen.getByLabelText('Clé API (si demandée)') as HTMLInputElement;
     expect(input.type).toBe('password');
     fireEvent.change(input, { target: { value: key } });
@@ -113,6 +120,7 @@ it('transmet la clé en mémoire et l’efface quand le serveur change', async (
     expect(new Headers(options?.headers).get('Authorization')).toBe(`Bearer ${key}`);
     expect(JSON.stringify(localStorage)).not.toContain(key);
     expect(JSON.stringify(sessionStorage)).not.toContain(key);
+    await openSettings();
     fireEvent.change(screen.getByLabelText('Adresse du serveur'), {
         target: { value: 'https://other.example.org' },
     });
@@ -125,10 +133,12 @@ it('transmet la clé en mémoire et l’efface quand le serveur change', async (
 it('invalide la connexion quand la clé change et l’oublie à la fermeture', async () => {
     const key = 'session-key-for-local-tests-123456789';
     const { unmount } = render(<App />);
+    await openSettings();
     fireEvent.change(screen.getByLabelText('Clé API (si demandée)'), {
         target: { value: key },
     });
     await connectAndChoose();
+    await openSettings();
     fireEvent.change(screen.getByLabelText('Clé API (si demandée)'), {
         target: { value: key + '2' },
     });
@@ -159,4 +169,50 @@ it('ignore un résultat tardif après annulation', async () => {
     });
     expect(screen.getByText('Opération annulée')).toBeTruthy();
     expect(screen.queryByText('2 éléments')).toBeNull();
+});
+
+it('conserve la capture et la connexion en passant par Réglages et Équipe', async () => {
+    render(<App />);
+    await connectAndChoose();
+    expect(screen.queryByRole('button', { name: 'Vérifier la connexion' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Équipe' }));
+    expect(screen.getByRole('button', { name: 'Charger l’inventaire' })).toBeTruthy();
+    await openSettings();
+    expect(screen.getByText('Serveur joignable · v0.1.0')).toBeTruthy();
+    openAnalysis();
+    expect(screen.getByText('capture.png')).toBeTruthy();
+    expect(
+        (screen.getByRole('button', { name: /Envoyer à l’API/ }) as HTMLButtonElement).disabled,
+    ).toBe(false);
+    expect(fetch).toHaveBeenCalledTimes(2);
+});
+
+it('montre une erreur d’authentification directement dans Réglages', async () => {
+    render(<App />);
+    await openSettings();
+    vi.mocked(fetch).mockImplementation(
+        async (url) =>
+            new Response(
+                JSON.stringify(
+                    String(url).endsWith('/health')
+                        ? { status: 'ok', version: '0.1.0', model_loaded: false }
+                        : {
+                              detail: {
+                                  code: 'authentication_required',
+                                  message: 'Clé API absente ou incorrecte.',
+                              },
+                          },
+                ),
+                { status: String(url).endsWith('/health') ? 200 : 401 },
+            ),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Vérifier la connexion' }));
+    await screen.findByText('Connexion impossible');
+    expect(screen.getByRole('alert').textContent).toContain('HTTP 401');
+    expect(screen.getByRole('button', { name: 'Réglages' }).getAttribute('aria-pressed')).toBe(
+        'true',
+    );
+    expect(screen.queryByText('API connectée')).toBeNull();
+    openAnalysis();
+    expect(screen.queryByRole('alert')).toBeNull();
 });

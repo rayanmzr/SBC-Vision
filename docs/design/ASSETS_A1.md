@@ -22,8 +22,32 @@ déplie les deux achats fictifs. Les valeurs sont calculées à partir des donn�
 aperçu : 4 200 d'achats + 6 800 de valeur du club = 11 000 au total.
 Ce scénario graphique ne contacte aucune API et n'exécute pas le solveur.
 
-La page est incluse dans le build de l'extension. Le popup fonctionnel conserve son
-point d'entrée `index.html?view=popup` pendant la préparation du kit.
+La page est incluse dans le build de l'extension. Le popup fonctionnel
+`index.html?view=popup` utilise maintenant cette direction sur **Analyser**, **Équipe**
+et **Réglages**.
+
+## Pages fonctionnelles
+
+- **Analyser** : capture d'onglet ou choix d'un fichier, envoi manuel, affichage de l'image,
+  des rectangles de détection, des éléments et du JSON. La connexion se configure dans
+  Réglages. Une capture est conservée lorsqu'on change de page.
+- **Équipe** : inventaire, protections, conditions, propositions et achats. Le terrain
+  utilise les cartes et les postes du rapport validé, de 1 à 11 cartes. Les petits défis
+  à trois cartes ont une présentation plus compacte. Pour les postes inconnus, les
+  formations trop denses ou le mode Item Score, la liste reste la présentation de référence.
+- **Réglages** : adresse API, clé masquée en mémoire, vérification de connexion et état
+  du modèle. Les messages d'erreur apparaissent sur la page en cours. Modifier le serveur
+  ou la clé invalide la connexion et les données reçues, comme avant le changement visuel.
+
+Le **Contrôleur local** reste accessible depuis Réglages, avec la même apparence dans
+l'extension. La page séparée `controller-lab.html` conserve sa scène de laboratoire.
+Le terrain est une disposition illustrative : il ne fournit jamais de coordonnées de clic
+au contrôleur. Le moteur SBC et le contrat de perception ne sont pas modifiés par le thème.
+
+Vérifications du lot : 175 tests frontend, typage, formatage et build ; parcours manuel en
+360 et 440 pixels avec l'API locale authentifiée, analyse du laboratoire et calcul CP-SAT
+sur les données fictives. L'overlay de détection garde les dimensions de l'image affichée.
+Le modèle entraîné pour la Web App EA reste à raccorder.
 
 ## Les pièces du rendu
 

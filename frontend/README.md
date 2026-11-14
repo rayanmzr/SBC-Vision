@@ -2,12 +2,12 @@
 
 Responsable : Samy Allali. Cette version permet de capturer l'onglet actif depuis le popup,
 de joindre l'API, d'envoyer manuellement une image et d'examiner son JSON.
-L'espace **Composition SBC** charge l'inventaire de
+L'espace **Équipe** charge l'inventaire de
 l'API, enregistre les protections et lance le véritable solveur de Rayan. Il ouvre aussi
 des rapports JSON locaux. Le scan et le placement dans le navigateur restent à raccorder
 avec #16 : **le parcours de l'issue #15 n'est pas encore terminé**.
 
-L'espace **Contrôleur local** prépare le deuxième lot de #16. Il propose observation,
+Le contrôleur, accessible depuis **Réglages → Contrôleur local**, prépare le deuxième lot de #16. Il propose observation,
 simulation et clics vérifiés sur une page locale dédiée : [guide du laboratoire](../docs/LOCAL_CONTROLLER.md).
 Cette page se teste aussi sans API sur <http://127.0.0.1:5173/controller-lab.html>.
 Son sélecteur **Analyse des images** permet aussi le parcours par la vraie API Python,
@@ -22,16 +22,19 @@ décrit l'extension à Chrome. Le modèle de vision restera dans l'API Python.
 
 Le parcours est : image choisie → requête HTTP → API Python → JSON → affichage.
 
-Pour un serveur partagé, saisir **Clé API (si demandée)** avant de vérifier la
-connexion. La clé reste uniquement en mémoire pour l'adresse exacte de l'API ;
+Dans **Réglages**, saisir l'adresse du serveur et, pour un serveur partagé,
+**Clé API (si demandée)**, puis vérifier la connexion. La clé reste uniquement en mémoire pour l'adresse exacte de l'API ;
 changer de serveur ou fermer la page l'efface. La modifier invalide aussi la connexion
 et l'inventaire affiché. Les routes métier la reçoivent dans l'en-tête `Authorization`.
 Voir le [guide Docker et partage](../docs/DEPLOYMENT.md).
 
-Le [kit graphique A1 — Stade](../docs/design/ASSETS_A1.md) prépare le visuel retenu :
-assets séparés, polices locales et aperçu de onze cartes sur
-<http://127.0.0.1:5173/design-assets.html>. Cet aperçu utilise uniquement des données
-fictives et conserve le point d'entrée du popup fonctionnel.
+La direction [A1 — Stade](../docs/design/ASSETS_A1.md) est appliquée aux trois pages :
+**Analyser**, **Équipe** et **Réglages**. Les textures et les polices sont locales.
+Le catalogue des assets et sa maquette de onze cartes restent disponibles sur
+<http://127.0.0.1:5173/design-assets.html> avec des données exclusivement fictives.
+Le terrain de l'application affiche les cartes retenues du rapport reçu, sans remplir
+les emplacements avec les onze joueurs de la maquette. La liste des postes reste
+accessible pour les rapports qui ne se prêtent pas à un affichage sur le terrain.
 Sans pipeline configuré, un PNG valide provoque une erreur `503 perception_unavailable`.
 Ce retour vérifie le transport de la capture et la gestion des erreurs, pas la vision.
 
@@ -102,7 +105,7 @@ dimensions de la réponse doivent correspondre à la demande.
 
 ## Vérifier le parcours
 
-1. Avant de lancer Python, **Vérifier la connexion** doit afficher un échec.
+1. Avant de lancer Python, ouvrir **Réglages** : **Vérifier la connexion** doit afficher un échec.
 2. Après lancement, **Serveur joignable** apparaît. **Vision à raccorder** indique que
    le serveur n'annonce pas de modèle prêt : ces états restent distincts.
 3. Choisir `data/fixtures/perception.synthetic.png` depuis la racine du dépôt.
@@ -112,7 +115,7 @@ dimensions de la réponse doivent correspondre à la demande.
    n'appelle pas le serveur et n'effectue aucune inférence.
 6. Déplier le JSON pour retrouver identifiants, types, textes, boîtes, scores et actions.
 
-Dans Analyse d'image et Composition SBC, les actions du JSON sont seulement décrites.
+Dans Analyser et Équipe, les actions du JSON sont seulement décrites.
 Les clics synthétiques sont réservés à **Contrôleur local** et à sa page de test.
 Aucun achat ou soumission n'est exécuté. La capture d'onglet est le premier lot de #16 : le [guide de capture](../docs/TAB_CAPTURE.md)
 explique le popup, les permissions et la vérification manuelle dans Chrome.
@@ -160,7 +163,7 @@ connexion attendent au plus 5 secondes chacune, l'analyse 30 secondes côté cli
 **Annuler** abandonne l'attente et empêche d'afficher une réponse tardive ; cela ne garantit
 pas l'arrêt immédiat d'un calcul déjà commencé sur le serveur.
 
-## Espace Composition SBC
+## Espace Équipe
 
 Cet espace utilise le moteur intégré depuis la branche de Rayan, en conservant son
 historique. Cette intégration sur nos branches ne fusionne pas sa PR #23 dans `main`.
@@ -173,7 +176,7 @@ lancé sans configuration reste joignable mais renvoie `503 sbc_unavailable` pou
 Pour tester sans compte EA, utiliser la base de démonstration du guide : cartes fictives,
 véritable calcul et protections réellement enregistrées dans une base distincte.
 
-1. Ouvrir **Composition SBC → Depuis l'API → Charger l'inventaire**. La connexion et,
+1. Ouvrir **Équipe → Depuis l'API → Charger l'inventaire**. La connexion et,
    dans Chrome, les permissions de l'hôte sont vérifiées si nécessaire.
 2. Les lignes représentent tous les exemplaires possédés. `club:demo-001` et
    `club:demo-002` sont deux copies de la même version : leur protection est indépendante.

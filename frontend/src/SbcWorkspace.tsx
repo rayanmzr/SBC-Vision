@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useCallback, type ChangeEvent } from 'react';
 import SbcApiPanel from './SbcApiPanel';
+import SbcSquadPreview from './SbcSquadPreview';
 import { DEFAULT_API_URL } from './lib/platform';
 import type { ApiProposal } from './lib/sbc-api';
 import fixture from '../../data/fixtures/sbc-report.synthetic.json';
@@ -317,6 +318,14 @@ export default function SbcWorkspace({
                                     </ul>
                                 ) : null}
                             </div>
+                            {showComposition && (
+                                <SbcSquadPreview
+                                    key={
+                                        document.name + JSON.stringify(report.solution.assignments)
+                                    }
+                                    report={report}
+                                />
+                            )}
                             <div className="cost-grid" aria-label="Coûts du rapport">
                                 <Cost
                                     label="Achats suggérés"

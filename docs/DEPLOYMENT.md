@@ -40,7 +40,7 @@ docker compose -f compose.yaml -f compose.demo.yaml up --build -d
 initialisé est refusé. Le mode `lab-colors` reconnaît seulement les rectangles de
 la page de laboratoire ; **il ne reconnaît pas les cartes EA**.
 
-Dans l'interface React, vérifier la connexion, ouvrir **Composition SBC**, charger
+Dans l'interface React, vérifier la connexion dans **Réglages**, ouvrir **Équipe**, charger
 l'inventaire et lancer le calcul. Pour un budget d'achat de 2 000, le solveur trouve
 une solution vérifiée de 2 100 : 1 300 d'achats et 800 de valeur sacrifiée. Le budget
 porte sur les achats ; le coût total inclut aussi les cartes du club utilisées.

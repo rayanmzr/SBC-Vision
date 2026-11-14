@@ -87,7 +87,7 @@ export default function SbcApiPanel({
         try {
             if (!connected && !(await onConnect()))
                 throw new Error(
-                    'Connexion non confirmée. Vérifier l’adresse dans Analyse d’image.',
+                    'Connexion non confirmée. Vérifier l’adresse et la clé dans Réglages.',
                 );
             if (current.current !== controller) return;
             const data = await loadWorkspace(base, controller.signal);

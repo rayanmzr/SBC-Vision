@@ -27,7 +27,8 @@ notamment le parcours de démonstration avec cartes fictives et véritable calcu
 ## Extension Chrome
 
 La [version React](frontend/README.md) reçoit les captures et affiche les résultats JSON.
-L’espace Composition SBC charge l’inventaire par HTTP, enregistre les protections et
+Les pages **Analyser**, **Équipe** et **Réglages** reprennent le visuel A1 — Stade.
+L’espace Équipe charge l’inventaire par HTTP, enregistre les protections et
 appelle le véritable solveur. Il présente les cartes retenues, conditions et coûts.
 Les exemples fictifs restent identifiés. Le popup prépare la capture manuelle de l'onglet
 avec son repère de coordonnées ; voir le [guide de capture](docs/TAB_CAPTURE.md).
