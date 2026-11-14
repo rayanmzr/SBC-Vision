@@ -1,85 +1,52 @@
 import { useState } from 'react';
-import { StadiumPitch, type PitchPlacement } from './design-a1/StadiumKit';
+import { StadiumPitch } from './design-a1/StadiumKit';
 import type { SolverReport } from './lib/sbc-report';
 import { credits } from './lib/sbc-report';
 import portrait from './design-a1/assets/player-silhouette.svg';
 
-// Disposition de lecture uniquement : ces positions ne sont jamais des coordonnées de clic.
-const rows: Record<string, number> = {
-    LW: 0,
-    ST: 0,
-    RW: 0,
-    CF: 0,
-    CAM: 1,
-    CM: 1,
-    CDM: 1,
-    LM: 1,
-    RM: 1,
-    LB: 2,
-    CB: 2,
-    RB: 2,
-    LWB: 2,
-    RWB: 2,
-    GK: 3,
-};
+import { squadLayout } from './lib/squad-layout';
+import { purchases } from './lib/sbc-report';
+import { StadiumIcon } from './design-a1/StadiumKit';
 
-export default function SbcSquadPreview({ report }: { report: SolverReport }) {
+export default function SbcSquadPreview({
+    report,
+    sourceLabel = 'Rapport',
+    shoppingOpen = false,
+    onShopping,
+}: {
+    report: SolverReport;
+    sourceLabel?: string;
+    shoppingOpen?: boolean;
+    onShopping?: () => void;
+}) {
     const [chosen, setChosen] = useState<string | null>(null);
+    const layout = squadLayout(report);
+    if (!layout) return null;
+    const { placements, compact, formation } = layout;
     const byKey = new Map(report.selected_candidates.map((card) => [card.key, card]));
-    const assignments = report.solution.assignments ?? [];
-    if (!assignments.length || assignments.length > 11 || report.challenge.mode === 'score')
-        return null;
-    const groups: Array<Array<{ slot: number; candidate_key: string }>> = [[], [], [], []];
-    for (const assignment of assignments) {
-        const position = report.challenge.positions?.[assignment.slot];
-        if (!position || rows[position] === undefined || !byKey.has(assignment.candidate_key))
-            return null;
-        groups[rows[position]].push(assignment);
-    }
-    if (groups.some((group) => group.length > 5)) return null;
-    const occupied = groups.filter((group) => group.length > 0);
-    const compact = assignments.length <= 3 && occupied.length <= 2;
-    const placements: PitchPlacement[] = groups.flatMap((group, row) =>
-        group.map((assignment, index) => {
-            const card = byKey.get(assignment.candidate_key)!;
-            return {
-                x:
-                    group.length === 1
-                        ? 50
-                        : compact
-                          ? 28 + (index * 44) / (group.length - 1)
-                          : 15 + (index * 70) / (group.length - 1),
-                y: compact
-                    ? occupied.length === 1
-                        ? 50
-                        : 25 + occupied.indexOf(group) * 50
-                    : 16 + row * 24,
-                player: {
-                    id: String(assignment.slot),
-                    name: card.name,
-                    position: report.challenge.positions![assignment.slot],
-                    rating: card.rating,
-                    origin: card.owned ? ('club' as const) : ('purchase' as const),
-                    value: card.value ?? 0,
-                },
-            };
-        }),
-    );
+    const assignments = report.solution.assignments!;
+    const shopping = purchases(report);
+    const quantity = shopping.reduce((total, item) => total + item.quantity, 0);
+    const amount = (value: number | null | undefined) =>
+        value == null ? '—' : value.toLocaleString('fr-FR');
     const selected =
-        placements.find(({ player }) => player.id === chosen)?.player ?? placements[0].player;
+        placements.find(({ player }) => player.id === chosen)?.player ??
+        placements.find(({ player }) => player.origin === 'club' && player.position === 'CM')
+            ?.player ??
+        placements[0].player;
     const candidate = byKey.get(
         assignments.find(({ slot }) => String(slot) === selected.id)!.candidate_key,
     )!;
     return (
-        <section className="panel squad-visual-panel" aria-label="Aperçu de l’équipe du rapport">
-            <div className="report-section-heading">
-                <h3>Équipe proposée</h3>
-                <span className="kind-label">{assignments.length} cartes</span>
-            </div>
+        <section className="squad-hero" aria-label="Aperçu de l’équipe du rapport">
+            <header className="squad-hero-heading">
+                <h1>ÉQUIPE PROPOSÉE</h1>
+                <span className="stadium-demo-label">{sourceLabel}</span>
+            </header>
             <div className="stadium-squad-visual" data-small-squad={compact}>
                 <StadiumPitch
                     placements={placements}
-                    formation={`${assignments.length} cartes`}
+                    formation={formation}
                     selectedId={selected.id}
                     onSelect={setChosen}
                 />
@@ -98,8 +65,61 @@ export default function SbcSquadPreview({ report }: { report: SolverReport }) {
                     Version {candidate.card_id} · {credits(candidate.value)}
                 </p>
             </div>
-            <p className="field-hint">
-                Disposition illustrative. Les postes et les cartes viennent du rapport.
+            <div className="stadium-costs" role="group" aria-label="Coûts du rapport, en crédits">
+                <div>
+                    <span>Achats</span>
+                    <strong
+                        aria-label={`Achats suggérés : ${credits(report.solution.purchase_cost)}`}
+                    >
+                        {amount(report.solution.purchase_cost)}
+                    </strong>
+                </div>
+                <div>
+                    <span>Valeur club</span>
+                    <strong
+                        aria-label={`Valeur des cartes utilisées : ${credits(report.solution.sacrifice_value)}`}
+                    >
+                        {amount(report.solution.sacrifice_value)}
+                    </strong>
+                </div>
+                <div className="stadium-total">
+                    <span>Total</span>
+                    <strong
+                        aria-label={`Coût économique total : ${credits(report.solution.total_cost)}`}
+                    >
+                        {amount(report.solution.total_cost)}
+                    </strong>
+                </div>
+            </div>
+            <div className="stadium-budget-line">
+                <span className="stadium-budget">
+                    Budget achats : {amount(report.challenge.budget)}
+                </span>
+                <span className="stadium-purchases-caption">
+                    <StadiumIcon name="bag" />
+                    {quantity} {quantity === 1 ? 'achat' : 'achats'}
+                </span>
+            </div>
+            {onShopping && (
+                <div className="stadium-action-row">
+                    <button
+                        className="stadium-cta"
+                        type="button"
+                        aria-expanded={shoppingOpen}
+                        aria-controls="report-shopping-content"
+                        onClick={onShopping}
+                    >
+                        {shoppingOpen
+                            ? 'Masquer les achats'
+                            : quantity
+                              ? 'Voir les achats'
+                              : 'Voir les détails'}
+                        <StadiumIcon name="arrow" />
+                    </button>
+                </div>
+            )}
+            <p className="squad-hero-caption">
+                Coûts en crédits · Disposition illustrative · Aucune validation EA
             </p>
         </section>
     );

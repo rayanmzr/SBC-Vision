@@ -16,6 +16,9 @@ async function load() {
 async function calculate() {
     fireEvent.click(screen.getByRole('button', { name: 'Calculer une proposition' }));
     await screen.findByText('API de démonstration · Calcul CP-SAT réel');
+    fireEvent.click(screen.getByRole('button', { name: 'État et vérification du rapport' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Voir les achats' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sources et inventaire' }));
 }
 
 it('vérifie la connexion puis affiche le résultat API et retire ce résultat si le budget change', async () => {

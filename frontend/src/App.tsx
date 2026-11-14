@@ -291,7 +291,7 @@ export default function App() {
     }
 
     return (
-        <main className="app-shell stadium-kit stadium-app">
+        <main className="app-shell stadium-kit stadium-app" data-workspace={workspace}>
             <header className="app-header stadium-header">
                 <StadiumBrand />
                 <div className="header-actions">
@@ -428,8 +428,8 @@ export default function App() {
                                 </button>
                                 <p className="field-hint capture-hint">
                                     {isExtension()
-                                        ? 'Depuis une page HTTP ou HTTPS, ouvre le popup SBC Vision. Seule la zone visible est capturée ; tu choisis ensuite de l’envoyer.'
-                                        : 'Disponible dans le popup de l’extension Chrome installée. L’aperçu web permet de choisir une image.'}
+                                        ? 'Capture la zone visible, puis choisis de l’envoyer pour analyse.'
+                                        : 'La capture d’onglet est disponible dans le popup Chrome.'}
                                 </p>
                                 <input
                                     ref={fileInput}
@@ -484,14 +484,18 @@ export default function App() {
                                         <span>Aucun clic effectué.</span>
                                     </div>
                                 )}
-                                <button
-                                    className="primary-button full-width"
-                                    onClick={analyze}
-                                    disabled={!selection || !connection || !!busy}
-                                >
-                                    {busy === 'analysis' ? 'Analyse en cours…' : 'Envoyer à l’API'}
-                                    <span aria-hidden="true">↗</span>
-                                </button>
+                                <div className="stadium-action-row">
+                                    <button
+                                        className="primary-button full-width"
+                                        onClick={analyze}
+                                        disabled={!selection || !connection || !!busy}
+                                    >
+                                        {busy === 'analysis'
+                                            ? 'Analyse en cours…'
+                                            : 'Envoyer à l’API'}
+                                        <span aria-hidden="true">↗</span>
+                                    </button>
+                                </div>
                                 <p className="field-hint">
                                     L’envoi commence uniquement avec ce bouton.
                                 </p>

@@ -61,10 +61,16 @@ export default function ApiSettings({
                     onChange={(event) => onKeyChange(event.target.value)}
                 />
                 <p className="field-hint">Clé gardée pour cette session uniquement.</p>
-                <button className="primary-button full-width" onClick={onConnect} disabled={busy}>
-                    {checking ? 'Vérification en cours…' : 'Vérifier la connexion'}
-                    <StadiumIcon name="arrow" />
-                </button>
+                <div className="stadium-action-row">
+                    <button
+                        className="primary-button full-width"
+                        onClick={onConnect}
+                        disabled={busy}
+                    >
+                        {checking ? 'Vérification en cours…' : 'Vérifier la connexion'}
+                        <StadiumIcon name="arrow" />
+                    </button>
+                </div>
                 <div className="connection-status" role="status" aria-live="polite">
                     <span className={`status-dot ${connection ? 'connected' : ''}`} />
                     <span>

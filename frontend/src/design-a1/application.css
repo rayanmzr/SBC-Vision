@@ -110,10 +110,12 @@ body:has(.stadium-app) {
     margin-bottom: 0;
 }
 .stadium-app .panel {
-    background: linear-gradient(140deg, #2a3525c9, #101810ed);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    box-shadow: inset 0 1px #b4c39818;
+    background: linear-gradient(140deg, #32382ce0, #121913ed);
+    border: 1px solid #8e9b795c;
+    border-radius: 3px;
+    box-shadow:
+        inset 0 1px #d4dec72e,
+        0 2px 0 #070d09;
     padding: 20px;
 }
 .stadium-app h3 {
@@ -673,13 +675,15 @@ body:has(.stadium-app) {
     color: var(--muted);
     font-size: 11px;
 }
-.stadium-app .squad-visual-panel {
-    padding-top: 16px;
+.stadium-app .squad-hero {
+    min-width: 0;
+    width: 100%;
+    max-width: 650px;
+    margin-inline: auto;
 }
 .stadium-app .stadium-squad-visual {
-    max-width: 440px;
     width: 100%;
-    margin: 24px auto 0;
+    margin: 20px auto 0;
     container-type: inline-size;
 }
 .stadium-app .stadium-squad-visual .stadium-pitch {
@@ -846,5 +850,280 @@ body:has(.stadium-app) {
     .stadium-app :is(input[type='url'], input[type='password'], input[type='number'], select) {
         font-size: 16px;
         min-height: 44px;
+    }
+}
+
+/* La proposition reprend la composition verticale du croquis A1. */
+.stadium-app[data-workspace='sbc']:has(.squad-hero) .intro {
+    display: none;
+}
+.stadium-app:has(.squad-hero) .sbc-workspace {
+    gap: 10px;
+    padding-top: 10px;
+}
+.stadium-app .squad-hero-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 5px 0 0;
+}
+.stadium-app .squad-hero-heading h1 {
+    font:
+        italic 800 32px/1.1 'Stadium Barlow',
+        sans-serif;
+    letter-spacing: -0.8px;
+}
+.stadium-app .stadium-demo-label {
+    font:
+        italic 600 13px/1.2 'Stadium Barlow',
+        sans-serif;
+}
+.stadium-app .squad-hero .stadium-pitch {
+    aspect-ratio: 1.05;
+}
+.stadium-app .squad-hero .stadium-selected {
+    border-radius: 0;
+    border-color: #a7b398;
+    min-height: 43px;
+    background: linear-gradient(130deg, #6b74665c, #172019);
+}
+.stadium-app .squad-hero .stadium-selected strong {
+    font:
+        600 20px/1.15 'Stadium Barlow',
+        sans-serif;
+    overflow-wrap: anywhere;
+}
+.stadium-app .squad-hero .stadium-origin {
+    font:
+        italic 600 16px/1.1 'Stadium Barlow',
+        sans-serif;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+.stadium-app .squad-hero .stadium-formation {
+    font-size: 24px;
+}
+.stadium-app .squad-hero .squad-card-detail {
+    margin-top: 5px;
+    font-size: 10px;
+    color: #c9d3be;
+}
+.stadium-app .squad-hero .stadium-costs {
+    margin-top: 8px;
+    background: linear-gradient(140deg, #41493b88, #121912);
+    box-shadow: inset 0 1px #d3ddc42b;
+}
+.stadium-app .squad-hero .stadium-costs > div {
+    padding: 5px 6px 7px;
+}
+.stadium-app .squad-hero .stadium-costs span {
+    font:
+        600 18px/1.15 'Stadium Barlow',
+        sans-serif;
+}
+.stadium-app .squad-hero .stadium-costs strong {
+    font:
+        italic 800 31px/1.05 'Stadium Barlow',
+        sans-serif;
+    letter-spacing: -0.7px;
+}
+.stadium-app .squad-hero .stadium-total {
+    position: relative;
+    background: linear-gradient(115deg, transparent 8%, #b6e62620 8% 91%, transparent 91%);
+}
+.stadium-app .squad-hero .stadium-total::after {
+    content: '';
+    position: absolute;
+    left: 7%;
+    right: 8%;
+    bottom: 0;
+    height: 2px;
+    background: var(--stadium-lime);
+    transform: skew(-15deg);
+}
+.stadium-app .squad-hero .stadium-budget-line {
+    font:
+        600 16px/1.2 'Stadium Barlow',
+        sans-serif;
+}
+.stadium-app .squad-hero .stadium-budget {
+    transform: skew(-8deg);
+    padding: 3px 7px;
+    border-radius: 3px;
+}
+.stadium-app .squad-hero .stadium-cta {
+    font-family: 'Stadium Barlow', sans-serif;
+    min-height: 46px;
+}
+.stadium-app .squad-hero-caption {
+    text-align: center;
+    font-size: 10px;
+    color: #afbea0;
+    margin-top: 9px;
+}
+.stadium-app :is(.report-input-toggle, .report-fold-toggle) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 38px;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid #63735488;
+    padding: 9px 2px;
+    color: #d4dfc9;
+    text-align: left;
+    font:
+        500 12px/1.4 system-ui,
+        sans-serif;
+}
+.stadium-app :is(.report-input-toggle, .report-fold-toggle) > span {
+    color: var(--stadium-lime);
+    font-size: 18px;
+    line-height: 1;
+}
+.stadium-app :is(.report-input-toggle, .report-fold-toggle):hover {
+    color: var(--stadium-lime);
+}
+.stadium-app .report-input-toggle {
+    min-height: 30px;
+    padding-block: 4px;
+    font-size: 11px;
+}
+.stadium-app .report-input-toggle[aria-expanded='true'] {
+    margin-bottom: 12px;
+}
+.stadium-app .report-fold:has(.report-fold-toggle[aria-expanded='true']) > div {
+    padding-top: 10px;
+}
+.stadium-app .report-fold:has(.report-fold-toggle[aria-expanded='true']) .panel {
+    margin-bottom: 10px;
+}
+.stadium-app .report-provenance .report-fold-toggle {
+    color: #e1d6a7;
+    font-size: 11px;
+}
+.stadium-app .report-provenance .report-fold-toggle::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    flex-shrink: 0;
+    background: #d2c691;
+}
+.stadium-app .report-provenance .report-fold-toggle > span {
+    margin-left: auto;
+}
+.stadium-app .report-input-area #report-inputs > div {
+    margin-top: 12px;
+}
+.stadium-app .report-input-area .report-examples {
+    gap: 9px;
+}
+.stadium-app .report-input-area .report-examples > span {
+    font-size: 12px;
+    color: var(--muted);
+}
+.stadium-app .report-input-area .report-examples select {
+    max-width: 100%;
+    background: #111a11;
+    color: #e6eedd;
+    border-color: #617052;
+    padding: 9px;
+}
+.stadium-app .report-input-area .report-examples > .text-button {
+    padding: 5px 0;
+}
+.stadium-app .report-fold .report-state {
+    margin-top: 0;
+}
+.stadium-app .stadium-action-row > .primary-button {
+    margin-top: 0;
+    width: 100%;
+}
+.stadium-app .settings-server .stadium-action-row {
+    margin-top: 20px;
+}
+.stadium-app .controls .stadium-action-row {
+    margin-top: 16px;
+}
+.stadium-app .settings-server {
+    position: relative;
+}
+.stadium-app .settings-server::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 24px;
+    width: 3px;
+    height: 28px;
+    background: var(--stadium-lime);
+}
+.stadium-app .settings-retention dt {
+    color: #e3e9dc;
+}
+.stadium-app .controls .capture-hint {
+    margin-bottom: 14px;
+    font-size: 11px;
+}
+.stadium-app .controls .file-picker {
+    padding-block: 17px;
+    gap: 4px;
+}
+.stadium-app .controls .file-icon {
+    width: 31px;
+    height: 31px;
+}
+.stadium-app .controls .example-choice {
+    margin-top: 16px;
+    padding-top: 12px;
+    gap: 6px;
+}
+@media (max-width: 720px) {
+    .stadium-app .intro .page-kicker {
+        display: none;
+    }
+    .stadium-app .intro {
+        padding-block: 18px 16px;
+    }
+    .stadium-app .intro > p:last-child {
+        margin-top: 6px;
+    }
+    .stadium-app .app-page {
+        padding-inline: 12px;
+    }
+    .stadium-app .squad-hero-heading h1 {
+        font-size: 29px;
+    }
+    .stadium-app .squad-hero .stadium-selected strong {
+        font-size: 20px;
+    }
+    .stadium-app .report-json summary {
+        font-size: 11px;
+    }
+}
+@media (max-width: 380px) {
+    .stadium-app .squad-hero-heading h1 {
+        font-size: 25px;
+    }
+    .stadium-app .squad-hero .stadium-costs span {
+        font-size: 16px;
+    }
+    .stadium-app .squad-hero .stadium-costs strong {
+        font-size: 26px;
+    }
+    .stadium-app .squad-hero .stadium-selected strong {
+        font-size: 18px;
+    }
+    .stadium-app .squad-hero .stadium-budget-line {
+        font-size: 14px;
+    }
+    .stadium-app .squad-hero .stadium-origin {
+        font-size: 14px;
+    }
+    .stadium-app .squad-hero .stadium-cta {
+        font-size: 24px !important;
     }
 }

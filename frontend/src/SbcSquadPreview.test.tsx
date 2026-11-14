@@ -18,13 +18,17 @@ it('montre les trois cartes retenues et les détails de la carte sélectionnée'
             .getByRole('button', { name: 'Léa Fictive, 83, ST, Achat' })
             .getAttribute('aria-pressed'),
     ).toBe('true');
-    expect(screen.getByText('3 cartes', { selector: '.kind-label' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Composition 3 cartes' })).toBeTruthy();
 });
 
-it.each(['score', 'unknown-position'])('n’invente pas de terrain pour un rapport %s', (mode) => {
-    const report = structuredClone(fixture) as SolverReport;
-    if (mode === 'score') report.challenge.mode = 'score';
-    else report.challenge.positions![0] = 'UNKNOWN';
-    const { container } = render(<SbcSquadPreview report={report} />);
-    expect(container.childElementCount).toBe(0);
-});
+it.each(['score', 'unknown-position', 'prototype-position'])(
+    'n’invente pas de terrain pour un rapport %s',
+    (mode) => {
+        const report = structuredClone(fixture) as SolverReport;
+        if (mode === 'score') report.challenge.mode = 'score';
+        else
+            report.challenge.positions![0] = mode === 'prototype-position' ? 'toString' : 'UNKNOWN';
+        const { container } = render(<SbcSquadPreview report={report} />);
+        expect(container.childElementCount).toBe(0);
+    },
+);

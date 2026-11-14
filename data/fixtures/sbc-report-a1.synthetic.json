@@ -1,0 +1,289 @@
+{
+  "description": "Scénario graphique de onze cartes préparé à la main pour comparer au croquis A1, sans calcul du solveur et sans vérification métier.",
+  "data_kind": "synthetic",
+  "challenge": {
+    "rules_version": "dynamic-v1",
+    "positions": [
+      "LW",
+      "ST",
+      "RW",
+      "CM",
+      "CM",
+      "CM",
+      "LB",
+      "CB",
+      "CB",
+      "RB",
+      "GK"
+    ],
+    "market": "pc",
+    "budget": 5000,
+    "conditions": []
+  },
+  "price_reference_at": "2026-10-30T12:00:00+00:00",
+  "solution": {
+    "status": "feasible",
+    "assignments": [
+      {
+        "slot": 0,
+        "candidate_key": "visual-a1:0"
+      },
+      {
+        "slot": 1,
+        "candidate_key": "visual-a1:1"
+      },
+      {
+        "slot": 2,
+        "candidate_key": "visual-a1:2"
+      },
+      {
+        "slot": 3,
+        "candidate_key": "visual-a1:3"
+      },
+      {
+        "slot": 4,
+        "candidate_key": "visual-a1:4"
+      },
+      {
+        "slot": 5,
+        "candidate_key": "visual-a1:5"
+      },
+      {
+        "slot": 6,
+        "candidate_key": "visual-a1:6"
+      },
+      {
+        "slot": 7,
+        "candidate_key": "visual-a1:7"
+      },
+      {
+        "slot": 8,
+        "candidate_key": "visual-a1:8"
+      },
+      {
+        "slot": 9,
+        "candidate_key": "visual-a1:9"
+      },
+      {
+        "slot": 10,
+        "candidate_key": "visual-a1:10"
+      }
+    ],
+    "purchase_cost": 4200,
+    "sacrifice_value": 6800,
+    "total_cost": 11000,
+    "errors": []
+  },
+  "selected_candidates": [
+    {
+      "key": "visual-a1:0",
+      "card_id": 920000,
+      "base_id": 920000,
+      "name": "Sacha Exemple",
+      "rating": 83,
+      "positions": [
+        "LW"
+      ],
+      "owned": true,
+      "protected": false,
+      "value": 800,
+      "max_quantity": 1,
+      "is_rare": false,
+      "observed_at": "2026-10-30T12:00:00+00:00",
+      "source_url": "urn:sbc-vision:synthetic:visual-a1:0",
+      "nation_id": 9901,
+      "league_id": 9902
+    },
+    {
+      "key": "visual-a1:1",
+      "card_id": 920001,
+      "base_id": 920001,
+      "name": "Léa Fictive",
+      "rating": 84,
+      "positions": [
+        "ST"
+      ],
+      "owned": true,
+      "protected": false,
+      "value": 800,
+      "max_quantity": 1,
+      "is_rare": false,
+      "observed_at": "2026-10-30T12:00:00+00:00",
+      "source_url": "urn:sbc-vision:synthetic:visual-a1:1",
+      "nation_id": 9901,
+      "league_id": 9902
+    },
+    {
+      "key": "visual-a1:2",
+      "card_id": 920002,
+      "base_id": 920002,
+      "name": "Noa Exemple",
+      "rating": 83,
+      "positions": [
+        "RW"
+      ],
+      "owned": true,
+      "protected": false,
+      "value": 800,
+      "max_quantity": 1,
+      "is_rare": false,
+      "observed_at": "2026-10-30T12:00:00+00:00",
+      "source_url": "urn:sbc-vision:synthetic:visual-a1:2",
+      "nation_id": 9901,
+      "league_id": 9902
+    },
+    {
+      "key": "visual-a1:3",
+      "card_id": 920003,
+      "base_id": 920003,
+      "name": "Morgan Test",
+      "rating": 82,
+      "positions": [
+        "CM"
+      ],
+      "owned": false,
+      "protected": false,
+      "value": 1700,
+      "max_quantity": 1,
+      "is_rare": false,
+      "observed_at": "2026-10-30T12:00:00+00:00",
+      "source_url": "urn:sbc-vision:synthetic:visual-a1:3",
+      "nation_id": 9901,
+      "league_id": 9902
+    },
+    {
+      "key": "visual-a1:4",
+      "card_id": 920004,
+      "base_id": 920004,
+      "name": "Alex Exemple",
+      "rating": 83,
+      "positions": [
+        "CM"
+      ],
+      "owned": true,
+      "protected": false,
+      "value": 800,
+      "max_quantity": 1,
+      "is_rare": false,
+      "observed_at": "2026-10-30T12:00:00+00:00",
+      "source_url": "urn:sbc-vision:synthetic:visual-a1:4",
+      "nation_id": 9901,
+      "league_id": 9902
+    },
+    {
+      "key": "visual-a1:5",
+      "card_id": 920005,
+      "base_id": 920005,
+      "name": "Eli Test",
+      "rating": 82,
+      "positions": [
+        "CM"
+      ],
+      "owned": false,
+      "protected": false,
+      "value": 2500,
+      "max_quantity": 1,
+      "is_rare": false,
+      "observed_at": "2026-10-30T12:00:00+00:00",
+      "source_url": "urn:sbc-vision:synthetic:visual-a1:5",
+      "nation_id": 9901,
+      "league_id": 9902
+    },
+    {
+      "key": "visual-a1:6",
+      "card_id": 920006,
+      "base_id": 920006,
+      "name": "Inès Démo",
+      "rating": 82,
+      "positions": [
+        "LB"
+      ],
+      "owned": true,
+      "protected": false,
+      "value": 800,
+      "max_quantity": 1,
+      "is_rare": false,
+      "observed_at": "2026-10-30T12:00:00+00:00",
+      "source_url": "urn:sbc-vision:synthetic:visual-a1:6",
+      "nation_id": 9901,
+      "league_id": 9902
+    },
+    {
+      "key": "visual-a1:7",
+      "card_id": 920007,
+      "base_id": 920007,
+      "name": "Yanis Démo",
+      "rating": 84,
+      "positions": [
+        "CB"
+      ],
+      "owned": true,
+      "protected": false,
+      "value": 800,
+      "max_quantity": 1,
+      "is_rare": false,
+      "observed_at": "2026-10-30T12:00:00+00:00",
+      "source_url": "urn:sbc-vision:synthetic:visual-a1:7",
+      "nation_id": 9901,
+      "league_id": 9902
+    },
+    {
+      "key": "visual-a1:8",
+      "card_id": 920008,
+      "base_id": 920008,
+      "name": "Camille Exemple",
+      "rating": 83,
+      "positions": [
+        "CB"
+      ],
+      "owned": true,
+      "protected": false,
+      "value": 800,
+      "max_quantity": 1,
+      "is_rare": false,
+      "observed_at": "2026-10-30T12:00:00+00:00",
+      "source_url": "urn:sbc-vision:synthetic:visual-a1:8",
+      "nation_id": 9901,
+      "league_id": 9902
+    },
+    {
+      "key": "visual-a1:9",
+      "card_id": 920009,
+      "base_id": 920009,
+      "name": "Robin Test",
+      "rating": 82,
+      "positions": [
+        "RB"
+      ],
+      "owned": true,
+      "protected": false,
+      "value": 800,
+      "max_quantity": 1,
+      "is_rare": false,
+      "observed_at": "2026-10-30T12:00:00+00:00",
+      "source_url": "urn:sbc-vision:synthetic:visual-a1:9",
+      "nation_id": 9901,
+      "league_id": 9902
+    },
+    {
+      "key": "visual-a1:10",
+      "card_id": 920010,
+      "base_id": 920010,
+      "name": "Lou Fictive",
+      "rating": 83,
+      "positions": [
+        "GK"
+      ],
+      "owned": true,
+      "protected": false,
+      "value": 400,
+      "max_quantity": 1,
+      "is_rare": false,
+      "observed_at": "2026-10-30T12:00:00+00:00",
+      "source_url": "urn:sbc-vision:synthetic:visual-a1:10",
+      "nation_id": 9901,
+      "league_id": 9902
+    }
+  ],
+  "verification": null
+}

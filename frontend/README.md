@@ -35,6 +35,10 @@ Le catalogue des assets et sa maquette de onze cartes restent disponibles sur
 Le terrain de l'application affiche les cartes retenues du rapport reçu, sans remplir
 les emplacements avec les onze joueurs de la maquette. La liste des postes reste
 accessible pour les rapports qui ne se prêtent pas à un affichage sur le terrain.
+Après calcul, **Sources et inventaire** retrouve le club et le budget. Le terrain,
+les coûts et **Voir les achats** passent au premier plan ; conditions, protections et
+vérification restent dépliables. Le scénario **Maquette A1 · 11 cartes** compare le rendu
+au croquis avec un rapport graphique préparé à la main, sans exécution du solveur.
 Sans pipeline configuré, un PNG valide provoque une erreur `503 perception_unavailable`.
 Ce retour vérifie le transport de la capture et la gestion des erreurs, pas la vision.
 

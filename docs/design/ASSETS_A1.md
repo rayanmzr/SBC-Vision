@@ -35,6 +35,11 @@ et **Réglages**.
   utilise les cartes et les postes du rapport validé, de 1 à 11 cartes. Les petits défis
   à trois cartes ont une présentation plus compacte. Pour les postes inconnus, les
   formations trop denses ou le mode Item Score, la liste reste la présentation de référence.
+  Une proposition valide place le terrain au premier plan, avec la fiche du joueur,
+  le bandeau **Achats / Valeur club / Total**, le budget et **Voir les achats**.
+  **Sources et inventaire** permet de retrouver les entrées ; conditions, protections
+  et vérification du rapport se déplient en dessous. Les états sans solution, incertains
+  ou à recalculer restent visibles et retirent la proposition obsolète.
 - **Réglages** : adresse API, clé masquée en mémoire, vérification de connexion et état
   du modèle. Les messages d'erreur apparaissent sur la page en cours. Modifier le serveur
   ou la clé invalide la connexion et les données reçues, comme avant le changement visuel.
@@ -44,7 +49,13 @@ l'extension. La page séparée `controller-lab.html` conserve sa scène de labor
 Le terrain est une disposition illustrative : il ne fournit jamais de coordonnées de clic
 au contrôleur. Le moteur SBC et le contrat de perception ne sont pas modifiés par le thème.
 
-Vérifications du lot : 175 tests frontend, typage, formatage et build ; parcours manuel en
+Le scénario **Exemple fictif → Maquette A1 · 11 cartes** charge
+`data/fixtures/sbc-report-a1.synthetic.json`. Ses coûts de 4 200 + 6 800 = 11 000 sont
+cohérents avec les cartes, mais aucun solveur ni contrôle métier n'est exécuté. Il sert
+à comparer le rendu au dessin dans le même écran que les autres rapports. Le libellé
+de formation est déduit des postes du rapport lorsque les onze cartes le permettent.
+
+Vérifications : typage, formatage et 178 tests frontend, puis build ; parcours manuel en
 360 et 440 pixels avec l'API locale authentifiée, analyse du laboratoire et calcul CP-SAT
 sur les données fictives. L'overlay de détection garde les dimensions de l'image affichée.
 Le modèle entraîné pour la Web App EA reste à raccorder.

@@ -136,14 +136,14 @@
 .stadium-pitch {
     position: relative;
     width: 100%;
-    aspect-ratio: 1.2;
+    aspect-ratio: 1.05;
     margin-top: 14px;
 }
 .stadium-grass {
     position: absolute;
     inset: 0;
     background: #214e1c url('./assets/pitch-grass.png') center / cover;
-    filter: brightness(1.48) saturate(0.82);
+    filter: brightness(1.65) saturate(0.98);
     clip-path: polygon(9% 2%, 91% 2%, 100% 100%, 0 100%);
 }
 .stadium-grass::after {
@@ -183,7 +183,7 @@
 .stadium-card {
     display: block;
     position: relative;
-    width: 14.2cqw;
+    width: 16cqw;
     aspect-ratio: 100 / 130;
     background: transparent;
     border: 0;
@@ -221,7 +221,7 @@
     position: absolute;
     left: 17%;
     top: 9%;
-    font-size: 5.1cqw;
+    font-size: 5.5cqw;
     font-weight: 800;
     font-style: italic;
     line-height: 1;
@@ -230,7 +230,7 @@
     position: absolute;
     left: 18%;
     top: 34%;
-    font-size: 3cqw;
+    font-size: 3.2cqw;
     font-weight: 800;
     font-style: italic;
     line-height: 1;

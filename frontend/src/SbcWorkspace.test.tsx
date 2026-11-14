@@ -15,6 +15,7 @@ it('garde la mention fictive et les protections en lecture seule pour un fichier
         target: { files: [file] },
     });
     await screen.findByText('Rapport importé · Données fictives');
+    fireEvent.click(screen.getByRole('button', { name: 'Cartes et protections' }));
     expect(
         (
             screen.getByRole('checkbox', {
@@ -28,6 +29,8 @@ function loadExample() {
     render(<SbcWorkspace />);
     fireEvent.click(screen.getByRole('button', { name: 'Exemple fictif' }));
     fireEvent.click(screen.getByRole('button', { name: 'Charger l’exemple du solveur →' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cartes et protections' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Voir les achats' }));
 }
 
 it('distingue dépenses, valeur sacrifiée, protections et prix inconnu', () => {
@@ -61,9 +64,42 @@ it.each([
     ['uncertain', 'Lecture à confirmer'],
 ])('présente correctement le cas %s', (scenario, message) => {
     loadExample();
+    fireEvent.click(screen.getByRole('button', { name: 'Sources et inventaire' }));
     fireEvent.change(screen.getByRole('combobox', { name: 'Scénario du solveur' }), {
         target: { value: scenario },
     });
     expect(screen.getByRole('heading', { name: message })).toBeTruthy();
     expect(screen.queryByRole('heading', { name: 'Achats suggérés' })).toBeNull();
+});
+
+it('place l’équipe et les coûts au premier plan et déplie les achats sur demande', () => {
+    render(<SbcWorkspace />);
+    fireEvent.click(screen.getByRole('button', { name: 'Exemple fictif' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Charger l’exemple du solveur →' }));
+    expect(screen.getByRole('region', { name: 'Aperçu de l’équipe du rapport' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Charger l’inventaire' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Achats suggérés' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Voir les achats' }));
+    expect(screen.getByRole('heading', { name: 'Achats suggérés' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Masquer les achats' }));
+    expect(screen.queryByRole('heading', { name: 'Achats suggérés' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Cartes et protections' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Protéger Alex Exemple club:demo-002' }));
+    expect(screen.queryByRole('region', { name: 'Aperçu de l’équipe du rapport' })).toBeNull();
+    expect(screen.getByText('Recalcul nécessaire')).toBeTruthy();
+});
+
+it('présente onze cartes fictives avec des coûts cohérents et une formation issue des postes', () => {
+    render(<SbcWorkspace />);
+    fireEvent.click(screen.getByRole('button', { name: 'Exemple fictif' }));
+    fireEvent.change(screen.getByRole('combobox', { name: 'Scénario du solveur' }), {
+        target: { value: 'eleven' },
+    });
+    expect(screen.getByRole('region', { name: 'Composition 4-3-3' })).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: /, (Club|Achat)$/ })).toHaveLength(11);
+    expect(screen.getByText(/11\s000/)).toBeTruthy();
+    expect(screen.getByText('Exemple synthétique · Aucun calcul exécuté')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Voir les achats' }));
+    expect(screen.getByText(/Total : 1\s700 crédits/)).toBeTruthy();
+    expect(screen.getByText(/Total : 2\s500 crédits/)).toBeTruthy();
 });
