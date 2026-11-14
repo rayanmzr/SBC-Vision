@@ -16,6 +16,10 @@ class Capture:
     image: Image.Image
 
 
+class UnrecognizedSceneError(Exception):
+    """Le pipeline ne peut pas produire une observation utilisable de cette scène."""
+
+
 class PerceptionPipeline(Protocol):
     async def analyze(self, capture: Capture) -> PerceptionResponse:
         """Détecter, lire puis normaliser ; ne réalise aucune action sur le navigateur.

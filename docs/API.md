@@ -9,6 +9,10 @@ pas encore raccordés. **Une installation normale renvoie donc HTTP 503 à une a
 Les tests utilisent un pipeline fictif clairement nommé ; ils ne mesurent aucune performance
 de vision. L'issue #14 reste ouverte jusqu'au raccordement et à son évaluation.
 
+Le mode explicite `SBC_PERCEPTION_MODE=lab-colors` permet maintenant de tester la vraie
+chaîne image → pipeline Python → JSON sur la page locale du contrôleur. Il ne reconnaît
+pas les joueurs EA et reste désactivé par défaut : [guide du pipeline de laboratoire](LAB_PERCEPTION_API.md).
+
 ## Comprendre le trajet de l'image
 
 1. Le contrôleur capture le viewport du navigateur, c'est-à-dire la zone visible.

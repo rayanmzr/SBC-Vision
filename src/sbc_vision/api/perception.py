@@ -13,7 +13,7 @@ from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
 
 from sbc_vision.contracts.perception import PerceptionResponse
-from sbc_vision.perception.pipeline import Capture, PerceptionPipeline
+from sbc_vision.perception.pipeline import Capture, PerceptionPipeline, UnrecognizedSceneError
 
 router = APIRouter(prefix="/api/v1/perception", tags=["perception"])
 FORMATS = {"image/png": "PNG", "image/jpeg": "JPEG"}
@@ -87,6 +87,7 @@ def decode_image(data: bytes, media_type: str, limits: AnalysisLimits) -> Image.
         408: {"description": "Délai de réception de l'image dépassé"},
         413: {"description": "Taille ou dimensions hors limites"},
         415: {"description": "Format non pris en charge ou Content-Type incorrect"},
+        422: {"description": "Identifiant invalide ou scène non reconnue par le pipeline de test"},
         502: {"description": "Erreur du pipeline ou résultat incohérent avec la capture"},
         503: {"description": "Pipeline de perception non configuré"},
         504: {"description": "Délai d'inférence dépassé"},
@@ -129,6 +130,10 @@ async def analyze_capture(
         except TimeoutError as exc:
             raise reject(
                 504, "inference_timeout", "Délai d'analyse de la capture dépassé."
+            ) from exc
+        except UnrecognizedSceneError as exc:
+            raise reject(
+                422, "scene_unrecognized", "Scène non reconnue par le pipeline de laboratoire."
             ) from exc
         except Exception as exc:
             raise reject(
