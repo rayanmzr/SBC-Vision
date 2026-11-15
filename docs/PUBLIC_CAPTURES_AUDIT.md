@@ -2,6 +2,8 @@
 
 Préparation du parcours de l'[issue #19](https://github.com/rayanmzr/SBC-Vision/issues/19), à partir de la branche `feat/15-extension-design`, commit `5875798`. Cette collecte complète le travail de données de Saber ; elle ne termine ni la collecte, ni le benchmark, ni l'intégration.
 
+Suite de cet audit, le même jour : le [lecteur OCR de Rayan a été vérifié et raccordé à une route HTTP](OCR_API.md), avec régions fournies. Le constat initial sur le détecteur non branché reste distinct de ce raccord.
+
 ## Résultat de la recherche
 
 14 fichiers téléchargés, décodés et examinés visuellement : **3 candidats FC27 sans ajout tiers repéré, 5 références d'anciennes éditions, 5 références auxiliaires et 1 capture console écartée**. Cela représente environ 3,1 Mo. Aucun fichier n'a été retouché. « Sans ajout repéré » ne garantit pas l'authenticité de la publication ni l'absence d'une modification discrète.

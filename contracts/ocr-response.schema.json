@@ -1,0 +1,661 @@
+{
+  "$defs": {
+    "BoundingBox": {
+      "additionalProperties": false,
+      "description": "Boîte dans la capture : x, y en haut à gauche ; largeur/hauteur en pixels.",
+      "properties": {
+        "x": {
+          "minimum": 0,
+          "title": "X",
+          "type": "integer"
+        },
+        "y": {
+          "minimum": 0,
+          "title": "Y",
+          "type": "integer"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "title": "BoundingBox",
+      "type": "object"
+    },
+    "CardReading": {
+      "additionalProperties": false,
+      "description": "Attributs lus sur une carte, à rapprocher des versions du catalogue.",
+      "properties": {
+        "capture_id": {
+          "minLength": 1,
+          "title": "Capture Id",
+          "type": "string"
+        },
+        "element_id": {
+          "minLength": 1,
+          "title": "Element Id",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "rating": {
+          "maximum": 99,
+          "minimum": 1,
+          "title": "Rating",
+          "type": "integer"
+        },
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "position": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Position"
+        },
+        "club_id": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Club Id"
+        },
+        "league_id": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "League Id"
+        },
+        "nation_id": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Nation Id"
+        },
+        "rare_type": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rare Type"
+        },
+        "is_rare": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Rare"
+        },
+        "item_score": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1000000000,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Item Score"
+        },
+        "stats": {
+          "additionalProperties": {
+            "maximum": 99,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "propertyNames": {
+            "enum": [
+              "PAC",
+              "SHO",
+              "PAS",
+              "DRI",
+              "DEF",
+              "PHY",
+              "DIV",
+              "HAN",
+              "KIC",
+              "REF",
+              "SPD",
+              "POS"
+            ]
+          },
+          "title": "Stats",
+          "type": "object"
+        }
+      },
+      "required": [
+        "capture_id",
+        "element_id",
+        "name",
+        "rating",
+        "confidence"
+      ],
+      "title": "CardReading",
+      "type": "object"
+    },
+    "Challenge": {
+      "additionalProperties": false,
+      "properties": {
+        "rules_version": {
+          "const": "dynamic-v1",
+          "default": "dynamic-v1",
+          "title": "Rules Version",
+          "type": "string"
+        },
+        "mode": {
+          "default": "squad",
+          "enum": [
+            "squad",
+            "score"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "positions": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 11,
+          "title": "Positions",
+          "type": "array"
+        },
+        "conditions": {
+          "items": {
+            "$ref": "#/$defs/Condition"
+          },
+          "title": "Conditions",
+          "type": "array"
+        },
+        "max_items": {
+          "default": 100,
+          "maximum": 100,
+          "minimum": 1,
+          "title": "Max Items",
+          "type": "integer"
+        },
+        "score_progress": {
+          "default": 0,
+          "maximum": 1000000000,
+          "minimum": 0,
+          "title": "Score Progress",
+          "type": "integer"
+        },
+        "card_level": {
+          "anyOf": [
+            {
+              "enum": [
+                "BRONZE",
+                "SILVER",
+                "GOLD"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Card Level"
+        },
+        "card_level_op": {
+          "default": "exact",
+          "enum": [
+            "min",
+            "max",
+            "exact"
+          ],
+          "title": "Card Level Op",
+          "type": "string"
+        },
+        "market": {
+          "enum": [
+            "ps",
+            "pc"
+          ],
+          "title": "Market",
+          "type": "string"
+        },
+        "budget": {
+          "maximum": 1000000000,
+          "minimum": 0,
+          "title": "Budget",
+          "type": "integer"
+        },
+        "max_card_value": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1000000000,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Card Value"
+        }
+      },
+      "required": [
+        "market",
+        "budget"
+      ],
+      "title": "Challenge",
+      "type": "object"
+    },
+    "Condition": {
+      "additionalProperties": false,
+      "properties": {
+        "metric": {
+          "enum": [
+            "players",
+            "rating",
+            "rated",
+            "rare",
+            "nation",
+            "league",
+            "club",
+            "nations",
+            "leagues",
+            "clubs",
+            "same_nation",
+            "same_league",
+            "same_club",
+            "quality",
+            "item_score",
+            "team_rating",
+            "chemistry"
+          ],
+          "title": "Metric",
+          "type": "string"
+        },
+        "op": {
+          "default": "min",
+          "enum": [
+            "min",
+            "max",
+            "exact"
+          ],
+          "title": "Op",
+          "type": "string"
+        },
+        "value": {
+          "maximum": 1000000000,
+          "minimum": 0,
+          "title": "Value",
+          "type": "integer"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target"
+        },
+        "text": {
+          "default": "",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metric",
+        "value"
+      ],
+      "title": "Condition",
+      "type": "object"
+    },
+    "ImageSize": {
+      "additionalProperties": false,
+      "properties": {
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ],
+      "title": "ImageSize",
+      "type": "object"
+    },
+    "OcrCard": {
+      "properties": {
+        "element_id": {
+          "title": "Element Id",
+          "type": "string"
+        },
+        "reading": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CardReading"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidate_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Candidate Ids",
+          "type": "array"
+        },
+        "issues": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Issues",
+          "type": "array"
+        },
+        "needs_confirmation": {
+          "const": true,
+          "title": "Needs Confirmation",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "element_id",
+        "reading",
+        "candidate_ids",
+        "issues",
+        "needs_confirmation"
+      ],
+      "title": "OcrCard",
+      "type": "object"
+    },
+    "OcrWord": {
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "width": {
+          "minimum": 0,
+          "title": "Width",
+          "type": "number"
+        },
+        "height": {
+          "minimum": 0,
+          "title": "Height",
+          "type": "number"
+        },
+        "line": {
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Line",
+          "type": "array"
+        }
+      },
+      "required": [
+        "text",
+        "confidence",
+        "x",
+        "y",
+        "width",
+        "height",
+        "line"
+      ],
+      "title": "OcrWord",
+      "type": "object"
+    },
+    "RegionReading": {
+      "additionalProperties": false,
+      "properties": {
+        "element_id": {
+          "minLength": 1,
+          "title": "Element Id",
+          "type": "string"
+        },
+        "field": {
+          "enum": [
+            "name",
+            "rating",
+            "position",
+            "stats",
+            "item_score",
+            "requirements",
+            "slots"
+          ],
+          "title": "Field",
+          "type": "string"
+        },
+        "bbox": {
+          "$ref": "#/$defs/BoundingBox"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "words": {
+          "items": {
+            "$ref": "#/$defs/OcrWord"
+          },
+          "title": "Words",
+          "type": "array"
+        },
+        "method": {
+          "enum": [
+            "global",
+            "region"
+          ],
+          "title": "Method",
+          "type": "string"
+        }
+      },
+      "required": [
+        "element_id",
+        "field",
+        "bbox",
+        "text",
+        "confidence",
+        "words",
+        "method"
+      ],
+      "title": "RegionReading",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "capture_id": {
+      "title": "Capture Id",
+      "type": "string"
+    },
+    "image": {
+      "$ref": "#/$defs/ImageSize"
+    },
+    "engine": {
+      "const": "rayan-tesseract",
+      "default": "rayan-tesseract",
+      "title": "Engine",
+      "type": "string"
+    },
+    "engine_version": {
+      "title": "Engine Version",
+      "type": "string"
+    },
+    "language": {
+      "title": "Language",
+      "type": "string"
+    },
+    "region_source": {
+      "const": "provided",
+      "default": "provided",
+      "title": "Region Source",
+      "type": "string"
+    },
+    "automatic_detection": {
+      "const": false,
+      "default": false,
+      "title": "Automatic Detection",
+      "type": "boolean"
+    },
+    "minimum_confidence": {
+      "title": "Minimum Confidence",
+      "type": "number"
+    },
+    "regions": {
+      "items": {
+        "$ref": "#/$defs/RegionReading"
+      },
+      "title": "Regions",
+      "type": "array"
+    },
+    "cards": {
+      "items": {
+        "$ref": "#/$defs/OcrCard"
+      },
+      "title": "Cards",
+      "type": "array"
+    },
+    "positions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Positions",
+      "type": "array"
+    },
+    "challenge_ready": {
+      "title": "Challenge Ready",
+      "type": "boolean"
+    },
+    "challenge": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Challenge"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "challenge_issues": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Challenge Issues",
+      "type": "array"
+    }
+  },
+  "required": [
+    "capture_id",
+    "image",
+    "engine_version",
+    "language",
+    "minimum_confidence",
+    "regions",
+    "cards",
+    "positions",
+    "challenge_ready",
+    "challenge",
+    "challenge_issues"
+  ],
+  "title": "OcrAnalysisResponse",
+  "type": "object"
+}

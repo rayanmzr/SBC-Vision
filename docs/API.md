@@ -104,6 +104,10 @@ de concurrence et l'isolation seront à vérifier avec les véritables modèles 
 
 ## Raccordement avec Saber et Rayan
 
+Le [raccord HTTP de l'OCR de Rayan](OCR_API.md) est disponible séparément à
+`POST /api/v1/ocr/analyze`, avec capture et régions fournies. Il ne remplace pas le
+détecteur de `/perception/analyze` ; son activation et ses résultats sont documentés.
+
 `src/sbc_vision/perception/pipeline.py` définit le point d'entrée commun :
 `async analyze(capture: Capture) -> PerceptionResponse`.
 L'adaptateur de détection/OCR sera chargé au démarrage, puis affecté à
