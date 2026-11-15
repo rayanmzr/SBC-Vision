@@ -75,8 +75,26 @@ Fermer le popup perd l'image ; elle n'est pas sauvegardée sur le disque.
 
 La suite automatisée utilise des doublures des API Chrome. L'aperçu web valide
 l'affichage et l'import d'images ; il ne dispose pas de `chrome.tabs` et ne peut
-pas valider une capture native. Le scénario suivant reste à exécuter dans Chrome
-installé, notamment après toute modification des permissions :
+pas valider une capture native.
+
+Essai natif du 15 novembre 2026 dans Google Chrome sur macOS : installation du build
+local, ouverture du popup, capture de la page de laboratoire, affichage du scénario
+A1 à onze cartes, ouverture des achats et de l'espace dans un onglet. La capture de
+3 024 × 1 614 pixels correspond à un viewport de 1 512 × 807 pixels CSS, avec une
+échelle de 2. L'API était arrêtée : aucun envoi de capture ni calcul serveur n'a été
+validé pendant cet essai. Les captures de contrôle sont conservées localement dans
+`artifacts/design/chrome-native/` (ignoré par Git).
+
+Cet essai a révélé un popup trop étroit : `max-width: 100vw` sur le corps empêchait
+Chrome de mesurer la largeur souhaitée à l'ouverture. Le document et son corps ont
+maintenant une largeur et une largeur minimale de 440 px, limitées à `html.popup`.
+Après reconstruction et rechargement, le titre et son badge restent sur une ligne.
+Le reste de l'application demeure responsive. La hauteur du popup est bornée par
+Chrome ; le contenu se parcourt par défilement ou dans l'onglet de travail.
+
+Le scénario complet suivant reste la référence, notamment après toute modification
+des permissions. Les cas de zoom à 125 %, de page interdite et les clics du contrôleur
+natif restent à vérifier séparément :
 
 1. Construire avec `cd frontend && pnpm run check`, puis recharger le dossier
    `frontend/dist` depuis `chrome://extensions`.

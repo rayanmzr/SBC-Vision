@@ -446,9 +446,10 @@ body {
         'Segoe UI',
         sans-serif;
 }
+html.popup,
 html.popup body {
     width: 440px;
-    max-width: 100vw;
+    min-width: 440px;
 }
 button,
 input {
