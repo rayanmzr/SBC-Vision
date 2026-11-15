@@ -1,0 +1,573 @@
+{
+  "schema_version": 1,
+  "created_on": "2026-11-16",
+  "purpose": "Références publiques inspectées pour développement et préparation du parcours #19 ; pas un benchmark.",
+  "reviewed_code_commit": "58757982139544d5d9a64b58d744bc9432f74384",
+  "raw_directory": "data/raw/public_references_2026-11-16",
+  "selection_counts": {
+    "pilot_current": 3,
+    "auxiliary": 5,
+    "rejected_console": 1,
+    "pilot_legacy": 5
+  },
+  "split_policy": "Non attribués. Regrouper les sources corrélées ; ne pas utiliser ces images déjà examinées comme test aveugle. Garder les éditions distinctes.",
+  "entries": [
+    {
+      "id": "pcgames27-transfer-list",
+      "title": "Liste des transferts FC27",
+      "source_page_url": "https://www.pcgames.de/EA-Sports-FC-27-Spiel-78781/News/Web-App-Companion-Start-Ulimate-Team-Vorbereitung-1554117/",
+      "image_url": "https://www.pcgames.de/screenshots/1280x1024/2026/09/ea-fc-27-web-app-6-pc-games.jpg",
+      "resolved_image_url": "https://www.pcgames.de/screenshots/1280x1024/2026/09/ea-fc-27-web-app-6-pc-games.jpg",
+      "publisher_domain": "pcgames.de",
+      "creator_credit": "PC Games ; auteur précis non vérifié",
+      "ui_domain": "ea.com",
+      "source_group": "pcgames-1554117",
+      "session_id": null,
+      "edition_claimed_by_source": "27",
+      "edition_visible_in_image": "27",
+      "local_path": "data/raw/public_references_2026-11-16/pcgames27-transfer-list.jpg",
+      "width": 1280,
+      "height": 817,
+      "decoded_format": "JPEG",
+      "bytes": 91048,
+      "sha256": "11f0d738dff84631be55b5445bfd2a7c872a7408eb67c5980bcc33903b81d764",
+      "selection": "pilot_current",
+      "screen_types": [
+        "transfer_list",
+        "card_summary",
+        "navigation"
+      ],
+      "review": {
+        "visual_reviewed_on": "2026-11-16",
+        "transformations": [],
+        "limitations": [
+          "JPEG compressé",
+          "Ce ne sont pas les joueurs disponibles du club",
+          "Authenticité de publication non garantie"
+        ],
+        "public_alias_or_balance_may_be_visible": true
+      },
+      "split": null,
+      "annotation_path": null,
+      "reuse_rights": "not_verified",
+      "training_ready": false
+    },
+    {
+      "id": "alloparadise27-starter",
+      "title": "Choix du pack initial et bouton Continuer",
+      "source_page_url": "https://blog.alloparadise.fr/guides/web-app-companion-fc-27/",
+      "image_url": "https://blog.alloparadise.fr/wp-content/uploads/2026/09/fc27-web-app-capture-1.webp",
+      "resolved_image_url": "https://blog.alloparadise.fr/wp-content/uploads/2026/09/fc27-web-app-capture-1.webp",
+      "publisher_domain": "blog.alloparadise.fr",
+      "creator_credit": "Abuelonchos (YouTube), relayé par Arthur / Alloparadise",
+      "ui_domain": "ea.com",
+      "source_group": "abuelonchos-DxaUiE3fWq4",
+      "session_id": null,
+      "edition_claimed_by_source": "27",
+      "edition_visible_in_image": "27",
+      "local_path": "data/raw/public_references_2026-11-16/alloparadise27-starter.webp",
+      "width": 1280,
+      "height": 720,
+      "decoded_format": "WEBP",
+      "bytes": 77932,
+      "sha256": "858d3ce3beb04fb7de517907d7670245885219937a68421b959399aab0fd80a6",
+      "selection": "auxiliary",
+      "screen_types": [
+        "starter_selection",
+        "button",
+        "text"
+      ],
+      "review": {
+        "visual_reviewed_on": "2026-11-16",
+        "transformations": [],
+        "limitations": [
+          "Webcam et habillage en haut à droite",
+          "Écran hors parcours SBC initial"
+        ],
+        "public_alias_or_balance_may_be_visible": true
+      },
+      "split": null,
+      "annotation_path": null,
+      "reuse_rights": "not_verified",
+      "training_ready": false
+    },
+    {
+      "id": "alloparadise27-objectives",
+      "title": "Objectifs de marché et boutons",
+      "source_page_url": "https://blog.alloparadise.fr/guides/web-app-companion-fc-27/",
+      "image_url": "https://blog.alloparadise.fr/wp-content/uploads/2026/09/fc27-web-app-capture-2.webp",
+      "resolved_image_url": "https://blog.alloparadise.fr/wp-content/uploads/2026/09/fc27-web-app-capture-2.webp",
+      "publisher_domain": "blog.alloparadise.fr",
+      "creator_credit": "Abuelonchos (YouTube), relayé par Arthur / Alloparadise",
+      "ui_domain": "ea.com",
+      "source_group": "abuelonchos-DxaUiE3fWq4",
+      "session_id": null,
+      "edition_claimed_by_source": "27",
+      "edition_visible_in_image": "27",
+      "local_path": "data/raw/public_references_2026-11-16/alloparadise27-objectives.webp",
+      "width": 1280,
+      "height": 720,
+      "decoded_format": "WEBP",
+      "bytes": 61550,
+      "sha256": "aaaf808b37cd070a3501231d2156658faf3c70f8f765beed60030bd3f9c96cf2",
+      "selection": "auxiliary",
+      "screen_types": [
+        "objectives",
+        "navigation",
+        "button"
+      ],
+      "review": {
+        "visual_reviewed_on": "2026-11-16",
+        "transformations": [],
+        "limitations": [
+          "Webcam et habillage en haut à droite",
+          "Les objectifs ne sont pas des conditions de SBC"
+        ],
+        "public_alias_or_balance_may_be_visible": true
+      },
+      "split": null,
+      "annotation_path": null,
+      "reuse_rights": "not_verified",
+      "training_ready": false
+    },
+    {
+      "id": "ea27-access-comparison",
+      "title": "Accueil / absence de club : montage EA",
+      "source_page_url": "https://help.ea.com/en/articles/ea-sports-fc/early-web-and-companion-app-start/",
+      "image_url": "https://help.ea.com/_images/seegk6e7ypwi/1GlLCttjNJyp5Pk1YlJDK2/60cf1c651097a523df86f1d2956668f6/fc-web-app-access-and-no-access.webp",
+      "resolved_image_url": "https://help.ea.com/_images/seegk6e7ypwi/1GlLCttjNJyp5Pk1YlJDK2/60cf1c651097a523df86f1d2956668f6/fc-web-app-access-and-no-access.webp",
+      "publisher_domain": "help.ea.com",
+      "creator_credit": "Electronic Arts",
+      "ui_domain": "ea.com",
+      "source_group": "ea-help-access-comparison",
+      "session_id": null,
+      "edition_claimed_by_source": "27",
+      "edition_visible_in_image": "27",
+      "local_path": "data/raw/public_references_2026-11-16/ea27-access-comparison.jpg",
+      "width": 800,
+      "height": 450,
+      "decoded_format": "JPEG",
+      "bytes": 68920,
+      "sha256": "92bada72cf146703ddb0a4dcea3080b1fe7ec6ea07fafe6ea051871bef4b48df",
+      "selection": "auxiliary",
+      "screen_types": [
+        "no_club",
+        "error_message",
+        "home"
+      ],
+      "review": {
+        "visual_reviewed_on": "2026-11-16",
+        "transformations": [],
+        "limitations": [
+          "Montage de deux vues, pas un viewport complet",
+          "Faible résolution",
+          "Format JPEG malgré URL webp"
+        ],
+        "public_alias_or_balance_may_be_visible": true
+      },
+      "split": null,
+      "annotation_path": null,
+      "reuse_rights": "not_verified",
+      "training_ready": false
+    },
+    {
+      "id": "futgenie27-sbc-set",
+      "title": "Liste et conditions de SBC avec FUTGenie",
+      "source_page_url": "https://www.futgenie.gg/posts/auto-complete-set",
+      "image_url": "https://www.futgenie.gg/_next/image?q=75&url=%2Fposts%2Fscreenshots%2Fauto-complete-set-button.png&w=3840",
+      "resolved_image_url": "https://www.futgenie.gg/_next/image?q=75&url=%2Fposts%2Fscreenshots%2Fauto-complete-set-button.png&w=3840",
+      "publisher_domain": "futgenie.gg",
+      "creator_credit": "FUTGenie",
+      "ui_domain": "ea.com",
+      "source_group": "futgenie-auto-complete-set",
+      "session_id": null,
+      "edition_claimed_by_source": "27",
+      "edition_visible_in_image": null,
+      "local_path": "data/raw/public_references_2026-11-16/futgenie27-sbc-set.png",
+      "width": 1224,
+      "height": 1015,
+      "decoded_format": "PNG",
+      "bytes": 47020,
+      "sha256": "03b9421412b4a3f1720f23480f9ff00983312f678d1a2281ebad72cb6ddb43d3",
+      "selection": "auxiliary",
+      "screen_types": [
+        "sbc_list",
+        "sbc_requirements",
+        "button"
+      ],
+      "review": {
+        "visual_reviewed_on": "2026-11-16",
+        "transformations": [],
+        "limitations": [
+          "Interface modifiée : Auto Complete set et flèche ajoutés",
+          "Édition non visible dans la capture",
+          "Exclu du corpus EA natif"
+        ],
+        "public_alias_or_balance_may_be_visible": true
+      },
+      "split": null,
+      "annotation_path": null,
+      "reuse_rights": "not_verified",
+      "training_ready": false
+    },
+    {
+      "id": "futgenie27-preview",
+      "title": "Aperçu de joueurs modifié par FUTGenie",
+      "source_page_url": "https://www.futgenie.gg/posts/auto-complete-set",
+      "image_url": "https://www.futgenie.gg/_next/image?q=75&url=%2Fposts%2Fscreenshots%2Fauto-complete-set-preview.png&w=3840",
+      "resolved_image_url": "https://www.futgenie.gg/_next/image?q=75&url=%2Fposts%2Fscreenshots%2Fauto-complete-set-preview.png&w=3840",
+      "publisher_domain": "futgenie.gg",
+      "creator_credit": "FUTGenie",
+      "ui_domain": "ea.com",
+      "source_group": "futgenie-auto-complete-set",
+      "session_id": null,
+      "edition_claimed_by_source": "27",
+      "edition_visible_in_image": null,
+      "local_path": "data/raw/public_references_2026-11-16/futgenie27-preview.png",
+      "width": 1285,
+      "height": 1041,
+      "decoded_format": "PNG",
+      "bytes": 108716,
+      "sha256": "006e0e4bed051612066b8850ffe33bfe46ca110db0b721e3f1215b8cb33b6c17",
+      "selection": "auxiliary",
+      "screen_types": [
+        "player_list",
+        "card_summary",
+        "menu"
+      ],
+      "review": {
+        "visual_reviewed_on": "2026-11-16",
+        "transformations": [],
+        "limitations": [
+          "Interface modifiée : prix, scores et options du solveur",
+          "Édition non visible dans la capture",
+          "Liste de prévisualisation, pas preuve de possession"
+        ],
+        "public_alias_or_balance_may_be_visible": true
+      },
+      "split": null,
+      "annotation_path": null,
+      "reuse_rights": "not_verified",
+      "training_ready": false
+    },
+    {
+      "id": "futbin26-player-bio",
+      "title": "Fiche Marmoush dans le jeu : exclue du web",
+      "source_page_url": "https://www.futbin.com/news/articles/1609/fc-26-84-omar-marmoush-player-review",
+      "image_url": "https://media.futbin.com/design/img/news/extras/26_mush_review_team.png",
+      "resolved_image_url": "https://designcdn.futbin.com/design/img/news/extras/26_mush_review_team.png",
+      "publisher_domain": "futbin.com",
+      "creator_credit": "FUTBIN ; auteur précis non vérifié",
+      "ui_domain": "ea.com",
+      "source_group": "futbin-review-1609",
+      "session_id": null,
+      "edition_claimed_by_source": "26",
+      "edition_visible_in_image": null,
+      "local_path": "data/raw/public_references_2026-11-16/futbin26-player-bio.jpg",
+      "width": 3840,
+      "height": 2160,
+      "decoded_format": "JPEG",
+      "bytes": 429863,
+      "sha256": "6455896ae3e8bc03e1114daf6c5c326314238bfa61ce6d1a39e9f180aebde6c6",
+      "selection": "rejected_console",
+      "screen_types": [
+        "console_player_bio"
+      ],
+      "review": {
+        "visual_reviewed_on": "2026-11-16",
+        "transformations": [],
+        "limitations": [
+          "Commandes de manette L1/R1 visibles",
+          "Ne correspond pas à la cible Web App",
+          "Format JPEG malgré URL png"
+        ],
+        "public_alias_or_balance_may_be_visible": true
+      },
+      "split": null,
+      "annotation_path": null,
+      "reuse_rights": "not_verified",
+      "training_ready": false
+    },
+    {
+      "id": "millenium26-home",
+      "title": "Accueil français FC26",
+      "source_page_url": "https://www.millenium.org/guide/427194.html",
+      "image_url": "https://static1.millenium.org/articles/4/42/71/94/%40/1862603-screenshot-2025-09-19-at-14-13-45-fc-ultimate-team-web-app-ea-sports-official-site-full-1.png",
+      "resolved_image_url": "https://static1.millenium.org/articles/4/42/71/94/%40/1862603-screenshot-2025-09-19-at-14-13-45-fc-ultimate-team-web-app-ea-sports-official-site-full-1.png",
+      "publisher_domain": "millenium.org",
+      "creator_credit": "Millenium ; auteur précis non vérifié",
+      "ui_domain": "ea.com",
+      "source_group": "millenium-427194",
+      "session_id": null,
+      "edition_claimed_by_source": "26",
+      "edition_visible_in_image": "26",
+      "local_path": "data/raw/public_references_2026-11-16/millenium26-home.png",
+      "width": 1825,
+      "height": 874,
+      "decoded_format": "PNG",
+      "bytes": 859252,
+      "sha256": "722be508458fc3ee5d229d1a1c822a579aa1dd9c992e44c07e1d4cc85373da7d",
+      "selection": "pilot_legacy",
+      "screen_types": [
+        "home",
+        "tile",
+        "text"
+      ],
+      "review": {
+        "visual_reviewed_on": "2026-11-16",
+        "transformations": [],
+        "limitations": [
+          "Ancienne édition à garder distincte",
+          "Capture recadrée, pas toute la navigation"
+        ],
+        "public_alias_or_balance_may_be_visible": true
+      },
+      "split": null,
+      "annotation_path": null,
+      "reuse_rights": "not_verified",
+      "training_ready": false
+    },
+    {
+      "id": "ea-forum25-club-filters",
+      "title": "Filtres de recherche du club FC25",
+      "source_page_url": "https://forums.ea.com/idea/fc-25-bug-reports-en/club-search-in-web-app-doesnt-show-all-players/12223980",
+      "image_url": "https://forums.ea.com/t5/s/tghpe58374/attachments/tghpe58374/fc-25-bug-reports-en/11961/4/Search-89.jpg",
+      "resolved_image_url": "https://forums.ea.com/t5/s/tghpe58374/attachments/tghpe58374/fc-25-bug-reports-en/11961/4/Search-89.jpg",
+      "publisher_domain": "forums.ea.com",
+      "creator_credit": "UnsafestPlacebo / EA Forums",
+      "ui_domain": "ea.com",
+      "source_group": "ea-forum-thread-12223980",
+      "session_id": null,
+      "edition_claimed_by_source": "25",
+      "edition_visible_in_image": null,
+      "local_path": "data/raw/public_references_2026-11-16/ea-forum25-club-filters.jpg",
+      "width": 1314,
+      "height": 734,
+      "decoded_format": "JPEG",
+      "bytes": 111748,
+      "sha256": "98030a3be9ee4d5c89cadc3853af92e212883c357b69c7e1fca0603862015267",
+      "selection": "pilot_legacy",
+      "screen_types": [
+        "club_search",
+        "input",
+        "toggle",
+        "dropdown",
+        "button"
+      ],
+      "review": {
+        "visual_reviewed_on": "2026-11-16",
+        "transformations": [],
+        "limitations": [
+          "Édition fournie par le fil, pas visible dans ce recadrage",
+          "Panneau partiel",
+          "Même source que résultats et recherche de ligue"
+        ],
+        "public_alias_or_balance_may_be_visible": true
+      },
+      "split": null,
+      "annotation_path": null,
+      "reuse_rights": "not_verified",
+      "training_ready": false
+    },
+    {
+      "id": "ea-forum25-club-results",
+      "title": "Liste du club et menu de carte FC25",
+      "source_page_url": "https://forums.ea.com/idea/fc-25-bug-reports-en/club-search-in-web-app-doesnt-show-all-players/12223980",
+      "image_url": "https://forums.ea.com/t5/s/tghpe58374/attachments/tghpe58374/fc-25-bug-reports-en/11961/1/Search-89-result.jpg",
+      "resolved_image_url": "https://forums.ea.com/t5/s/tghpe58374/attachments/tghpe58374/fc-25-bug-reports-en/11961/1/Search-89-result.jpg",
+      "publisher_domain": "forums.ea.com",
+      "creator_credit": "UnsafestPlacebo / EA Forums",
+      "ui_domain": "ea.com",
+      "source_group": "ea-forum-thread-12223980",
+      "session_id": null,
+      "edition_claimed_by_source": "25",
+      "edition_visible_in_image": null,
+      "local_path": "data/raw/public_references_2026-11-16/ea-forum25-club-results.jpg",
+      "width": 1323,
+      "height": 785,
+      "decoded_format": "JPEG",
+      "bytes": 187907,
+      "sha256": "09e7b36ae9bcd5e4bddc9cdf0eda482e2b12af2793d5f9cd829112d83ae7426c",
+      "selection": "pilot_legacy",
+      "screen_types": [
+        "player_list",
+        "card_summary",
+        "menu",
+        "pagination"
+      ],
+      "review": {
+        "visual_reviewed_on": "2026-11-16",
+        "transformations": [],
+        "limitations": [
+          "Dernière carte partiellement visible",
+          "Les compteurs de prêt ne sont pas des quantités de cartes",
+          "Édition fournie par le fil"
+        ],
+        "public_alias_or_balance_may_be_visible": true
+      },
+      "split": null,
+      "annotation_path": null,
+      "reuse_rights": "not_verified",
+      "training_ready": false
+    },
+    {
+      "id": "ea-forum25-club-league",
+      "title": "Résultats de recherche par ligue FC25",
+      "source_page_url": "https://forums.ea.com/idea/fc-25-bug-reports-en/club-search-in-web-app-doesnt-show-all-players/12223980",
+      "image_url": "https://forums.ea.com/t5/s/tghpe58374/attachments/tghpe58374/fc-25-bug-reports-en/11961/3/Search-PL.jpg",
+      "resolved_image_url": "https://forums.ea.com/t5/s/tghpe58374/attachments/tghpe58374/fc-25-bug-reports-en/11961/3/Search-PL.jpg",
+      "publisher_domain": "forums.ea.com",
+      "creator_credit": "UnsafestPlacebo / EA Forums",
+      "ui_domain": "ea.com",
+      "source_group": "ea-forum-thread-12223980",
+      "session_id": null,
+      "edition_claimed_by_source": "25",
+      "edition_visible_in_image": null,
+      "local_path": "data/raw/public_references_2026-11-16/ea-forum25-club-league.jpg",
+      "width": 928,
+      "height": 776,
+      "decoded_format": "JPEG",
+      "bytes": 139399,
+      "sha256": "9a872f32357c12c5b74fca896f7f399a29e18db84b1aa25e5913b074c9aa3eeb",
+      "selection": "pilot_legacy",
+      "screen_types": [
+        "player_list",
+        "card_summary",
+        "pagination"
+      ],
+      "review": {
+        "visual_reviewed_on": "2026-11-16",
+        "transformations": [],
+        "limitations": [
+          "Édition fournie par le fil",
+          "Aucun inventaire complet ni suite de clics établis"
+        ],
+        "public_alias_or_balance_may_be_visible": true
+      },
+      "split": null,
+      "annotation_path": null,
+      "reuse_rights": "not_verified",
+      "training_ready": false
+    },
+    {
+      "id": "ea-forum24-sbc",
+      "title": "Terrain vide et filtres de recherche FC24",
+      "source_page_url": "https://forums.ea.com/discussions/fc-24-technical-issues-en/search-on-transfer-market-does-not-work-for-sbcs-on-web-app-and-companion-app/7987686",
+      "image_url": "https://forums.ea.com/t5/s/tghpe58374/attachments/tghpe58374/fc-24-technical-issues-en/66886/3/Screenshot%202024-01-17%20at%203.35.59%E2%80%AFPM.png",
+      "resolved_image_url": "https://forums.ea.com/t5/s/tghpe58374/attachments/tghpe58374/fc-24-technical-issues-en/66886/3/Screenshot%202024-01-17%20at%203.35.59%E2%80%AFPM.png",
+      "publisher_domain": "forums.ea.com",
+      "creator_credit": "Contributeur EA Forums ; pseudonyme non vérifié",
+      "ui_domain": "ea.com",
+      "source_group": "ea-forum-thread-7987686",
+      "session_id": null,
+      "edition_claimed_by_source": "24",
+      "edition_visible_in_image": "24",
+      "local_path": "data/raw/public_references_2026-11-16/ea-forum24-sbc.png",
+      "width": 1472,
+      "height": 1090,
+      "decoded_format": "PNG",
+      "bytes": 790920,
+      "sha256": "f1a8e378319581343b4d1cbfc5dbe231a05a39c3bb05831f87f52f84fd41039f",
+      "selection": "pilot_legacy",
+      "screen_types": [
+        "sbc_empty_squad",
+        "slot",
+        "input",
+        "dropdown",
+        "button"
+      ],
+      "review": {
+        "visual_reviewed_on": "2026-11-16",
+        "transformations": [],
+        "limitations": [
+          "Ancienne édition",
+          "Bordure et barre du navigateur incluses",
+          "Conditions du défi non dépliées"
+        ],
+        "public_alias_or_balance_may_be_visible": true
+      },
+      "split": null,
+      "annotation_path": null,
+      "reuse_rights": "not_verified",
+      "training_ready": false
+    },
+    {
+      "id": "pcgames27-reward-modal",
+      "title": "Récompense et fond désactivé FC27",
+      "source_page_url": "https://www.pcgames.de/EA-Sports-FC-27-Spiel-78781/News/Web-App-Companion-Start-Ulimate-Team-Vorbereitung-1554117/",
+      "image_url": "https://www.pcgames.de/screenshots/1280x1024/2026/09/ea-fc-27-web-app-7-pc-games.jpg",
+      "resolved_image_url": "https://www.pcgames.de/screenshots/1280x1024/2026/09/ea-fc-27-web-app-7-pc-games.jpg",
+      "publisher_domain": "pcgames.de",
+      "creator_credit": "PC Games ; auteur précis non vérifié",
+      "ui_domain": "ea.com",
+      "source_group": "pcgames-1554117",
+      "session_id": null,
+      "edition_claimed_by_source": "27",
+      "edition_visible_in_image": "27",
+      "local_path": "data/raw/public_references_2026-11-16/pcgames27-reward-modal.jpg",
+      "width": 1280,
+      "height": 821,
+      "decoded_format": "JPEG",
+      "bytes": 54089,
+      "sha256": "90bb58c38de27cdc0fb258df54dcbfac55c5a8e1d196883a127d887f3ab3f893",
+      "selection": "pilot_current",
+      "screen_types": [
+        "modal",
+        "button",
+        "occlusion"
+      ],
+      "review": {
+        "visual_reviewed_on": "2026-11-16",
+        "transformations": [],
+        "limitations": [
+          "Ne pas annoter les tuiles assombries comme activables",
+          "Publication commune aux autres images PC Games"
+        ],
+        "public_alias_or_balance_may_be_visible": true
+      },
+      "split": null,
+      "annotation_path": null,
+      "reuse_rights": "not_verified",
+      "training_ready": false
+    },
+    {
+      "id": "pcgames27-welcome",
+      "title": "Message de bienvenue FC27",
+      "source_page_url": "https://www.pcgames.de/EA-Sports-FC-27-Spiel-78781/News/Web-App-Companion-Start-Ulimate-Team-Vorbereitung-1554117/",
+      "image_url": "https://www.pcgames.de/screenshots/1280x1024/2026/09/ea-fc-27-web-app-3-pc-games.jpg",
+      "resolved_image_url": "https://www.pcgames.de/screenshots/1280x1024/2026/09/ea-fc-27-web-app-3-pc-games.jpg",
+      "publisher_domain": "pcgames.de",
+      "creator_credit": "PC Games ; auteur précis non vérifié",
+      "ui_domain": "ea.com",
+      "source_group": "pcgames-1554117",
+      "session_id": null,
+      "edition_claimed_by_source": "27",
+      "edition_visible_in_image": "27",
+      "local_path": "data/raw/public_references_2026-11-16/pcgames27-welcome.jpg",
+      "width": 1280,
+      "height": 812,
+      "decoded_format": "JPEG",
+      "bytes": 88671,
+      "sha256": "dbac56ce5b0ac78cd5bd19cd6113e9471f9315c7ecfd567e9c36dd23502338c6",
+      "selection": "pilot_current",
+      "screen_types": [
+        "modal",
+        "text",
+        "button"
+      ],
+      "review": {
+        "visual_reviewed_on": "2026-11-16",
+        "transformations": [],
+        "limitations": [
+          "Texte allemand et JPEG compressé",
+          "Ordre des écrans non vérifié"
+        ],
+        "public_alias_or_balance_may_be_visible": true
+      },
+      "split": null,
+      "annotation_path": null,
+      "reuse_rights": "not_verified",
+      "training_ready": false
+    }
+  ]
+}

@@ -15,6 +15,8 @@ Au moins 50 captures de 5 domaines distincts sont réservées au test hors domai
 
 Chaque échantillon doit avoir : ID, origine, domaine, session, taille, split, chemin local de l'image et annotations. Les données originales et les exports lourds ne sont pas committés. Publier un manifeste, des instructions d'accès et des empreintes de version.
 
+Le [lot de références publiques du 16 novembre](PUBLIC_CAPTURES_AUDIT.md) contient 14 images examinées et un manifeste de provenance. Il distingue éditions anciennes, interfaces modifiées et captures adaptées à un premier essai. Ce lot de recherche n'est ni annoté ni affecté aux splits ; il ne constitue pas un test indépendant.
+
 ## Catalogue et prix FUTBIN
 
 Les tests exploratoires effectués avant l'initialisation du dépôt ont validé :
