@@ -42,6 +42,12 @@ def main() -> None:
     parser.add_argument("--split", required=True)
     parser.add_argument("--data-root", type=Path, required=True)
     parser.add_argument("--count", type=int)
+    parser.add_argument(
+        "--one-per",
+        choices=("domain", "group"),
+        default="domain",
+        help="une capture par site (WebUI) ou par page (test vérifié : toutes ses captures)",
+    )
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--detector", required=True)
     parser.add_argument("--threshold", type=float)
@@ -56,7 +62,7 @@ def main() -> None:
     args = parser.parse_args()
 
     subset = evaluation_subset(
-        args.corpus, args.split, args.count, args.seed, args.near_duplicate_max
+        args.corpus, args.split, args.count, args.seed, args.near_duplicate_max, args.one_per
     )
     wanted = {record.image_id for record in subset.records}
     truth = load_ground_truth(args.corpus / f"{args.split}.coco.json")
@@ -76,6 +82,7 @@ def main() -> None:
         "split": args.split,
         "count": len(images),
         "seed": args.seed,
+        "one_per": args.one_per,
         "near_duplicate_max": args.near_duplicate_max,
         "pages_excluded_near_duplicates": subset.pages_excluded,
     }

@@ -48,12 +48,16 @@ def evaluation_subset(
     count: int | None,
     seed: int = 0,
     near_duplicate_max: int | None = None,
+    one_per: str = "domain",
 ) -> EvaluationSubset:
-    """Une capture par site, quasi-doublons de l'entraînement écartés si `near_duplicate_max`."""
+    """Une capture par site (`domain`) ou par page (`group`), quasi-doublons de l'entraînement
+    écartés si `near_duplicate_max`."""
     excluded = (
         near_duplicate_groups(corpus, split, near_duplicate_max)
         if near_duplicate_max is not None
         else set()
     )
     records = read_manifest(corpus / f"{split}.manifest.jsonl")
-    return EvaluationSubset(one_per_group(records, count, seed, exclude=excluded), len(excluded))
+    return EvaluationSubset(
+        one_per_group(records, count, seed, key=one_per, exclude=excluded), len(excluded)
+    )
