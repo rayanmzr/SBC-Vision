@@ -130,7 +130,7 @@ sont donc publiés à côté des moyennes.
 | | Approche | État |
 | --- | --- | --- |
 | A | Propositions OpenCV + classifieur classique (gradient boosting) | évaluée (validation, test) |
-| B | YOLO26 affiné (Ultralytics), 1280 px, export ONNX | entraînement en cours (Modal, L40S) |
+| B | YOLO26 affiné (Ultralytics), 1280 px, export ONNX | évaluée (validation, test) |
 | C | RF-DETR affiné | à faire |
 | D | OmniParser v2 sans adaptation | à faire |
 
@@ -180,6 +180,45 @@ Sensibilité : avec le même modèle et le même seuil sur 500 sites tirés sans
 quasi-doublons, le mAP@0,5 par classe passe à 0,390 [0,311 – 0,471], et chaque classe monte
 (boutons 0,23, cases 0,60, champs 0,69, liens 0,37, menus 0,06). Ces pages, déjà vues ou plus
 faciles (domaines parkés), surestimeraient la généralisation.
+
+### B : YOLO26 affiné
+
+`yolo26s.pt` (poids COCO) affiné sur les 19 817 captures PC de l'entraînement (les quatre tailles
+d'écran de chaque page), 1280 px, lots de 16, sans miroir horizontal, graine 0, sur un GPU L40S
+de Modal (`scripts/modal_train_yolo.py`, run MLflow `yolo26s-webui-1280-s0`). Arrêt automatique
+à l'époque 46 faute de progrès depuis l'époque 26, dont les poids sont gardés : 3 h 51 de GPU,
+environ 11 $. Au-delà d'une quinzaine d'époques, l'erreur de classification remonte sur la
+validation alors qu'elle continue de baisser sur l'entraînement : le modèle apprend les pages
+d'entraînement plus qu'il ne progresse sur des sites nouveaux.
+
+Évaluation commune, modèle exporté en ONNX et exécuté par ONNX Runtime sur processeur (4 fils,
+serveur partagé), seuil choisi sur la validation (0,30) :
+
+| Niveau | Validation, 500 sites [IC 95 %] | Test, 1 000 sites [IC 95 %] |
+| --- | --- | --- |
+| Classe | 0,605 [0,544 – 0,664] | 0,539 [0,486 – 0,600] |
+| Action | 0,631 [0,578 – 0,698] | 0,620 [0,575 – 0,664] |
+| Interactif | 0,682 [0,640 – 0,716] | 0,660 [0,634 – 0,687] |
+
+mAP@0,5:0,95 (classe) : 0,501 en validation, 0,450 en test ; F1 au seuil : 0,66 et 0,64.
+AP@0,5 par classe sur le test : champs 0,87, liens 0,63, cases 0,46, boutons 0,39, menus 0,35.
+Rappel des petits éléments (< 32² px) : 54 %. Latence : 374 ms en médiane sur la validation,
+430 ms sur le test. Les captures de 1920 px, réduites à 1280 px, sont les moins bien traitées
+(test, niveau interactif : 0,61 contre 0,72 en 1280 px). Sans retirer les quasi-doublons, le
+mAP@0,5 de validation passe à 0,643 (+0,04, contre +0,07 pour la baseline).
+
+Écart apparié B − A (même tirage de sites pour les deux, 500 rééchantillonnages, commande
+`compare`) :
+
+| Niveau | Validation | Test |
+| --- | --- | --- |
+| Classe | +0,28 [0,21 – 0,34] | +0,26 [0,22 – 0,30] |
+| Action | +0,30 [0,25 – 0,36] | +0,32 [0,28 – 0,36] |
+| Interactif | +0,35 [0,31 – 0,38] | +0,33 [0,31 – 0,35] |
+
+Aucun rééchantillonnage ne donne l'avantage à la baseline. Les erreurs restantes : 24 % des
+boutons pris pour des liens et 36 % manqués, et 91 % des fausses détections sont des « liens »,
+souvent du texte cliquable que le site n'a pas déclaré comme lien.
 
 ## Reproduire
 
