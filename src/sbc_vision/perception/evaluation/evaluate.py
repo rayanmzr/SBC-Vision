@@ -29,6 +29,10 @@ def load_detector(spec: str) -> Detector:
         from sbc_vision.perception.baselines.opencv_baseline import OpenCVBaseline
 
         return OpenCVBaseline.load(Path(path))
+    if kind == "yolo":
+        from sbc_vision.perception.detectors.yolo_onnx import YoloOnnxDetector
+
+        return YoloOnnxDetector(Path(path))
     raise ValueError(f"détecteur inconnu : {kind}")
 
 

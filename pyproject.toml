@@ -26,6 +26,7 @@ vision = [
   "numpy>=2,<3",
   "pillow>=10",
   "scikit-learn>=1.5,<2",
+  "onnxruntime>=1.20,<2",
   "pycocotools>=2.0.8,<3",
 ]
 solver = ["ortools>=9.10,<10"]
