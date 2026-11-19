@@ -220,6 +220,52 @@ Aucun rééchantillonnage ne donne l'avantage à la baseline. Les erreurs restan
 boutons pris pour des liens et 36 % manqués, et 91 % des fausses détections sont des « liens »,
 souvent du texte cliquable que le site n'a pas déclaré comme lien.
 
+## Test vérifié à la main
+
+Les étiquettes de WebUI viennent du code des pages et gardent du bruit ; ce test-ci est revu
+capture par capture selon le [guide d'annotation](ANNOTATION.md). Cinq sites absents de WebUI (y
+compris sous un autre domaine), capturés le 19/11/2026 (`data/manifests/ood-sites.json`) :
+ldlc.com et natureetdecouvertes.com (boutiques), airbnb.fr (réservation), play.grafana.org
+(tableau de bord), service-public.gouv.fr (administration). Pour chacun, l'accueil avec son
+bandeau de cookies, puis neuf pages de rubriques différentes (graine 0), les quatre tailles
+d'écran PC en alternance. Les sites qui refusaient l'accès (Back Market après trois pages,
+Boulanger, Maisons du Monde, Decathlon, Cultura dès l'accueil) ont été écartés, sans
+contournement. Deux pages encore vides au moment de la capture sont écartées par le contrôle
+automatique : 48 captures.
+
+`perception/datasets/capture_web.py` enregistre la capture, l'arbre d'accessibilité et les
+boîtes de la page au format WebUI ; `build_webui` en tire la pré-annotation. Les corrections de
+la revue sont versionnées (`data/manifests/ood-corrections.json`) et appliquées par
+`perception/datasets/corrections.py` ; une boîte ajoutée est recalée sur l'élément de la page qui
+la recouvre le mieux.
+
+| | Éléments |
+| --- | --- |
+| Pré-annotation | 1 269 |
+| Gardés / reclassés / retirés | 1 191 / 25 / 53 |
+| Ajoutés | 77 |
+| Test final | 1 293 |
+
+La pré-annotation trouvait donc 94 % des éléments du test. Elle compte à tort des éléments cachés
+(bandeau de cookies, calendrier ouvert, fenêtre modale, liste repliée) et rate ceux que les sites
+codent comme de simples blocs cliquables (menus maison, flèches de carrousel, filtres) ou
+déclarent mal (un bouton de bandeau en `role="listitem"`).
+
+Résultats, mêmes détecteurs et seuils de validation, toutes les captures, intervalles par
+rééchantillonnage des sites (cinq, d'où leur largeur) :
+
+| mAP@0,5 | A | B | Écart B − A apparié |
+| --- | --- | --- | --- |
+| Classe | 0,148 [0,079 – 0,252] | 0,340 [0,146 – 0,493] | +0,19 [−0,02 – 0,38] |
+| Action | 0,201 [0,082 – 0,395] | 0,313 [0,154 – 0,549] | +0,14 [0,03 – 0,29] |
+| Interactif | 0,239 [0,174 – 0,372] | 0,455 [0,255 – 0,646] | +0,22 [0,02 – 0,39] |
+
+Par site (classe), YOLO fait 0,52 sur Grafana, 0,51 sur LDLC, 0,44 sur Nature & Découvertes,
+0,42 sur Service Public et 0,08 sur Airbnb, où huit pages montrent le calendrier de dates
+ouvert : 240 jours-boutons (41 % des boutons du test), dont 12 trouvés. Un widget absent de
+l'entraînement suffit à faire tomber un site ; les petits éléments (chevrons de 16 px) restent
+l'autre faiblesse (9 % trouvés).
+
 ## Reproduire
 
 ```bash
@@ -246,7 +292,23 @@ python -m sbc_vision.perception.evaluation.evaluate --corpus <corpus> --split te
 # le modèle ONNX avec les mêmes commandes et `--detector yolo:<best.onnx>`.
 python -m sbc_vision.perception.datasets.export_yolo --corpus <corpus> --data-root <extrait> \
     --out <exports>/webui-desktop --train train:all --val val:500 --near-duplicate-max 18
+
+# Test vérifié : capture (Chromium de Playwright : `playwright install chromium`),
+# pré-annotation, corrections, évaluation de toutes les captures.
+python -m sbc_vision.perception.datasets.capture_web --sites data/manifests/ood-sites.json \
+    --out <captures>
+python -m sbc_vision.perception.datasets.build_webui --pages <captures> --data-root <captures> \
+    --split ood-auto --out <corpus-ood>
+python -m sbc_vision.perception.datasets.corrections --corpus <corpus-ood> --split ood-auto \
+    --out-split ood --data-root <captures> --corrections data/manifests/ood-corrections.json
+python -m sbc_vision.perception.evaluation.evaluate --corpus <corpus-ood> --split ood \
+    --one-per group --data-root <captures> --threshold-from reports/opencv/val/report.json \
+    --detector opencv:models/opencv-gbdt.pkl --out reports/opencv/ood
 ```
+
+Les corrections désignent les boîtes pré-annotées par leur rang : elles valent pour les captures
+du 19/11/2026, gardées hors de Git avec le reste des données (une nouvelle capture demande une
+nouvelle revue).
 
 Ni les captures, ni les corpus, ni les modèles ne sont versionnés dans Git : les sous-ensembles
 d'évaluation se retrouvent à l'identique depuis le corpus (graine 0), et chaque entraînement est
