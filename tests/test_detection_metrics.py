@@ -8,6 +8,7 @@ from sbc_vision.perception.evaluation.metrics import (  # noqa: E402
     bootstrap_interval,
     confusion_matrix,
     match_dataset,
+    paired_bootstrap,
 )
 
 
@@ -100,6 +101,24 @@ def _random_dataset(seed, n_images=40, classes=("button", "link", "input")):
             )
         )
     return gts, preds
+
+
+def test_paired_bootstrap_sees_a_consistent_gap_and_no_gap_against_itself():
+    # Dix sites : A trouve les deux éléments de chaque page, B un seul.
+    gts = [gt(["button", "link"], BOXES[:2]) for _ in range(10)]
+    better = [pred(["button", "link"], BOXES[:2], [0.9, 0.8]) for _ in range(10)]
+    worse = [pred(["button"], BOXES[:1], [0.9]) for _ in range(10)]
+    a, b = match_dataset(gts, better, "kind"), match_dataset(gts, worse, "kind")
+    groups = [f"site{i}" for i in range(10)]
+
+    def stat(m):
+        return lambda idx: m.summary(idx)["mAP50"]
+
+    gap = paired_bootstrap(stat(a), stat(b), 10, groups, samples=200)
+    assert gap["mean_diff"] == pytest.approx(0.5)
+    assert gap["p_not_better"] == 0
+    same = paired_bootstrap(stat(a), stat(a), 10, groups, samples=200)
+    assert same["mean_diff"] == 0 and same["p_not_better"] == 1
 
 
 def test_map_matches_pycocotools():
