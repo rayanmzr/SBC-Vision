@@ -69,8 +69,8 @@ réduits à l'écran (environ 20 % des captures de téléphone, aucune d'ordinat
 
 Les boîtes viennent du code de la page, la capture d'un autre instant. Une boîte posée sur une
 zone uniforme (écart type des gris < 3) est écartée ; une page où elles sont au moins 3 et 30 %
-est exclue entière (page pas encore affichée). Sur l'entraînement, toutes tailles d'écran
-confondues : 11 392 boîtes écartées et 523 captures exclues.
+est exclue entière (page pas encore affichée). Sur l'entraînement : 8 144 boîtes écartées et
+339 captures exclues.
 
 ### Audit manuel des étiquettes (24 pages tirées au hasard, graine 42)
 
