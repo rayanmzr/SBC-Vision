@@ -1,0 +1,279 @@
+[
+ {
+  "name": "easysbc",
+  "category": "proche de la Web App FC 27",
+  "start_url": "https://www.easysbc.io/fr",
+  "pages": [
+   {
+    "url": "https://www.easysbc.io/fr/sbc"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/squad-builder"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/players"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/fut-gallery"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/evolutions"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/objectives"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/my-club"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/10x-82-upgrade/163",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/ligue-1-arkema-premiere-ligue/92",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/campaign-mix-upgrade/151",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/intro-to-upgrade-sbcs/3",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/marquee-matchups/112",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/gold-re-roll/9",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/silver-upgrade/5",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/premier-league-potm-october/148",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/2x-80-upgrade/157",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/intro-to-streamlined-sbcs/7",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/black-friday-flash-1/132",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/arnaut-danjuma/147",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/bundesliga-google-pixel-frauen-bundesliga/91",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/federico-chiesa/150",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/gallery-milestone-sbc/153",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/serie-a-roshn-saudi-league/99",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/laliga-liga-f/94",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/tradeable-5x-79-upgrade/158",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/laliga-potm-october/128",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/hall-of-fut-unleashed-challenge-3/116",
+    "click": [
+     "Créer les solutions"
+    ],
+    "dismiss": [
+     "Ne pas utiliser mon club"
+    ]
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/bronze-and-silver-re-roll/8"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/red-bull-wiiings-challenge/107"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/81-totw-1-9-upgrade/130"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/premier-league-barclays-wsl/93"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/bronze-upgrade/4"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/alessandro-florenzi/155"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/serie-a-potm-october/152"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/base-icon-matchday-player-pick/159"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/lucia-di-guglielmo/166"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/intro-to-player-sbcs/20"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/bundesliga-potm-october/154"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/sbc/max-88-base-icon-upgrade/185"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/players/jaheim-headley/team-of-the-week/50590139"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/players/sandy-baltimore/team-of-the-week/50593381"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/players/maya-le-tissier/team-of-the-week/50596941"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/players/luka-vuskovic/ones-to-watch/50606840"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/players/croix-bethune/team-of-the-week/50611460"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/players/dominik-szoboszlai/team-of-the-week/84122852"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/players/tijjani-reijnders/team-of-the-week/67349502"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/players/svea-stoldt/team-of-the-week/50410330"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/evolutions/overview/finesse-shot/2778"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/evolutions/overview/press-proven/2785"
+   },
+   {
+    "url": "https://www.easysbc.io/fr/evolutions/overview/power-shot/2793"
+   }
+  ]
+ }
+]

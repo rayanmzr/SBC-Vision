@@ -5,10 +5,11 @@
 
 Pour chaque site : la page d'accueil telle qu'un visiteur la découvre (bandeau de cookies
 compris), puis, bandeau refermé, des pages de rubriques différentes tirées parmi les liens de
-l'accueil (graine fixe). Chaque page est enregistrée dans son dossier avec les fichiers de
-WebUI : capture, arbre d'accessibilité (`Accessibility.getFullAXTree`), boîtes et styles
-calculés des nœuds (`DOMSnapshot.captureSnapshot`), URL. `build_webui` en tire ensuite les
-étiquettes, exactement comme pour WebUI ; elles restent à vérifier à la main.
+l'accueil (graine fixe), ou les pages listées par le site (`pages`, avec les textes sur
+lesquels cliquer pour amener l'écran voulu). Chaque page est enregistrée dans son dossier
+avec les fichiers de WebUI : capture, arbre d'accessibilité (`Accessibility.getFullAXTree`),
+boîtes et styles calculés des nœuds (`DOMSnapshot.captureSnapshot`), URL. `build_webui` en
+tire ensuite les étiquettes, exactement comme pour WebUI ; elles restent à vérifier à la main.
 """
 
 import argparse
@@ -102,6 +103,17 @@ async def _dismiss_consent(page) -> bool:
     return False
 
 
+async def _click_through(page, texts: list[str]) -> str | None:
+    """Clique dans l'ordre sur les éléments portant ces textes ; rend le premier introuvable."""
+    for text in texts:
+        target = page.get_by_text(text, exact=True)
+        if not await target.count():
+            return text
+        await target.first.click(timeout=10000)
+        await page.wait_for_timeout(SETTLE_MS)
+    return None
+
+
 def _section_links(links: list[str], host: str, count: int, seed: int) -> list[str]:
     """Liens du même site, une page par rubrique (premier segment du chemin) tant que possible."""
     by_section: dict[str, list[str]] = {}
@@ -143,8 +155,13 @@ async def capture_site(browser, site: dict, pages: int, seed: int, out: Path):
     records.append(await _snapshot(page, out / f"{site['name']}-00", device))
     consent = await _dismiss_consent(page)
     host = urlsplit(page.url).hostname
-    links = await page.eval_on_selector_all("a[href]", "els => els.map(e => e.href)")
-    for index, url in enumerate(_section_links(links, host, pages - 1, seed), start=1):
+    if "pages" in site:  # pages choisies, avec les clics qui amènent l'écran voulu
+        targets = site["pages"]
+    else:
+        links = await page.eval_on_selector_all("a[href]", "els => els.map(e => e.href)")
+        targets = [{"url": url} for url in _section_links(links, host, pages - 1, seed)]
+    for index, target in enumerate(targets, start=1):
+        url = target["url"]
         device = DESKTOP_DEVICES[index % len(DESKTOP_DEVICES)]
         await page.set_viewport_size(_viewport(device))
         try:
@@ -160,6 +177,12 @@ async def capture_site(browser, site: dict, pages: int, seed: int, out: Path):
         if urlsplit(page.url).hostname != host:
             skipped.append({"site": site["name"], "url": url, "reason": "redirigé hors du site"})
             continue
+        missing = await _click_through(page, target.get("click", []))
+        if missing:
+            skipped.append({"site": site["name"], "url": url, "reason": f"introuvable : {missing}"})
+            continue
+        for text in target.get("dismiss", []):  # fenêtre qui ne s'ouvre que parfois
+            await _click_through(page, [text])
         records.append(await _snapshot(page, out / f"{site['name']}-{index:02d}", device))
     await context.close()
     for record in records:
