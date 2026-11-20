@@ -266,6 +266,43 @@ ouvert : 240 jours-boutons (41 % des boutons du test), dont 12 trouvés. Un widg
 l'entraînement suffit à faire tomber un site ; les petits éléments (chevrons de 16 px) restent
 l'autre faiblesse (9 % trouvés).
 
+## Adaptation aux cartes et emplacements : EasySBC
+
+La Web App EA FC 27 demande un compte possédant un club FC 27. En attendant des captures
+réelles, l'adaptation aux classes `card` et `slot` est préparée sur EasySBC (easysbc.io), un
+outil de SBC pour FC 27 qui affiche un terrain à onze emplacements, des cartes de joueurs, des
+filtres et des menus. FUTBIN, FUT.GG et FUTWIZ refusent l'accès automatisé : écartés, sans
+contournement.
+
+51 pages listées (`data/manifests/near-sites.json` : listes, créateur d'équipe, solutions de
+défis obtenues en cliquant « Créer les solutions », fiches joueurs, évolutions), capturées le
+20/11/2026 ; 48 passent le contrôle automatique. Le code de la page ne connaît ni carte ni
+emplacement : ils sont proposés depuis les images aux proportions d'une carte (une image qui
+remplit un bouton du terrain fait de ce bouton un emplacement), puis toutes les pages sont
+revues (`data/manifests/near-corrections.json`, règles dans le
+[guide d'annotation](ANNOTATION.md)) : 1 102 éléments, dont 92 emplacements et 50 cartes.
+Découpage par type de page, un tiers en test (`data/manifests/near-split.json`,
+`perception/datasets/split_corpus.py`) : 25 pages d'entraînement, 7 de validation, 16 de test.
+
+Affinage du YOLO26s web sur 3 000 captures WebUI (une par site) et les 25 pages
+d'entraînement répétées 30 fois (`export_yolo --add`), AdamW, lr 0,0005, 30 époques : 40 min
+sur L40S, environ 2 $ (run MLflow `yolo26s-easysbc-ft-s0`). Seuils choisis sur la validation de
+chaque corpus, intervalles par rééchantillonnage des pages (`--bootstrap-by group`) pour le test
+d'un seul site :
+
+| mAP@0,5 | Avant | Après | Écart apparié |
+| --- | --- | --- | --- |
+| EasySBC, 16 pages, classe | 0,084 [0,04 – 0,25] | 0,959 [0,92 – 1,00] | +0,85 [0,70 – 0,94] |
+| EasySBC, action | 0,157 | 0,958 | +0,75 [0,47 – 0,90] |
+| WebUI test, 1 000 sites, classe | 0,539 | 0,529 | −0,01 [−0,03 – +0,01] |
+| WebUI test, action | 0,620 | 0,598 | −0,02 [−0,04 – −0,01] |
+| Test vérifié, 5 sites, classe | 0,340 | 0,323 | −0,03 [−0,10 – +0,01] |
+
+Les 33 emplacements et 21 cartes du test EasySBC sont tous trouvés (AP 1,00). La mesure est
+optimiste : entraînement et test viennent du même site, aux gabarits répétés. Elle montre que
+quelques dizaines de pages suffisent à apprendre ces classes, au prix d'un à deux points sur le
+web générique ; elle ne mesure pas la reconnaissance sur la vraie Web App, dont le style diffère.
+
 ## Reproduire
 
 ```bash
