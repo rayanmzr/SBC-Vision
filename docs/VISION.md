@@ -304,6 +304,47 @@ optimiste : entraînement et test viennent du même site, aux gabarits répété
 quelques dizaines de pages suffisent à apprendre ces classes, au prix d'un à deux points sur le
 web générique ; elle ne mesure pas la reconnaissance sur la vraie Web App, dont le style diffère.
 
+## Explicabilité
+
+Deux méthodes (`perception/explain/`), à deux niveaux :
+
+- **D-RISE** (Petsiuk et al., CVPR 2021), boîte noire, pour tous les détecteurs : 1 000 masques
+  aléatoires par capture (grille de 32 × 32 cases, la moitié cachée et remplie de gris, car un
+  élément d'interface ne fait que quelques dizaines de pixels), pondérés par la ressemblance de
+  ce que le détecteur trouve encore avec la détection à expliquer (IoU × score, même classe).
+  Environ 20 min par capture sur processeur.
+- **TreeSHAP** sur le gradient boosting de la baseline : contribution exacte de chacune des 19
+  caractéristiques au score de chaque classe, sur les 6 138 zones gardées dans 150 sites de
+  validation (extra `explain`).
+
+Constats :
+
+| Observation | Explication |
+| --- | --- |
+| YOLO voit un bouton par sa forme et ses bords, un lien par son texte | évidence concentrée dans la boîte : 5 à 8 fois le hasard pour les boutons, 11 à 20 fois pour les liens du pied de page (Grafana) |
+| YOLO prend des boutons pour des liens (24 % des boutons) | dans l'entraînement, 91 % des éléments au gabarit d'un bouton (≥ 36 px de haut, 80 à 400 px de large) sont des liens `<a href>` : le modèle reproduit les étiquettes ; au niveau action (clic), l'erreur ne coûte rien |
+| La baseline prend un bouton clair pour un champ | SHAP : « champ » = fond clair, forme allongée, large, peu de texte ; D-RISE : décision portée par le contour du rectangle |
+| La baseline rate les boutons (16 % de rappel) | SHAP : « bouton » = à droite de la page, en haut, fond coloré : un raccourci de mise en page plutôt que l'apparence |
+| Cartes et postes du terrain : cartes D-RISE diffuses | limite de la méthode : un grand élément survit à des masques couvrant la moitié de sa surface ; la concentration dépend surtout de la taille (corrélation de rang −0,93 sur 70 détections) |
+
+```bash
+python -m sbc_vision.perception.explain.drise --detector yolo:<best.onnx> --image <capture> \
+    --threshold-from reports/yolo/val/report.json --out reports/explain/<nom>
+python -m sbc_vision.perception.explain.shap_baseline --model models/opencv-gbdt.pkl \
+    --corpus <corpus> --split val --count 150 --near-duplicate-max 18 --data-root <extrait> \
+    --threshold-from reports/opencv/val/report.json --out reports/explain/opencv-shap.json
+```
+
+## Zones de texte d'une carte
+
+L'OCR lit des zones précises d'une carte (`name`, `rating`, `position`, `stats`), là où le
+détecteur rend la carte entière. `perception/card_regions.py` les place par les proportions
+fixes d'une carte EA FC, mesurées sur huit visuels officiels de cartes FC 27 (affichés par
+EasySBC) et vérifiées sur 22 cartes : note en haut à gauche, poste dessous, nom vers les deux
+tiers, statistiques en dessous. Une boîte qui n'a pas les proportions d'une carte entière
+(coupée par le bord de l'écran) est refusée. Les régions ont le format attendu par l'OCR
+(`element_id`, `field`, `bbox`). À vérifier sur la Web App réelle.
+
 ## Organisation du code et sortie pour l'API
 
 `src/sbc_vision/perception/` :
@@ -314,6 +355,8 @@ web générique ; elle ne mesure pas la reconnaissance sur la vraie Web App, don
 | `boxes.py` | Aire, rognage, IoU, suppression des non-maxima : données, détecteurs, mesure |
 | `detector.py` | Interface commune (une image RGB → `(classe, boîte, score)`) et chargement d'un détecteur |
 | `elements.py` | Détections → `DetectedElement` du contrat, au seuil lu dans le rapport de validation |
+| `card_regions.py` | Carte détectée → zones de texte pour l'OCR (note, poste, nom, statistiques) |
+| `explain/` | Explicabilité : D-RISE (tout détecteur) et SHAP (baseline) |
 | `datasets/` | Format des corpus (`records.py`, seule lecture et écriture), WebUI, captures de sites, contrôles, quasi-doublons, propositions de cartes, corrections, découpages, export YOLO |
 | `baselines/` | Approche A (propositions OpenCV, gradient boosting) et son entraînement |
 | `detectors/` | Approche B à l'inférence : YOLO exporté en ONNX, sur processeur |

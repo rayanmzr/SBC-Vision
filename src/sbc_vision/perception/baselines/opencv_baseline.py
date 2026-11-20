@@ -230,15 +230,20 @@ class OpenCVBaseline:
         self.params = params  # ceux des propositions vues à l'entraînement
         self.name = "opencv-gbdt"
 
-    def detect(self, image: np.ndarray) -> list[Detection]:
+    def classify(self, image: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """Propositions, leurs caractéristiques, leur classe la plus probable hors fond (indice
+        dans `classes`) et son score."""
         boxes, source, maps = propose(image, self.params)
-        if len(boxes) == 0:
-            return []
-        probabilities = self.classifier.predict_proba(features(boxes, source, maps))
-        background = self.classes.index(BACKGROUND)
-        probabilities[:, background] = -1
+        x = features(boxes, source, maps) if len(boxes) else np.zeros((0, len(FEATURE_NAMES)))
+        probabilities = (
+            self.classifier.predict_proba(x) if len(boxes) else np.zeros((0, len(self.classes)))
+        )
+        probabilities[:, self.classes.index(BACKGROUND)] = -1
         best = probabilities.argmax(axis=1)
-        scores = probabilities[np.arange(len(best)), best]
+        return boxes, x, best, probabilities[np.arange(len(best)), best]
+
+    def detect(self, image: np.ndarray) -> list[Detection]:
+        boxes, _, best, scores = self.classify(image)
         keep = scores >= MIN_SCORE
         kinds = [self.classes[i] for i in best[keep]]
         return to_detections(boxes[keep], kinds, scores[keep], NMS_IOU, MAX_DETECTIONS)
