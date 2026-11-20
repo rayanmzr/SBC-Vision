@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 112" preserveAspectRatio="none" fill="none">
+  <defs>
+    <linearGradient id="gold" x1="18" y1="7" x2="80" y2="111" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff0ac"/><stop offset=".42" stop-color="#f5d974"/><stop offset="1" stop-color="#e8bd50"/>
+    </linearGradient>
+    <pattern id="pencil" width="13" height="17" patternUnits="userSpaceOnUse">
+      <path d="m-3 15 16-18M2 21 18 3m-4 16 8-9" stroke="#ac7e2d" stroke-width=".45" opacity=".16"/>
+      <path d="M1 10 9 0m-1 17 9-11" stroke="#fff9ca" stroke-width=".55" opacity=".34"/>
+    </pattern>
+    <clipPath id="shield"><path d="M50 4c-13 0-29 3-37 8l-7 7v70q0 4 5 6l36 16q3 1 6 0l36-16q5-2 5-6V19l-8-7C78 7 63 4 50 4Z"/></clipPath>
+  </defs>
+  <path d="M50 4c-13 0-29 3-37 8l-7 7v70q0 4 5 6l36 16q3 1 6 0l36-16q5-2 5-6V19l-8-7C78 7 63 4 50 4Z" fill="url(#gold)" stroke="#9e752a" stroke-width="1.4"/>
+  <g clip-path="url(#shield)"><path fill="url(#pencil)" d="M0 0h100v112H0Z"/>
+    <path d="M6 23 18 12 50 6l34 7 8 9M8 24v64l4 5 37 16 37-16 6-5V24" stroke="#fff2b4" stroke-width="1.2" opacity=".85"/>
+    <path d="m13 13 37-7 34 7M8 89l40 20 40-18" stroke="#ad842e" stroke-width=".65" opacity=".6"/>
+  </g>
+</svg>

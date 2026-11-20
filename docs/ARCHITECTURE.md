@@ -43,7 +43,16 @@ flowchart LR
 - La proposition et ses alternatives incluent les valeurs recalculées de chaque condition dans `verification`, avec les limites demandées ; elles restent à confronter à l'état réel de la Web App.
 - La commande `demo` relie ces fonctions sur une image fictive annotée et un catalogue synthétique ; les exemplaires passent par la lecture OCR et les conditions sont interprétées depuis les textes lus.
 
-L'inférence, le scan du club et les actions ne sont pas encore câblés. L'import du catalogue, l'inventaire et le solveur sont indépendants de l'API pour le moment. Les routes de capacités ne les déclarent donc pas encore comme disponibles via HTTP.
+L'inventaire, les protections persistantes et le solveur sont accessibles via HTTP quand
+le serveur est explicitement configuré ; voir le [guide API SBC](SBC_API.md).
+Le popup de l'extension ajoute la capture manuelle et la conservation de son repère
+image/viewport, décrites dans le [guide de capture](TAB_CAPTURE.md).
+Un [laboratoire du contrôleur](LOCAL_CONTROLLER.md) teste les clics et la vérification
+après action avec une vision déterministe par couleurs et des cartes fictives.
+Le choix de source relie aussi cette boucle à la route de perception Python via le
+[pipeline HTTP du laboratoire](LAB_PERCEPTION_API.md), désactivé par défaut.
+L'inférence réelle, le scan du club et le contrôleur sur les données de l'API restent
+à raccorder. Les capacités `controller` et `live_actions_enabled` restent donc fausses.
 
 Les conditions sont transmises dynamiquement par l'OCR au contrat `dynamic-v1`. Le solveur distingue composition et Item Score, traite les contraintes reconnues et vérifie ses résultats séparément. La note d'équipe est limitée à onze emplacements et le collectif à un profil standard sans bonus particuliers. Les autres cas sont rejetés. Le [guide](../src/sbc_vision/sbc_engine/README.md) précise les limites et l'interface entre les membres.
 

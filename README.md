@@ -6,7 +6,7 @@ Le client prévu est une **extension Chrome avec interface React**, reliée à l
 
 Le modèle transforme une capture en une liste JSON d'éléments et d'actions possibles. Un contrôleur exploite ce résultat pour inventorier le club, préparer une composition et vérifier les écrans. Le solveur cherche à réduire les dépenses et la valeur des cartes sacrifiées, en préservant les cartes protégées.
 
-**Avancement :** API de démarrage, OCR local, import FUTBIN, inventaire SQLite et solveur dynamique testés sur des données synthétiques. La détection et l'extension restent à développer ; le parcours sur la vraie Web App reste à vérifier.
+**Avancement :** transport des captures par l’API, OCR local, import FUTBIN, inventaire SQLite et solveur dynamique. Le détecteur reste à raccorder ; le parcours sur la vraie Web App reste à vérifier. Voir le [guide API](docs/API.md).
 
 ## Équipe
 
@@ -19,6 +19,22 @@ Le modèle transforme une capture en une liste JSON d'éléments et d'actions po
 La [répartition détaillée](docs/TEAM.md) précise les interfaces et livrables de chacun.
 
 La partie de Rayan est regroupée dans [sbc_engine](src/sbc_vision/sbc_engine/README.md) : catalogue FUTBIN, inventaire, OCR et optimisation. Une seule commande permet de tester les fonctions : `python -m sbc_vision.sbc_engine --help`.
+
+Les routes d'inventaire, de protections et de résolution sont maintenant raccordées à
+ce moteur. Leur activation est explicite : voir le [guide API SBC](docs/SBC_API.md),
+notamment le parcours de démonstration avec cartes fictives et véritable calcul CP-SAT.
+
+## Extension Chrome
+
+La [version React](frontend/README.md) reçoit les captures et affiche les résultats JSON.
+Les pages **Analyser**, **Équipe** et **Réglages** reprennent le visuel A1 — Stade.
+L’espace Équipe charge l’inventaire par HTTP, enregistre les protections et
+appelle le véritable solveur. Il présente les cartes retenues, conditions et coûts.
+Les exemples fictifs restent identifiés. Le popup prépare la capture manuelle de l'onglet
+avec son repère de coordonnées ; voir le [guide de capture](docs/TAB_CAPTURE.md).
+Le [laboratoire du contrôleur](docs/LOCAL_CONTROLLER.md) ajoute des clics et leur vérification
+sur une scène fictive locale. Le détecteur et le contrôleur sur les données réelles
+restent à raccorder.
 
 ## Démarrage local
 
@@ -37,6 +53,7 @@ Avec Python 3.12, remplacer `python3.11` par `python3.12`. Pour l'OCR, installer
 - Documentation API : <http://127.0.0.1:8000/docs>
 - Capacités implémentées : <http://127.0.0.1:8000/api/v1/capabilities>
 - Schéma de perception : <http://127.0.0.1:8000/api/v1/contracts/perception>
+- Analyse : `POST /api/v1/perception/analyze` (PNG/JPEG ; `503` avant raccordement du détecteur).
 
 ```bash
 make check
@@ -71,13 +88,19 @@ Le moteur reçoit les conditions de chaque capture : aucun nom de SBC n'est cod�
 docker compose up --build
 ```
 
-L'API est exposée sur `127.0.0.1:8000`. Les modèles seront intégrés dans les prochaines étapes.
+L'API est exposée uniquement sur `127.0.0.1:8000`. L'image contient aussi OR-Tools
+et Tesseract ; les fonctions métier restent activées explicitement. Compose utilise
+le mode local sans clé. L'image seule utilise le mode production et exige une clé.
+Le [guide Docker et partage](docs/DEPLOYMENT.md) explique la démonstration fictive,
+la clé d'accès, les limites, la persistance et les vérifications. Aucun cloud n'est
+déployé par ces commandes.
 
 ## Organisation
 
 ```text
-src/sbc_vision/      API, contrats et emplacements des briques Python
-contracts/          Deux schémas générés : perception et formats SBC
+src/sbc_vision/      API, contrats et briques Python
+frontend/           Extension Chrome React, aperçu, tests et build MV3
+contracts/          Schémas JSON : perception, formats SBC, inventaire et propositions
 data/fixtures/      Exemples synthétiques et protocole enregistré anonymisé, sans compte réel
 data/raw/           Captures locales, ignorées par Git
 docs/               Cadrage, architecture, données, protocole et équipe
