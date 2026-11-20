@@ -1,0 +1,1010 @@
+{
+ "easysbc-00": {
+  "remove": [
+   1,
+   2,
+   3,
+   4,
+   7,
+   8,
+   9,
+   10,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   22,
+   23,
+   24
+  ],
+  "note": "fenêtre de cookies modale : seule la fenêtre est cliquable"
+ },
+ "easysbc-01": {
+  "relabel": {
+   "11": "menu",
+   "13": "menu"
+  },
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     939.7,
+     358.1,
+     1047.7,
+     507.9
+    ]
+   }
+  ],
+  "note": "filtre et tri : des menus ; carte de récompense Chiesa : une carte"
+ },
+ "easysbc-02": {
+  "relabel": {
+   "25": "slot",
+   "26": "slot",
+   "27": "slot",
+   "28": "slot",
+   "29": "slot",
+   "30": "slot",
+   "31": "slot",
+   "32": "slot",
+   "33": "slot",
+   "34": "slot",
+   "15": "menu",
+   "16": "menu",
+   "17": "menu",
+   "19": "menu",
+   "20": "menu",
+   "21": "menu",
+   "22": "menu",
+   "2": "button",
+   "3": "button",
+   "4": "button"
+  },
+  "add": [
+   {
+    "kind": "button",
+    "near": [
+     1400,
+     480,
+     1486,
+     508
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     1400,
+     520,
+     1486,
+     548
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     1400,
+     560,
+     1486,
+     588
+    ]
+   }
+  ],
+  "note": "postes vides du terrain : des emplacements ; sélecteurs : des menus ; choix de la source : des boutons ; boutons drapeau, coupe, écusson non déclarés"
+ },
+ "easysbc-03": {
+  "relabel": {
+   "15": "menu"
+  },
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     265.0,
+     206.7,
+     369.4,
+     351.5
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     265.0,
+     357.7,
+     369.4,
+     502.5
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     265.0,
+     508.7,
+     369.4,
+     653.5
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     265.0,
+     659.7,
+     369.4,
+     804.5
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     265.0,
+     810.7,
+     369.4,
+     955.5
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     265.0,
+     961.7,
+     369.4,
+     1080
+    ]
+   }
+  ],
+  "note": "6 cartes de la liste justes ; tri : un menu"
+ },
+ "easysbc-04": {
+  "relabel": {
+   "6": "menu",
+   "7": "menu",
+   "11": "menu"
+  },
+  "note": "état, catégorie et tri : des menus"
+ },
+ "easysbc-05": {
+  "relabel": {
+   "17": "menu"
+  },
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     115.0,
+     531.8,
+     259.0,
+     731.5
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     271.0,
+     531.8,
+     415.0,
+     731.5
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     942.5,
+     531.8,
+     1086.5,
+     731.5
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     1107.0,
+     531.8,
+     1251.0,
+     731.5
+    ]
+   },
+   {
+    "kind": "card",
+    "near": [
+     535,
+     532,
+     679,
+     731
+    ]
+   },
+   {
+    "kind": "card",
+    "near": [
+     692,
+     532,
+     836,
+     731
+    ]
+   }
+  ],
+  "note": "cartes Tzolakis ajoutées (image sans nom) ; tri : un menu"
+ },
+ "easysbc-06": {
+  "relabel": {
+   "15": "menu",
+   "16": "menu",
+   "17": "menu"
+  },
+  "note": "filtres récompense, modes, disponibilité : des menus"
+ },
+ "easysbc-07": {
+  "note": "vérifiée, rien à corriger (menu latéral et suggestions estompés, inactifs)"
+ },
+ "easysbc-08": {
+  "relabel": {
+   "8": "slot",
+   "9": "slot",
+   "10": "slot",
+   "11": "slot",
+   "12": "slot",
+   "13": "slot",
+   "14": "slot",
+   "15": "slot",
+   "16": "slot",
+   "17": "slot",
+   "18": "slot"
+  },
+  "note": "11 postes du terrain (le gardien, coupé par le bas de l'écran, ajouté)"
+ },
+ "easysbc-09": {
+  "remove": [
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20
+  ],
+  "note": "fenêtre « Importe ton club » modale : la page assombrie derrière n'est pas cliquable"
+ },
+ "easysbc-10": {
+  "remove": [
+   0,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20
+  ],
+  "note": "fenêtre « Importe ton club » modale : seule la fenêtre est cliquable"
+ },
+ "easysbc-11": {
+  "relabel": {
+   "9": "slot",
+   "10": "slot",
+   "11": "slot",
+   "12": "slot",
+   "13": "slot",
+   "14": "slot",
+   "15": "slot",
+   "16": "slot",
+   "17": "slot",
+   "18": "slot",
+   "19": "slot"
+  },
+  "note": "proposition juste : 11 postes du terrain"
+ },
+ "easysbc-12": {
+  "relabel": {
+   "8": "slot",
+   "9": "slot",
+   "10": "slot",
+   "11": "slot",
+   "12": "slot",
+   "13": "slot",
+   "14": "slot",
+   "15": "slot",
+   "16": "slot",
+   "17": "slot",
+   "18": "slot"
+  },
+  "note": "proposition juste : 11 postes du terrain"
+ },
+ "easysbc-13": {
+  "remove": [
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19
+  ],
+  "note": "fenêtre « Importe ton club » modale : seule la fenêtre est cliquable"
+ },
+ "easysbc-14": {
+  "relabel": {
+   "9": "slot",
+   "10": "slot",
+   "11": "slot",
+   "12": "slot",
+   "13": "slot",
+   "14": "slot",
+   "15": "slot",
+   "16": "slot",
+   "17": "slot",
+   "18": "slot",
+   "19": "slot"
+  },
+  "note": "proposition juste : 11 postes du terrain"
+ },
+ "easysbc-15": {
+  "remove": [
+   0,
+   1,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   21
+  ],
+  "note": "fenêtre « Importe ton club » modale : seule la fenêtre est cliquable"
+ },
+ "easysbc-16": {
+  "relabel": {
+   "8": "slot",
+   "9": "slot",
+   "10": "slot",
+   "11": "slot",
+   "12": "slot"
+  },
+  "note": "5 postes occupés justes ; postes verrouillés (cadenas) non boîtés"
+ },
+ "easysbc-17": {
+  "remove": [
+   0,
+   1,
+   2,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   21
+  ],
+  "note": "fenêtre « Importe ton club » modale : seule la fenêtre est cliquable"
+ },
+ "easysbc-18": {
+  "relabel": {
+   "9": "slot",
+   "10": "slot",
+   "11": "slot",
+   "12": "slot",
+   "13": "slot",
+   "14": "slot",
+   "15": "slot",
+   "16": "slot",
+   "17": "slot",
+   "18": "slot",
+   "19": "slot"
+  },
+  "note": "proposition juste : 11 postes du terrain"
+ },
+ "easysbc-19": {
+  "remove": [
+   0,
+   1,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   21
+  ],
+  "note": "fenêtre « Importe ton club » modale : seule la fenêtre est cliquable"
+ },
+ "easysbc-22": {
+  "relabel": {
+   "9": "slot",
+   "10": "slot",
+   "11": "slot",
+   "12": "slot",
+   "13": "slot",
+   "14": "slot",
+   "15": "slot",
+   "16": "slot",
+   "17": "slot",
+   "18": "slot",
+   "19": "slot"
+  },
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     20.0,
+     377.6,
+     128.0,
+     527.4
+    ]
+   }
+  ],
+  "note": "11 postes du terrain ; carte de récompense Paula León : une carte"
+ },
+ "easysbc-23": {
+  "remove": [
+   0,
+   1,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   21,
+   22
+  ],
+  "note": "fenêtre « Importe ton club » modale : seule la fenêtre est cliquable"
+ },
+ "easysbc-25": {
+  "remove": [
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19
+  ],
+  "note": "fenêtre « Importe ton club » modale : seule la fenêtre est cliquable"
+ },
+ "easysbc-26": {
+  "remove": [
+   0,
+   1,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   21
+  ],
+  "note": "fenêtre « Importe ton club » modale : seule la fenêtre est cliquable"
+ },
+ "easysbc-27": {
+  "relabel": {
+   "9": "slot",
+   "10": "slot",
+   "11": "slot",
+   "12": "slot",
+   "13": "slot",
+   "14": "slot",
+   "15": "slot",
+   "16": "slot",
+   "17": "slot",
+   "18": "slot",
+   "19": "slot"
+  },
+  "note": "proposition juste : 11 postes du terrain"
+ },
+ "easysbc-28": {
+  "note": "vérifiée, rien à corriger (paquets : pas des cartes de joueur)"
+ },
+ "easysbc-29": {
+  "note": "vérifiée, rien à corriger (paquets : pas des cartes de joueur)"
+ },
+ "easysbc-30": {
+  "note": "vérifiée, rien à corriger (paquets : pas des cartes de joueur)"
+ },
+ "easysbc-31": {
+  "note": "vérifiée, rien à corriger (paquets : pas des cartes de joueur)"
+ },
+ "easysbc-32": {
+  "note": "vérifiée, rien à corriger (paquets : pas des cartes de joueur)"
+ },
+ "easysbc-33": {
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     715.0,
+     85.0,
+     850.0,
+     272.2
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     85.0,
+     617.1,
+     193.0,
+     766.9
+    ]
+   }
+  ],
+  "note": "2 cartes Florenzi justes (récompense en haut et dans le défi)"
+ },
+ "easysbc-34": {
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     800.0,
+     85.0,
+     935.0,
+     272.2
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     85.0,
+     617.1,
+     193.0,
+     766.9
+    ]
+   }
+  ],
+  "note": "2 cartes de récompense justes (en haut et dans le défi)"
+ },
+ "easysbc-35": {
+  "note": "choix de joueur (paquet) : pas une carte de joueur"
+ },
+ "easysbc-36": {
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     672.0,
+     85.0,
+     807.0,
+     272.2
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     85.0,
+     620.1,
+     193.0,
+     720
+    ]
+   }
+  ],
+  "note": "2 cartes de récompense justes (en haut et dans le défi)"
+ },
+ "easysbc-37": {
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     715.0,
+     85.0,
+     850.0,
+     272.2
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     85.0,
+     620.1,
+     193.0,
+     768
+    ]
+   }
+  ],
+  "note": "2 cartes de récompense justes (en haut et dans le défi)"
+ },
+ "easysbc-38": {
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     800.0,
+     85.0,
+     935.0,
+     272.2
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     85.0,
+     620.1,
+     193.0,
+     769.9
+    ]
+   }
+  ],
+  "note": "2 cartes de récompense justes (en haut et dans le défi)"
+ },
+ "easysbc-39": {
+  "note": "vérifiée, rien à corriger (paquets : pas des cartes de joueur)"
+ },
+ "easysbc-40": {
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     119.2,
+     58.0,
+     320.8,
+     338.0
+    ]
+   }
+  ],
+  "note": "fiche joueur : une seule carte (deux images superposées sur la page)"
+ },
+ "easysbc-41": {
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     129.9,
+     58.0,
+     331.6,
+     338.0
+    ]
+   }
+  ],
+  "note": "fiche joueur : une seule carte (deux images superposées sur la page)"
+ },
+ "easysbc-42": {
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     151.2,
+     58.0,
+     352.8,
+     338.0
+    ]
+   }
+  ],
+  "note": "fiche joueur : une seule carte (deux images superposées sur la page)"
+ },
+ "easysbc-43": {
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     343.2,
+     58.0,
+     544.8,
+     338.0
+    ]
+   }
+  ],
+  "note": "fiche joueur : une seule carte (deux images superposées sur la page)"
+ },
+ "easysbc-44": {
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     119.2,
+     58.0,
+     320.8,
+     338.0
+    ]
+   }
+  ],
+  "note": "fiche joueur : une seule carte (deux images superposées sur la page)"
+ },
+ "easysbc-45": {
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     129.9,
+     58.0,
+     331.6,
+     338.0
+    ]
+   }
+  ],
+  "note": "fiche joueur : une seule carte (deux images superposées sur la page)"
+ },
+ "easysbc-46": {
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     151.2,
+     58.0,
+     352.8,
+     338.0
+    ]
+   }
+  ],
+  "note": "fiche joueur : une seule carte (deux images superposées sur la page)"
+ },
+ "easysbc-47": {
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     343.2,
+     58.0,
+     544.8,
+     338.0
+    ]
+   }
+  ],
+  "note": "fiche joueur : une seule carte (deux images superposées sur la page)"
+ },
+ "easysbc-48": {
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     69.2,
+     329.2,
+     213.2,
+     528.9
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     240.7,
+     329.2,
+     384.7,
+     528.9
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     478.5,
+     329.2,
+     622.5,
+     528.9
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     650.0,
+     329.2,
+     794.0,
+     528.9
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     887.8,
+     329.2,
+     1031.8,
+     528.9
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     1059.3,
+     329.2,
+     1203.3,
+     528.9
+    ]
+   }
+  ],
+  "note": "6 cartes de l'évolution justes (avant / après)"
+ },
+ "easysbc-49": {
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     91.0,
+     329.2,
+     235.0,
+     528.9
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     255.0,
+     329.2,
+     399.0,
+     528.9
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     529.0,
+     329.2,
+     673.0,
+     528.9
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     693.0,
+     329.2,
+     837.0,
+     528.9
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     961.5,
+     329.2,
+     1105.5,
+     528.9
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     1131.0,
+     329.2,
+     1275.0,
+     528.9
+    ]
+   }
+  ],
+  "note": "6 cartes de l'évolution justes (avant / après)"
+ },
+ "easysbc-50": {
+  "add": [
+   {
+    "kind": "card",
+    "box": [
+     111.8,
+     329.2,
+     255.8,
+     528.9
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     283.3,
+     329.2,
+     427.3,
+     528.9
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     606.5,
+     329.2,
+     750.5,
+     528.9
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     778.0,
+     329.2,
+     922.0,
+     528.9
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     1108.7,
+     329.2,
+     1252.7,
+     528.9
+    ]
+   },
+   {
+    "kind": "card",
+    "box": [
+     1272.7,
+     329.2,
+     1416.7,
+     528.9
+    ]
+   }
+  ],
+  "note": "6 cartes de l'évolution justes (avant / après)"
+ }
+}

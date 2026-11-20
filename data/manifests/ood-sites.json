@@ -1,0 +1,7 @@
+[
+  {"name": "ldlc", "category": "boutique", "start_url": "https://www.ldlc.com/"},
+  {"name": "nature-et-decouvertes", "category": "boutique", "start_url": "https://www.natureetdecouvertes.com/"},
+  {"name": "airbnb", "category": "réservation", "start_url": "https://www.airbnb.fr/"},
+  {"name": "grafana-play", "category": "tableau de bord", "start_url": "https://play.grafana.org/"},
+  {"name": "service-public", "category": "administration", "start_url": "https://www.service-public.gouv.fr/"}
+]
