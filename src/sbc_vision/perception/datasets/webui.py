@@ -14,7 +14,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlsplit
 
+import numpy as np
+
 from sbc_vision.contracts.perception import ElementKind
+from sbc_vision.perception.boxes import iou_matrix
 
 ROLE_TO_KIND: dict[str, ElementKind] = {
     "button": ElementKind.BUTTON,
@@ -49,16 +52,14 @@ KIND_PRIORITY: tuple[ElementKind, ...] = (
 DESKTOP_DEVICES = ("default_1280-720", "default_1366-768", "default_1536-864", "default_1920-1080")
 
 
-@dataclass(frozen=True)
-class LabelRules:
-    min_side_css: float = 4.0
-    min_area_css: float = 64.0
-    min_visible_fraction: float = 0.5
-    max_area_fraction: float = 0.6
-    duplicate_iou: float = 0.8
-
-
-DEFAULT_LABEL_RULES = LabelRules()
+# Règles d'étiquetage, en pixels CSS : côté et aire minimaux, part visible minimale, part de
+# l'écran au-delà de laquelle un nœud est un conteneur de mise en page, IoU de deux nœuds
+# imbriqués qui ne donnent qu'un élément.
+MIN_SIDE_CSS = 4.0
+MIN_AREA_CSS = 64.0
+MIN_VISIBLE_FRACTION = 0.5
+MAX_AREA_FRACTION = 0.6
+DUPLICATE_IOU = 0.8
 
 
 @dataclass(frozen=True)
@@ -77,11 +78,7 @@ def viewport_scale(axtree: dict, boxes: dict, image_size: tuple[int, int]) -> fl
     l'écran puis réduite donne moins. Une capture qui n'a pas les proportions de la zone
     d'affichage est refusée : ses boîtes ne seraient pas à leur place.
     """
-    roots = [n for n in axtree["nodes"] if n.get("role", {}).get("value") == "RootWebArea"]
-    if len(roots) != 1:
-        raise ValueError(f"{len(roots)} zones d'affichage")
-    [root] = roots
-    view = boxes.get(str(root.get("backendDOMNodeId")))
+    view = boxes.get(str(root_node(axtree)["backendDOMNodeId"]))
     if not view or view["width"] <= 0 or view["height"] <= 0:
         raise ValueError("zone d'affichage sans boîte")
     scale_x, scale_y = image_size[0] / view["width"], image_size[1] / view["height"]
@@ -92,12 +89,12 @@ def viewport_scale(axtree: dict, boxes: dict, image_size: tuple[int, int]) -> fl
     return scale_x
 
 
-def iou(a: tuple[float, ...], b: tuple[float, ...]) -> float:
-    ix = max(0.0, min(a[2], b[2]) - max(a[0], b[0]))
-    iy = max(0.0, min(a[3], b[3]) - max(a[1], b[1]))
-    inter = ix * iy
-    union = (a[2] - a[0]) * (a[3] - a[1]) + (b[2] - b[0]) * (b[3] - b[1]) - inter
-    return inter / union if union > 0 else 0.0
+def root_node(axtree: dict) -> dict:
+    """Nœud de la zone d'affichage (RootWebArea), unique dans une page."""
+    roots = [n for n in axtree["nodes"] if n.get("role", {}).get("value") == "RootWebArea"]
+    if len(roots) != 1:
+        raise ValueError(f"{len(roots)} zones d'affichage")
+    return roots[0]
 
 
 def _is_hidden(style: dict | None) -> bool:
@@ -131,7 +128,6 @@ def label_page(
     styles: dict,
     image_size: tuple[int, int],
     scale: float,
-    rules: LabelRules = DEFAULT_LABEL_RULES,
 ) -> list[LabeledElement]:
     """Éléments interactifs visibles d'une page, dans le repère de la capture."""
     nodes = {node["nodeId"]: node for node in axtree["nodes"]}
@@ -162,14 +158,14 @@ def label_page(
         x2, y2 = x1 + rect["width"], y1 + rect["height"]
         cx1, cy1 = max(0.0, x1), max(0.0, y1)
         cx2, cy2 = min(view_w, x2), min(view_h, y2)
-        if cx2 - cx1 < rules.min_side_css or cy2 - cy1 < rules.min_side_css:
+        if cx2 - cx1 < MIN_SIDE_CSS or cy2 - cy1 < MIN_SIDE_CSS:
             continue
         clipped_area = (cx2 - cx1) * (cy2 - cy1)
-        if clipped_area < rules.min_area_css:
+        if clipped_area < MIN_AREA_CSS:
             continue
-        if clipped_area < rules.min_visible_fraction * rect["width"] * rect["height"]:
+        if clipped_area < MIN_VISIBLE_FRACTION * rect["width"] * rect["height"]:
             continue
-        if clipped_area > rules.max_area_fraction * view_w * view_h:
+        if clipped_area > MAX_AREA_FRACTION * view_w * view_h:
             continue
         candidates.append(
             LabeledElement(
@@ -183,7 +179,8 @@ def label_page(
 
     kept: list[LabeledElement] = []
     for element in sorted(candidates, key=lambda e: KIND_PRIORITY.index(e.kind)):
-        if all(iou(element.box, other.box) < rules.duplicate_iou for other in kept):
+        others = np.array([other.box for other in kept]).reshape(-1, 4)
+        if not (iou_matrix(np.array([element.box]), others) >= DUPLICATE_IOU).any():
             kept.append(element)
     return kept
 
@@ -197,7 +194,9 @@ class WebUIPage:
 
     @property
     def domain(self) -> str:
-        host = urlsplit(self.url).hostname or ""
+        host = urlsplit(self.url).hostname
+        if not host:
+            raise ValueError(f"URL sans domaine : {self.url}")
         return host.removeprefix("www.")
 
     def _read_json(self, suffix: str) -> dict:
@@ -205,21 +204,17 @@ class WebUIPage:
         with gzip.open(path, "rt", encoding="utf-8") as handle:
             return json.load(handle)
 
-    def labels(
-        self, image_size: tuple[int, int], rules: LabelRules = DEFAULT_LABEL_RULES
-    ) -> tuple[float, list[LabeledElement]]:
+    def labels(self, image_size: tuple[int, int]) -> tuple[float, list[LabeledElement]]:
         """Échelle de la capture et éléments étiquetés."""
         axtree, boxes = self._read_json("axtree.json.gz"), self._read_json("bb.json.gz")
         scale = viewport_scale(axtree, boxes, image_size)
-        return scale, label_page(
-            axtree, boxes, self._read_json("style.json.gz"), image_size, scale, rules
-        )
+        return scale, label_page(axtree, boxes, self._read_json("style.json.gz"), image_size, scale)
 
 
-def iter_pages(sample_dir: Path, devices: tuple[str, ...]) -> list[WebUIPage]:
-    """Pages d'un échantillon dont tous les fichiers nécessaires sont présents."""
+def iter_pages(sample_dir: Path) -> list[WebUIPage]:
+    """Captures d'ordinateur d'un échantillon dont tous les fichiers nécessaires sont présents."""
     pages = []
-    for device in devices:
+    for device in DESKTOP_DEVICES:
         files = [
             sample_dir / f"{device}-{suffix}"
             for suffix in ("screenshot.webp", "axtree.json.gz", "bb.json.gz", "style.json.gz")

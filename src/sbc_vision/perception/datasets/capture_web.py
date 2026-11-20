@@ -28,7 +28,7 @@ from PIL import Image
 from playwright.async_api import TimeoutError as PageTimeout
 from playwright.async_api import async_playwright
 
-from sbc_vision.perception.datasets.webui import DESKTOP_DEVICES
+from sbc_vision.perception.datasets.webui import DESKTOP_DEVICES, root_node
 
 STYLES = ("display", "visibility", "opacity")
 CONSENT = re.compile(
@@ -77,8 +77,12 @@ async def _snapshot(page, folder: Path, device: str) -> dict:
         if style:  # les nœuds de texte n'ont pas de style calculé propre
             styles[key] = {name: strings[i] for name, i in zip(STYLES, style, strict=True)}
     # La zone d'affichage : la racine du document a la taille de la fenêtre, comme dans WebUI.
-    root = next(n for n in axtree["nodes"] if n.get("role", {}).get("value") == "RootWebArea")
-    boxes[str(root["backendDOMNodeId"])] = {"x": 0, "y": 0, "width": width, "height": height}
+    boxes[str(root_node(axtree)["backendDOMNodeId"])] = {
+        "x": 0,
+        "y": 0,
+        "width": width,
+        "height": height,
+    }
 
     folder.mkdir(parents=True, exist_ok=True)
     Image.open(io.BytesIO(png)).save(

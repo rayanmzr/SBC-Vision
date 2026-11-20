@@ -44,10 +44,7 @@ EXPERIMENT = "sbc-vision-detector"
 
 
 def _git_commit() -> str:
-    try:
-        return subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
-    except (OSError, subprocess.CalledProcessError):
-        return "unknown"
+    return subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
 
 
 def _source_snapshot() -> bytes:
@@ -62,16 +59,13 @@ def _source_snapshot() -> bytes:
     buffer = io.BytesIO()
     with tarfile.open(fileobj=buffer, mode="w:gz") as archive:
         for name in names:
-            if Path(name).is_file() and not name.startswith(("data/", "docs/design/")):
+            if Path(name).is_file():  # un fichier supprimé mais encore suivi n'existe plus
                 archive.add(name)
     return buffer.getvalue()
 
 
 def _git_dirty() -> bool:
-    try:
-        return bool(subprocess.check_output(["git", "status", "--porcelain"], text=True).strip())
-    except (OSError, subprocess.CalledProcessError):
-        return True
+    return bool(subprocess.check_output(["git", "status", "--porcelain"], text=True).strip())
 
 
 @APP.function(
@@ -193,7 +187,7 @@ def _train_run(
         detector = YOLO(model)
         detector.train(**arguments)
         trainer = detector.trainer
-        metrics = {k: float(v) for k, v in (trainer.metrics or {}).items()}
+        metrics = {k: float(v) for k, v in trainer.metrics.items()}
         best = Path(trainer.best)
         onnx_path = YOLO(str(best)).export(format="onnx", imgsz=imgsz, dynamic=False, simplify=True)
         # Ultralytics a déjà joint au run son dossier (courbes, results.csv, poids .pt) ; seul

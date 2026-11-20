@@ -10,12 +10,12 @@ import time
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol
 
 import numpy as np
 from PIL import Image
 
 from sbc_vision.perception.datasets.records import ImageRecord, kind_from_category_id
+from sbc_vision.perception.detector import Detector
 from sbc_vision.perception.evaluation.metrics import (
     ImageBoxes,
     MatchedSet,
@@ -24,16 +24,6 @@ from sbc_vision.perception.evaluation.metrics import (
     match_dataset,
 )
 from sbc_vision.perception.ontology import DETECTOR_CLASSES
-
-Detection = tuple[str, tuple[float, float, float, float], float]
-
-
-class Detector(Protocol):
-    name: str
-
-    def detect(self, image: np.ndarray) -> list[Detection]:
-        """Image RGB (H, W, 3) en uint8 ; boîtes x1, y1, x2, y2 dans ses pixels."""
-        ...
 
 
 @dataclass
@@ -112,7 +102,7 @@ def best_f1_threshold(matched: MatchedSet) -> float:
     )
     best, best_f1 = 0.5, -1.0
     for threshold in np.quantile(candidates, np.linspace(0, 1, 201)) if len(candidates) else []:
-        f1 = matched.operating_point(float(threshold))["_all"]["f1"] or 0.0
+        f1 = matched.operating_point(float(threshold))["_all"]["f1"]
         if f1 > best_f1:
             best, best_f1 = float(threshold), f1
     return best
@@ -122,7 +112,7 @@ def evaluate(
     truth: GroundTruth,
     predictions: dict[int, ImageBoxes],
     latencies: dict[int, float],
-    manifest: Sequence[ImageRecord] | None = None,
+    manifest: Sequence[ImageRecord],
     threshold: float | None = None,
     bootstrap_samples: int = 500,
     bootstrap_by: str = "domain",
@@ -132,8 +122,8 @@ def evaluate(
     image_ids = [image["id"] for image in truth.images if image["id"] in predictions]
     gts = [truth.boxes[i] for i in image_ids]
     preds = [predictions[i] for i in image_ids]
-    records = {record.image_id: record for record in manifest or []}
-    groups = [getattr(records[i], bootstrap_by) for i in image_ids] if records else None
+    records = {record.image_id: record for record in manifest}
+    groups = [getattr(records[i], bootstrap_by) for i in image_ids]
 
     levels = {
         level: match_dataset(gts, preds, level) for level in ("kind", "action", "interactive")
@@ -167,8 +157,7 @@ def evaluate(
         "p95": float(np.percentile(values, 95)),
         "mean": float(values.mean()),
     }
-    if records:
-        report["by_device"] = _breakdown(levels["interactive"], image_ids, records, "device")
+    report["by_device"] = _breakdown(levels["interactive"], image_ids, records, "device")
     return report
 
 

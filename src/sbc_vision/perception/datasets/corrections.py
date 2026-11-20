@@ -22,14 +22,16 @@ import json
 from dataclasses import replace
 from pathlib import Path
 
+import numpy as np
+
 from sbc_vision.contracts.perception import ElementKind
+from sbc_vision.perception.boxes import iou_matrix
 from sbc_vision.perception.datasets.records import (
     BoxRecord,
     kind_from_category_id,
     read_manifest,
     write_corpus,
 )
-from sbc_vision.perception.datasets.webui import iou
 
 SNAP_IOU = 0.5
 
@@ -52,13 +54,13 @@ def _page_boxes(capture: Path, scale: float) -> list[tuple[float, float, float, 
 
 
 def snap(near: tuple[float, ...], candidates: list[tuple[float, ...]]) -> tuple[float, ...]:
-    best = max(candidates, key=lambda box: iou(near, box))
-    overlap = iou(near, best)
-    if overlap < SNAP_IOU:
+    overlaps = iou_matrix(np.array([near]), np.array(candidates).reshape(-1, 4))[0]
+    best = int(overlaps.argmax())
+    if overlaps[best] < SNAP_IOU:
         raise ValueError(
-            f"aucun élément de la page ne recouvre {near} (meilleur IoU {overlap:.2f})"
+            f"aucun élément de la page ne recouvre {near} (meilleur IoU {overlaps[best]:.2f})"
         )
-    return best
+    return tuple(float(v) for v in candidates[best])
 
 
 def apply_corrections(

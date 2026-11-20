@@ -14,8 +14,8 @@ import json
 from pathlib import Path
 
 from sbc_vision.perception.datasets.subsets import evaluation_subset
+from sbc_vision.perception.detector import Detector
 from sbc_vision.perception.evaluation.runner import (
-    Detector,
     evaluate,
     load_ground_truth,
     load_predictions,
@@ -106,7 +106,7 @@ def main() -> None:
                         "mAP50": round(report[level]["mAP50"], 3),
                         "ci95": [round(v, 3) for v in report[level]["mAP50_ci95"]],
                         "mAP50_95": round(report[level]["mAP50_95"], 3),
-                        "F1": round(report[level]["operating_point"]["_all"]["f1"] or 0, 3),
+                        "F1": round(report[level]["operating_point"]["_all"]["f1"], 3),
                     }
                     for level in ("kind", "action", "interactive")
                 },

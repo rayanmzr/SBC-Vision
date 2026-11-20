@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from sbc_vision.contracts.perception import ElementKind
+from sbc_vision.perception.boxes import iou_matrix
 from sbc_vision.perception.ontology import primary_action
 
 IOU_THRESHOLDS = np.round(np.arange(0.5, 0.96, 0.05), 2)
@@ -63,20 +64,6 @@ class ImageBoxes:
             self.scores is not None and len(self.scores) != len(self.boxes)
         ):
             raise ValueError("classes, boîtes et scores de longueurs différentes")
-
-
-def iou_matrix(a: np.ndarray, b: np.ndarray) -> np.ndarray:
-    if len(a) == 0 or len(b) == 0:
-        return np.zeros((len(a), len(b)))
-    x1 = np.maximum(a[:, None, 0], b[None, :, 0])
-    y1 = np.maximum(a[:, None, 1], b[None, :, 1])
-    x2 = np.minimum(a[:, None, 2], b[None, :, 2])
-    y2 = np.minimum(a[:, None, 3], b[None, :, 3])
-    inter = np.clip(x2 - x1, 0, None) * np.clip(y2 - y1, 0, None)
-    area_a = (a[:, 2] - a[:, 0]) * (a[:, 3] - a[:, 1])
-    area_b = (b[:, 2] - b[:, 0]) * (b[:, 3] - b[:, 1])
-    union = area_a[:, None] + area_b[None, :] - inter
-    return np.where(union > 0, inter / np.where(union > 0, union, 1), 0.0)
 
 
 def greedy_match(ious: np.ndarray, threshold: float) -> tuple[np.ndarray, np.ndarray]:
@@ -171,7 +158,6 @@ def _ap_from(scores: np.ndarray, tp: np.ndarray, n_gt: int) -> np.ndarray:
 class MatchedSet:
     """Appariements d'un jeu de test, prêts à être agrégés sur n'importe quelle sélection."""
 
-    level: str
     images: list[ImageMatches]
 
     def labels(self) -> list[str]:
@@ -255,7 +241,6 @@ def match_dataset(
 ) -> MatchedSet:
     mapping = LEVELS[level]
     return MatchedSet(
-        level=level,
         images=[match_image(g, p, mapping, max_dets) for g, p in zip(gts, preds, strict=True)],
     )
 

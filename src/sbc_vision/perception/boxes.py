@@ -1,7 +1,22 @@
-"""Opérations sur les boîtes partagées par les détecteurs."""
+"""Opérations sur les boîtes (x1, y1, x2, y2) : données, détecteurs et mesure."""
 
 import cv2
 import numpy as np
+
+
+def iou_matrix(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """IoU de chaque boîte de `a` (n, 4) avec chaque boîte de `b` (m, 4) : matrice (n, m)."""
+    if len(a) == 0 or len(b) == 0:
+        return np.zeros((len(a), len(b)))
+    x1 = np.maximum(a[:, None, 0], b[None, :, 0])
+    y1 = np.maximum(a[:, None, 1], b[None, :, 1])
+    x2 = np.minimum(a[:, None, 2], b[None, :, 2])
+    y2 = np.minimum(a[:, None, 3], b[None, :, 3])
+    inter = np.clip(x2 - x1, 0, None) * np.clip(y2 - y1, 0, None)
+    area_a = (a[:, 2] - a[:, 0]) * (a[:, 3] - a[:, 1])
+    area_b = (b[:, 2] - b[:, 0]) * (b[:, 3] - b[:, 1])
+    union = area_a[:, None] + area_b[None, :] - inter
+    return np.where(union > 0, inter / np.where(union > 0, union, 1), 0.0)
 
 
 def nms_per_class(

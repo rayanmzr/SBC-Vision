@@ -106,7 +106,7 @@ def main() -> None:
         )
         summary[part].setdefault("added", []).append(
             {
-                "corpus": str(Path(corpus).relative_to(Path(corpus).parents[1])),
+                "corpus": corpus,
                 "split": split,
                 "repeat": int(repeat),
                 **added,

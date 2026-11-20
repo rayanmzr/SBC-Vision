@@ -72,30 +72,34 @@ class Maps:
     width: int
     integrals: dict[str, np.ndarray] = field(default_factory=dict)
 
-    def mean(self, name: str, boxes: np.ndarray) -> np.ndarray:
+    def _sum(self, name: str, boxes: np.ndarray) -> np.ndarray:
         integral = self.integrals[name]
         x1, y1, x2, y2 = (boxes[:, i] for i in range(4))
-        total = integral[y2, x2] - integral[y1, x2] - integral[y2, x1] + integral[y1, x1]
-        area = np.maximum((x2 - x1) * (y2 - y1), 1)
-        return total / area
+        return integral[y2, x2] - integral[y1, x2] - integral[y2, x1] + integral[y1, x1]
+
+    def mean(self, name: str, boxes: np.ndarray) -> np.ndarray:
+        return self._sum(name, boxes) / np.maximum(_area(boxes), 1)
 
     def ring_mean(self, name: str, outer: np.ndarray, inner: np.ndarray) -> np.ndarray:
-        integral = self.integrals[name]
-
-        def total(b):
-            return (
-                integral[b[:, 3], b[:, 2]]
-                - integral[b[:, 1], b[:, 2]]
-                - integral[b[:, 3], b[:, 0]]
-                + integral[b[:, 1], b[:, 0]]
-            )
-
-        area_outer = (outer[:, 2] - outer[:, 0]) * (outer[:, 3] - outer[:, 1])
-        area_inner = (inner[:, 2] - inner[:, 0]) * (inner[:, 3] - inner[:, 1])
-        return (total(outer) - total(inner)) / np.maximum(area_outer - area_inner, 1)
+        ring = self._sum(name, outer) - self._sum(name, inner)
+        return ring / np.maximum(_area(outer) - _area(inner), 1)
 
 
-def build_maps(rgb: np.ndarray, params: ProposalParams) -> tuple[Maps, np.ndarray, np.ndarray]:
+def _area(boxes: np.ndarray) -> np.ndarray:
+    return (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
+
+
+def _clip(boxes: np.ndarray, width: int, height: int) -> np.ndarray:
+    clipped = boxes.copy()
+    clipped[:, [0, 2]] = np.clip(clipped[:, [0, 2]], 0, width)
+    clipped[:, [1, 3]] = np.clip(clipped[:, [1, 3]], 0, height)
+    return clipped
+
+
+def build_maps(
+    rgb: np.ndarray, params: ProposalParams
+) -> tuple[Maps, np.ndarray, np.ndarray, np.ndarray]:
+    """Images intégrales, et les cartes dont partent les propositions : gris, contours, texte."""
     gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
     edges = cv2.Canny(gray, params.canny_low, params.canny_high)
     gradient = cv2.morphologyEx(
@@ -112,7 +116,7 @@ def build_maps(rgb: np.ndarray, params: ProposalParams) -> tuple[Maps, np.ndarra
     maps.integrals["saturation"] = cv2.integral(saturation.astype(np.float64))
     for index, channel in enumerate("rgb"):
         maps.integrals[channel] = cv2.integral(rgb[:, :, index].astype(np.float64))
-    return maps, edges, text
+    return maps, gray, edges, text
 
 
 def _rects(mask: np.ndarray) -> np.ndarray:
@@ -129,17 +133,15 @@ def propose(
     rgb: np.ndarray, params: ProposalParams = DEFAULT_PARAMS
 ) -> tuple[np.ndarray, np.ndarray, Maps]:
     """Boîtes candidates (n, 4) en pixels entiers, leur origine (0 contours, 1 texte), cartes."""
-    maps, edges, text = build_maps(rgb, params)
-    gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
+    maps, gray, edges, text = build_maps(rgb, params)
     soft = cv2.Canny(gray, params.soft_canny_low, params.soft_canny_high)
     kernel = np.ones((3, 3), np.uint8)
     from_contours = np.vstack([_rects(cv2.dilate(edges, kernel)), _rects(cv2.dilate(soft, kernel))])
     words = cv2.morphologyEx(text, cv2.MORPH_CLOSE, np.ones((1, params.word_gap), np.uint8))
     phrases = cv2.morphologyEx(text, cv2.MORPH_CLOSE, np.ones((3, params.phrase_gap), np.uint8))
     tight = np.vstack([_rects(words), _rects(phrases)])
-    from_text = np.vstack([tight + np.array([-dx, -dy, dx, dy]) for dx, dy in params.text_paddings])
-    from_text[:, [0, 2]] = np.clip(from_text[:, [0, 2]], 0, maps.width)
-    from_text[:, [1, 3]] = np.clip(from_text[:, [1, 3]], 0, maps.height)
+    padded = [tight + np.array([-dx, -dy, dx, dy]) for dx, dy in params.text_paddings]
+    from_text = _clip(np.vstack(padded), maps.width, maps.height)
     boxes = np.vstack([from_contours, from_text])
     source = np.concatenate([np.zeros(len(from_contours)), np.ones(len(from_text))])
 
@@ -156,8 +158,7 @@ def propose(
     boxes, source = boxes[unique], source[unique]
     if len(boxes) > params.max_proposals:
         # Garder les plus grandes : les éléments interactifs sont rarement minuscules.
-        area = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
-        order = np.argsort(-area)[: params.max_proposals]
+        order = np.argsort(-_area(boxes))[: params.max_proposals]
         boxes, source = boxes[order], source[order]
     return boxes, source, maps
 
@@ -186,19 +187,13 @@ def features(boxes: np.ndarray, source: np.ndarray, maps: Maps) -> np.ndarray:
     w = (boxes[:, 2] - boxes[:, 0]).astype(np.float64)
     h = (boxes[:, 3] - boxes[:, 1]).astype(np.float64)
 
-    def clip(b):
-        b = b.copy()
-        b[:, [0, 2]] = np.clip(b[:, [0, 2]], 0, W)
-        b[:, [1, 3]] = np.clip(b[:, [1, 3]], 0, H)
-        return b
-
     inner = boxes.copy()
     shrink = np.minimum(2, np.minimum(w, h) // 4).astype(np.int64)
     inner[:, 0] += shrink
     inner[:, 1] += shrink
     inner[:, 2] -= shrink
     inner[:, 3] -= shrink
-    outer = clip(boxes + np.array([-3, -3, 3, 3]))
+    outer = _clip(boxes + np.array([-3, -3, 3, 3]), W, H)
 
     gray_mean = maps.mean("gray", boxes)
     gray_std = np.sqrt(np.maximum(maps.mean("gray2", boxes) - gray_mean**2, 0))

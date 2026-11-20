@@ -27,9 +27,9 @@ from sbc_vision.perception.baselines.opencv_baseline import (
     features,
     propose,
 )
+from sbc_vision.perception.boxes import iou_matrix
 from sbc_vision.perception.datasets.records import read_manifest
 from sbc_vision.perception.datasets.subsets import one_per_group
-from sbc_vision.perception.evaluation.metrics import iou_matrix
 from sbc_vision.perception.evaluation.runner import load_ground_truth
 
 POSITIVE_IOU = 0.5

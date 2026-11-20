@@ -9,15 +9,11 @@ from dataclasses import dataclass
 
 import numpy as np
 
-
-@dataclass(frozen=True)
-class QualityRules:
-    min_box_std: float = 3.0  # écart type des niveaux de gris sous la boîte (0-255)
-    max_uniform_share: float = 0.3
-    min_uniform_count: int = 3
-
-
-DEFAULT_QUALITY_RULES = QualityRules()
+MIN_BOX_STD = 3.0  # écart type des niveaux de gris sous la boîte (0-255)
+# Page exclue quand au moins MIN_UNIFORM_COUNT boîtes, et MAX_UNIFORM_SHARE d'entre elles,
+# sont uniformes.
+MIN_UNIFORM_COUNT = 3
+MAX_UNIFORM_SHARE = 0.3
 
 
 @dataclass(frozen=True)
@@ -36,12 +32,10 @@ def box_std(gray: np.ndarray, box: tuple[float, float, float, float]) -> float:
     return float(crop.std()) if crop.size else 0.0
 
 
-def assess_page(
-    gray: np.ndarray, boxes: list[tuple[float, float, float, float]], rules: QualityRules
-) -> PageQuality:
-    uniform = [box_std(gray, box) < rules.min_box_std for box in boxes]
+def assess_page(gray: np.ndarray, boxes: list[tuple[float, float, float, float]]) -> PageQuality:
+    uniform = [box_std(gray, box) < MIN_BOX_STD for box in boxes]
     count = sum(uniform)
     excluded = bool(
-        boxes and count >= rules.min_uniform_count and count / len(boxes) >= rules.max_uniform_share
+        boxes and count >= MIN_UNIFORM_COUNT and count / len(boxes) >= MAX_UNIFORM_SHARE
     )
     return PageQuality(uniform=uniform, excluded=excluded)
