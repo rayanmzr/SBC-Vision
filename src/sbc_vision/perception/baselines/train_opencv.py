@@ -22,15 +22,15 @@ from sklearn.ensemble import HistGradientBoostingClassifier
 
 from sbc_vision.perception.baselines.opencv_baseline import (
     BACKGROUND,
+    DEFAULT_PARAMS,
     FEATURE_NAMES,
     OpenCVBaseline,
     features,
     propose,
 )
 from sbc_vision.perception.boxes import iou_matrix
-from sbc_vision.perception.datasets.records import read_manifest
+from sbc_vision.perception.datasets.records import read_corpus
 from sbc_vision.perception.datasets.subsets import one_per_group
-from sbc_vision.perception.evaluation.runner import load_ground_truth
 
 POSITIVE_IOU = 0.5
 NEGATIVE_IOU = 0.3
@@ -40,7 +40,7 @@ def _image_samples(args):
     path, gt_kinds, gt_boxes, seed = args
     with Image.open(path) as source:
         rgb = np.asarray(source.convert("RGB"))
-    boxes, origin, maps = propose(rgb)
+    boxes, origin, maps = propose(rgb, DEFAULT_PARAMS)
     if len(boxes) == 0:
         return np.zeros((0, len(FEATURE_NAMES)), np.float32), []
     x = features(boxes, origin, maps)
@@ -70,18 +70,14 @@ def main() -> None:
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
 
-    truth = load_ground_truth(args.corpus / f"{args.split}.coco.json")
-    records = one_per_group(
-        read_manifest(args.corpus / f"{args.split}.manifest.jsonl"),
-        args.images,
-        args.seed,
-        key="group",
-    )
+    corpus = read_corpus(args.corpus, args.split)
+    # Une capture par page : les quatre tailles d'écran d'une page sont presque identiques.
+    records = one_per_group(corpus.images, args.images, args.seed, key="group", exclude=set())
     jobs = [
         (
             args.data_root / record.file_name,
-            truth.boxes[record.image_id].kinds,
-            truth.boxes[record.image_id].boxes,
+            [box.kind.value for box in corpus.boxes[record.image_id]],
+            [box.box for box in corpus.boxes[record.image_id]],
             args.seed + record.image_id,
         )
         for record in records
@@ -105,7 +101,7 @@ def main() -> None:
     started = time.perf_counter()
     classifier.fit(x, y)
     fit_s = time.perf_counter() - started
-    detector = OpenCVBaseline(classifier, tuple(classifier.classes_))
+    detector = OpenCVBaseline(classifier, tuple(classifier.classes_), DEFAULT_PARAMS)
     detector.save(args.out)
     labels, counts = np.unique(y, return_counts=True)
     info = {

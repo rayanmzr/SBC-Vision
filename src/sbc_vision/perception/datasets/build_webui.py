@@ -3,7 +3,10 @@
     python -m sbc_vision.perception.datasets.build_webui \
         --pages <extrait>/train_split_web7k \
         --data-root <extrait> \
-        --split train --out data/processed/webui
+        --split train --source webui --out data/processed/webui
+
+`--source` dit d'où viennent les captures : `webui` pour le corpus WebUI, `capture` pour les
+sites capturés par `capture_web` (même format).
 """
 
 import argparse
@@ -56,7 +59,7 @@ def _process(sample_dir: Path) -> list[_Labeled | _Rejected]:
                 gray = np.asarray(image.convert("L"), dtype=np.float32)
             scale, labels = page.labels(size)
             domain = page.domain
-        except (OSError, ValueError, KeyError) as exc:
+        except (OSError, ValueError) as exc:  # image illisible, page incohérente
             results.append(_Rejected(page, f"{type(exc).__name__}: {exc}"))
             continue
         quality = assess_page(gray, [element.box for element in labels])
@@ -66,7 +69,9 @@ def _process(sample_dir: Path) -> list[_Labeled | _Rejected]:
     return results
 
 
-def build_split(pages_dir: Path, data_root: Path, split: str, out: Path, workers: int) -> dict:
+def build_split(
+    pages_dir: Path, data_root: Path, split: str, source: str, out: Path, workers: int
+) -> dict:
     sample_dirs = sorted(path for path in pages_dir.iterdir() if path.is_dir())
     images: list[ImageRecord] = []
     boxes: list[BoxRecord] = []
@@ -92,13 +97,14 @@ def build_split(pages_dir: Path, data_root: Path, split: str, out: Path, workers
                         file_name=str(page.screenshot.relative_to(data_root)),
                         width=item.size[0],
                         height=item.size[1],
-                        source="webui",
+                        source=source,
                         split=split,
                         domain=item.domain,
                         group=page.sample_id,
                         device=page.device,
                         sha256=item.sha256,
-                        extra={"url": page.url, "scale": round(item.scale, 4)},
+                        scale=round(item.scale, 4),
+                        extra={"url": page.url},
                     )
                 )
                 empty += not item.labels
@@ -136,10 +142,11 @@ def main() -> None:
     parser.add_argument("--pages", type=Path, required=True)
     parser.add_argument("--data-root", type=Path, required=True)
     parser.add_argument("--split", required=True)
+    parser.add_argument("--source", choices=("webui", "capture"), required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--workers", type=int, default=4)
     args = parser.parse_args()
-    stats = build_split(args.pages, args.data_root, args.split, args.out, args.workers)
+    stats = build_split(args.pages, args.data_root, args.split, args.source, args.out, args.workers)
     print(json.dumps(stats, indent=2))
 
 

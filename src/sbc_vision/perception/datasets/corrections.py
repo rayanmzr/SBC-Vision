@@ -17,7 +17,6 @@ Voir docs/ANNOTATION.md pour ce qu'on boîte et avec quelle classe.
 """
 
 import argparse
-import gzip
 import json
 from dataclasses import replace
 from pathlib import Path
@@ -26,31 +25,12 @@ import numpy as np
 
 from sbc_vision.contracts.perception import ElementKind
 from sbc_vision.perception.boxes import iou_matrix
-from sbc_vision.perception.datasets.records import (
-    BoxRecord,
-    kind_from_category_id,
-    read_manifest,
-    write_corpus,
-)
+from sbc_vision.perception.datasets.records import BoxRecord, read_corpus, write_corpus
+from sbc_vision.perception.datasets.webui import WebUIPage
 
 SNAP_IOU = 0.5
-
-
-def _page_boxes(capture: Path, scale: float) -> list[tuple[float, float, float, float]]:
-    """Boîtes de tous les éléments mis en page, en pixels de la capture."""
-    device = capture.name.removesuffix("-screenshot.webp")
-    with gzip.open(capture.with_name(f"{device}-bb.json.gz"), "rt", encoding="utf-8") as handle:
-        boxes = json.load(handle)
-    return [
-        (
-            b["x"] * scale,
-            b["y"] * scale,
-            (b["x"] + b["width"]) * scale,
-            (b["y"] + b["height"]) * scale,
-        )
-        for b in boxes.values()
-        if b["width"] > 0 and b["height"] > 0
-    ]
+PAGE_KEYS = {"remove", "relabel", "add", "note"}
+ADD_KEYS = ({"kind", "box"}, {"kind", "near"})
 
 
 def snap(near: tuple[float, ...], candidates: list[tuple[float, ...]]) -> tuple[float, ...]:
@@ -63,52 +43,57 @@ def snap(near: tuple[float, ...], candidates: list[tuple[float, ...]]) -> tuple[
     return tuple(float(v) for v in candidates[best])
 
 
+def _check(page: str, fix: dict, n_boxes: int) -> None:
+    if set(fix) - PAGE_KEYS:
+        raise ValueError(f"{page} : clés inconnues {sorted(set(fix) - PAGE_KEYS)}")
+    ranks = set(fix.get("remove", [])) | {int(rank) for rank in fix.get("relabel", {})}
+    if any(not 0 <= rank < n_boxes for rank in ranks):
+        raise ValueError(f"{page} : rang de boîte hors limites")
+    if any(set(added) not in ADD_KEYS for added in fix.get("add", [])):
+        raise ValueError(f"{page} : un ajout demande `kind` et soit `box`, soit `near`")
+
+
 def apply_corrections(
     corpus: Path, split: str, out_split: str, data_root: Path, corrections: dict
 ) -> dict:
-    document = json.loads((corpus / f"{split}.coco.json").read_text(encoding="utf-8"))
-    images = read_manifest(corpus / f"{split}.manifest.jsonl")
-    per_image: dict[int, list[dict]] = {}
-    for annotation in sorted(document["annotations"], key=lambda a: a["id"]):
-        per_image.setdefault(annotation["image_id"], []).append(annotation)
-    unknown = set(corrections) - {image.group for image in images}
+    source = read_corpus(corpus, split)
+    unknown = set(corrections) - {image.group for image in source.images}
     if unknown:
         raise ValueError(f"corrections pour des pages absentes du split : {sorted(unknown)}")
 
     boxes: list[BoxRecord] = []
     counts = {"kept": 0, "removed": 0, "relabeled": 0, "added": 0}
-    for image in images:
+    for image in source.images:
+        page_boxes = source.boxes[image.image_id]
+        # Une page sans entrée n'a rien à corriger.
         fix = corrections.get(image.group, {})
+        _check(image.group, fix, len(page_boxes))
         removed = set(fix.get("remove", []))
         relabel = {int(rank): ElementKind(kind) for rank, kind in fix.get("relabel", {}).items()}
-        annotations = per_image.get(image.image_id, [])
-        if any(rank >= len(annotations) for rank in removed | set(relabel)):
-            raise ValueError(f"{image.group} : rang de boîte hors limites")
-        for rank, annotation in enumerate(annotations):
+        for rank, box in enumerate(page_boxes):
             if rank in removed:
                 counts["removed"] += 1
-                continue
-            x, y, w, h = annotation["bbox"]
-            kind = relabel.get(rank, kind_from_category_id(annotation["category_id"]))
-            counts["relabeled" if rank in relabel else "kept"] += 1
-            extra = {
-                **annotation.get("extra", {}),
-                **({"relabeled": True} if rank in relabel else {}),
-            }
-            boxes.append(BoxRecord(image.image_id, kind, (x, y, x + w, y + h), extra))
-        candidates = None
+            elif rank in relabel:
+                counts["relabeled"] += 1
+                boxes.append(
+                    replace(box, kind=relabel[rank], extra={**box.extra, "relabeled": True})
+                )
+            else:
+                counts["kept"] += 1
+                boxes.append(box)
+        layout = None
         for added in fix.get("add", []):
             if "box" in added:
                 box = tuple(added["box"])
             else:
-                if candidates is None:
-                    candidates = _page_boxes(data_root / image.file_name, image.extra["scale"])
-                box = snap(tuple(added["near"]), candidates)
+                if layout is None:
+                    layout = WebUIPage.from_record(image, data_root).layout_boxes(image.scale)
+                box = snap(tuple(added["near"]), layout)
             boxes.append(
                 BoxRecord(image.image_id, ElementKind(added["kind"]), box, {"added": True})
             )
             counts["added"] += 1
-    records = [replace(image, split=out_split) for image in images]
+    records = [replace(image, split=out_split) for image in source.images]
     write_corpus(corpus, out_split, records, boxes)
     return {"images": len(records), "boxes": len(boxes), **counts}
 

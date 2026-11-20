@@ -18,9 +18,9 @@ from sbc_vision.perception.datasets.records import ImageRecord, read_manifest
 def one_per_group(
     records: Sequence[ImageRecord],
     count: int | None,
-    seed: int = 0,
-    key: str = "domain",
-    exclude: set[str] = frozenset(),
+    seed: int,
+    key: str,
+    exclude: set[str],
 ) -> list[ImageRecord]:
     """Une capture par valeur de `key` (`domain` ou `group`), hors pages listées dans `exclude`."""
     by_group: dict[str, list[ImageRecord]] = {}
@@ -46,9 +46,9 @@ def evaluation_subset(
     corpus: Path,
     split: str,
     count: int | None,
-    seed: int = 0,
-    near_duplicate_max: int | None = None,
-    one_per: str = "domain",
+    seed: int,
+    near_duplicate_max: int | None,
+    one_per: str,
 ) -> EvaluationSubset:
     """Une capture par site (`domain`) ou par page (`group`), quasi-doublons de l'entraînement
     écartés si `near_duplicate_max`."""

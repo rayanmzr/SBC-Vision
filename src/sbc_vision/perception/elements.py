@@ -6,12 +6,19 @@ entiers, arrondies vers l'extérieur ; l'action vient de la classe (`ontology.AC
 est laissé vide : il vient de la lecture (OCR).
 """
 
+import json
 import math
 from collections.abc import Sequence
+from pathlib import Path
 
 from sbc_vision.contracts.perception import BoundingBox, DetectedElement, ElementKind
 from sbc_vision.perception.detector import Detection
 from sbc_vision.perception.ontology import ACTIONS
+
+
+def read_threshold(report: Path) -> float:
+    """Seuil du point de fonctionnement, choisi sur la validation, d'un rapport d'évaluation."""
+    return json.loads(report.read_text(encoding="utf-8"))["threshold"]
 
 
 def to_elements(detections: Sequence[Detection], min_score: float) -> list[DetectedElement]:

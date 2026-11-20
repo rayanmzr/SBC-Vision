@@ -28,9 +28,18 @@ from PIL import Image
 from playwright.async_api import TimeoutError as PageTimeout
 from playwright.async_api import async_playwright
 
-from sbc_vision.perception.datasets.webui import DESKTOP_DEVICES, root_node
+from sbc_vision.perception.datasets.webui import (
+    AXTREE_FILE,
+    BOXES_FILE,
+    DESKTOP_DEVICES,
+    SCREENSHOT_FILE,
+    STYLES_FILE,
+    URL_FILE,
+    capture_file,
+    root_node,
+)
 
-STYLES = ("display", "visibility", "opacity")
+COMPUTED_STYLES = ("display", "visibility", "opacity")
 CONSENT = re.compile(
     r"^\s*(tout accepter|accepter( et fermer| tout)?|j'accepte|accept all)\s*$", re.I
 )
@@ -52,7 +61,9 @@ async def _snapshot(page, folder: Path, device: str) -> dict:
     png = await page.screenshot()
     cdp = await page.context.new_cdp_session(page)
     axtree = await cdp.send("Accessibility.getFullAXTree")
-    snapshot = await cdp.send("DOMSnapshot.captureSnapshot", {"computedStyles": list(STYLES)})
+    snapshot = await cdp.send(
+        "DOMSnapshot.captureSnapshot", {"computedStyles": list(COMPUTED_STYLES)}
+    )
     width, height = await page.evaluate("[innerWidth, innerHeight]")
     await cdp.detach()
 
@@ -75,7 +86,7 @@ async def _snapshot(page, folder: Path, device: str) -> dict:
             x, y, w, h = x1, y1, x2 - x1, y2 - y1
         boxes[key] = {"x": x, "y": y, "width": w, "height": h}
         if style:  # les nœuds de texte n'ont pas de style calculé propre
-            styles[key] = {name: strings[i] for name, i in zip(STYLES, style, strict=True)}
+            styles[key] = {name: strings[i] for name, i in zip(COMPUTED_STYLES, style, strict=True)}
     # La zone d'affichage : la racine du document a la taille de la fenêtre, comme dans WebUI.
     boxes[str(root_node(axtree)["backendDOMNodeId"])] = {
         "x": 0,
@@ -86,12 +97,12 @@ async def _snapshot(page, folder: Path, device: str) -> dict:
 
     folder.mkdir(parents=True, exist_ok=True)
     Image.open(io.BytesIO(png)).save(
-        folder / f"{device}-screenshot.webp", lossless=True, quality=100
+        capture_file(folder, device, SCREENSHOT_FILE), lossless=True, quality=100
     )
-    _write_json(folder / f"{device}-axtree.json.gz", axtree)
-    _write_json(folder / f"{device}-bb.json.gz", boxes)
-    _write_json(folder / f"{device}-style.json.gz", styles)
-    (folder / f"{device}-url.txt").write_text(page.url, encoding="utf-8")
+    _write_json(capture_file(folder, device, AXTREE_FILE), axtree)
+    _write_json(capture_file(folder, device, BOXES_FILE), boxes)
+    _write_json(capture_file(folder, device, STYLES_FILE), styles)
+    capture_file(folder, device, URL_FILE).write_text(page.url, encoding="utf-8")
     return {"url": page.url, "title": await page.title(), "device": device}
 
 

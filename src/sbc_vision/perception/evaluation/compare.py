@@ -13,45 +13,43 @@ import argparse
 import json
 from pathlib import Path
 
-from sbc_vision.perception.datasets.records import read_manifest
-from sbc_vision.perception.evaluation.metrics import LEVELS, match_dataset, paired_bootstrap
-from sbc_vision.perception.evaluation.runner import load_ground_truth, load_predictions
+from sbc_vision.perception.datasets.records import read_corpus
+from sbc_vision.perception.evaluation.metrics import match_levels, paired_bootstrap
+from sbc_vision.perception.evaluation.runner import (
+    ground_truth,
+    load_predictions,
+    predicted_records,
+)
 
 
 def compare(
-    corpus: Path,
+    corpus_dir: Path,
     split: str,
     report_a: Path,
     report_b: Path,
     bootstrap_samples: int,
-    bootstrap_by: str = "domain",
+    bootstrap_by: str,
 ) -> dict:
-    truth = load_ground_truth(corpus / f"{split}.coco.json")
-    units = {
-        r.image_id: getattr(r, bootstrap_by)
-        for r in read_manifest(corpus / f"{split}.manifest.jsonl")
-    }
+    corpus = read_corpus(corpus_dir, split)
     predictions_a, _ = load_predictions(report_a / "predictions.jsonl")
     predictions_b, _ = load_predictions(report_b / "predictions.jsonl")
     if predictions_a.keys() != predictions_b.keys():
         raise ValueError("les deux évaluations ne portent pas sur les mêmes captures")
-    image_ids = [image["id"] for image in truth.images if image["id"] in predictions_a]
-    gts = [truth.boxes[i] for i in image_ids]
-    groups = [units[i] for i in image_ids]
+    records = predicted_records(corpus, predictions_a)
+    truth = ground_truth(corpus)
+    gts = [truth[record.image_id] for record in records]
+    groups = [getattr(record, bootstrap_by) for record in records]
+    levels_a = match_levels(gts, [predictions_a[record.image_id] for record in records])
+    levels_b = match_levels(gts, [predictions_b[record.image_id] for record in records])
     names = [json.loads((r / "report.json").read_text())["detector"] for r in (report_a, report_b)]
-    result: dict = {"split": split, "images": len(image_ids), "a": names[0], "b": names[1]}
-    for level in LEVELS:
-        matched_a = match_dataset(gts, [predictions_a[i] for i in image_ids], level)
-        matched_b = match_dataset(gts, [predictions_b[i] for i in image_ids], level)
+    result: dict = {"split": split, "images": len(records), "a": names[0], "b": names[1]}
+    for level, matched_a in levels_a.items():
+        matched_b = levels_b[level]
         result[level] = {
-            "mAP50_a": matched_a.summary()["mAP50"],
-            "mAP50_b": matched_b.summary()["mAP50"],
+            "mAP50_a": matched_a.map50(range(len(records))),
+            "mAP50_b": matched_b.map50(range(len(records))),
             **paired_bootstrap(
-                lambda idx, m=matched_a: m.summary(idx)["mAP50"],
-                lambda idx, m=matched_b: m.summary(idx)["mAP50"],
-                len(image_ids),
-                groups,
-                samples=bootstrap_samples,
+                matched_a.map50, matched_b.map50, len(records), groups, bootstrap_samples
             ),
         }
     return result

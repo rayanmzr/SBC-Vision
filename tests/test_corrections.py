@@ -18,13 +18,14 @@ def corpus(tmp_path):
         CAPTURE,
         1280,
         720,
-        "web-ood",
+        "capture",
         "auto",
         "site.org",
         PAGE,
         "default_1280-720",
         "0" * 64,
-        extra={"scale": 1.0},
+        scale=1.0,
+        extra={"url": "https://site.org/"},
     )
     boxes = [
         BoxRecord(1, ElementKind.LINK, (10, 10, 110, 30)),
@@ -75,3 +76,10 @@ def test_addition_far_from_any_element_is_refused(corpus):
 def test_corrections_for_unknown_pages_are_refused(corpus):
     with pytest.raises(ValueError):
         apply_corrections(corpus, "auto", "verified", corpus, {"other-00": {"remove": [0]}})
+
+
+def test_unknown_keys_are_refused(corpus):
+    with pytest.raises(ValueError):
+        apply_corrections(corpus, "auto", "verified", corpus, {PAGE: {"relable": {"0": "button"}}})
+    with pytest.raises(ValueError):
+        apply_corrections(corpus, "auto", "verified", corpus, {PAGE: {"add": [{"kind": "menu"}]}})

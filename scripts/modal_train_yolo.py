@@ -27,6 +27,7 @@ fichiers sous `/mlflow/artifacts`. Récupération locale :
 import json
 import os
 import subprocess
+from dataclasses import dataclass
 from pathlib import Path
 
 import modal
@@ -68,6 +69,24 @@ def _git_dirty() -> bool:
     return bool(subprocess.check_output(["git", "status", "--porcelain"], text=True).strip())
 
 
+@dataclass(frozen=True)
+class TrainConfig:
+    """Tout ce qui définit un run : envoyé au conteneur, et tracé dans MLflow."""
+
+    dataset: str
+    run_name: str
+    model: str
+    epochs: int
+    imgsz: int
+    batch: int
+    seed: int
+    overrides: dict
+    gpu: str
+    git_commit: str
+    git_dirty: bool
+    source_snapshot: bytes  # archive des sources (voir `_source_snapshot`)
+
+
 @APP.function(
     image=IMAGE,
     gpu=GPU,
@@ -76,19 +95,7 @@ def _git_dirty() -> bool:
     timeout=10 * 3600,
     volumes={"/vol": VOLUME},
 )
-def train(
-    dataset: str,
-    run_name: str,
-    model: str,
-    epochs: int,
-    imgsz: int,
-    batch: int,
-    seed: int,
-    git_commit: str,
-    git_dirty: bool,
-    source_snapshot: bytes,
-    overrides: dict,
-) -> dict:
+def train(config: TrainConfig) -> dict:
     import shutil
 
     import mlflow
@@ -97,9 +104,8 @@ def train(
     # Lecture aléatoire intensive : l'archive est extraite sur le disque local du conteneur.
     root = Path("/tmp/datasets")
     root.mkdir(parents=True)
-    subprocess.run(["tar", "-xf", f"/vol/datasets/{dataset}.tar", "-C", str(root)], check=True)
-    local = root / dataset
-    export = json.loads((local / "export.json").read_text())
+    archive = f"/vol/datasets/{config.dataset}.tar"
+    subprocess.run(["tar", "-xf", archive, "-C", str(root)], check=True)
 
     # SQLite ne doit pas vivre sur un volume réseau : la base est copiée sur le disque local du
     # conteneur pendant le run, puis remise dans le volume, même si l'entraînement échoue.
@@ -116,80 +122,56 @@ def train(
         mlflow.create_experiment(EXPERIMENT, artifact_location=str(MLFLOW / "artifacts"))
     mlflow.set_experiment(EXPERIMENT)
     try:
-        return _train_run(
-            local,
-            export,
-            run_name,
-            model,
-            epochs,
-            imgsz,
-            batch,
-            seed,
-            git_commit,
-            git_dirty,
-            source_snapshot,
-            overrides,
-        )
+        return _train_run(config, root / config.dataset)
     finally:
         MLFLOW.mkdir(parents=True, exist_ok=True)
         shutil.copy2(database, MLFLOW / "mlflow.db")
         VOLUME.commit()
 
 
-def _train_run(
-    local: Path,
-    export: dict,
-    run_name: str,
-    model: str,
-    epochs: int,
-    imgsz: int,
-    batch: int,
-    seed: int,
-    git_commit: str,
-    git_dirty: bool,
-    source_snapshot: bytes,
-    overrides: dict,
-) -> dict:
+def _train_run(config: TrainConfig, local: Path) -> dict:
     import mlflow
     from ultralytics import YOLO
 
-    with mlflow.start_run(run_name=run_name) as run:
+    with mlflow.start_run(run_name=config.run_name) as run:
         mlflow.set_tags(
             {
                 "approach": "B-yolo",
-                "git_commit": git_commit,
-                "git_dirty": str(git_dirty),
-                "dataset": local.name,
-                "gpu": GPU,
+                "git_commit": config.git_commit,
+                "git_dirty": str(config.git_dirty),
+                "dataset": config.dataset,
+                "gpu": config.gpu,
             }
         )
-        mlflow.log_dict(export, "dataset/export.json")
+        mlflow.log_dict(json.loads((local / "export.json").read_text()), "dataset/export.json")
         snapshot = Path("/tmp/source.tar.gz")
-        snapshot.write_bytes(source_snapshot)
+        snapshot.write_bytes(config.source_snapshot)
         mlflow.log_artifact(str(snapshot), "source")
         arguments = {
             "data": str(local / "data.yaml"),
-            "epochs": epochs,
-            "imgsz": imgsz,
-            "batch": batch,
-            "seed": seed,
+            "epochs": config.epochs,
+            "imgsz": config.imgsz,
+            "batch": config.batch,
+            "seed": config.seed,
             "deterministic": True,
             "project": "/vol/runs",
-            "name": run_name,
+            "name": config.run_name,
             "exist_ok": False,
             "workers": 10,
             "fliplr": 0.0,  # un texte retourné n'existe pas dans une interface
             "patience": 20,
             "cos_lr": True,
             "plots": True,
-            **overrides,
+            **config.overrides,
         }
-        detector = YOLO(model)
+        detector = YOLO(config.model)
         detector.train(**arguments)
         trainer = detector.trainer
         metrics = {k: float(v) for k, v in trainer.metrics.items()}
         best = Path(trainer.best)
-        onnx_path = YOLO(str(best)).export(format="onnx", imgsz=imgsz, dynamic=False, simplify=True)
+        onnx_path = YOLO(str(best)).export(
+            format="onnx", imgsz=config.imgsz, dynamic=False, simplify=True
+        )
         # Ultralytics a déjà joint au run son dossier (courbes, results.csv, poids .pt) ; seul
         # l'ONNX, exporté après, manque.
         mlflow.log_artifact(onnx_path, "weights")
@@ -213,17 +195,18 @@ def main(
     seed: int = 0,
     overrides: str = "{}",
 ):
-    result = train.remote(
-        dataset,
-        run_name,
-        model,
-        epochs,
-        imgsz,
-        batch,
-        seed,
-        _git_commit(),
-        _git_dirty(),
-        _source_snapshot(),
-        json.loads(overrides),
+    config = TrainConfig(
+        dataset=dataset,
+        run_name=run_name,
+        model=model,
+        epochs=epochs,
+        imgsz=imgsz,
+        batch=batch,
+        seed=seed,
+        overrides=json.loads(overrides),
+        gpu=GPU,
+        git_commit=_git_commit(),
+        git_dirty=_git_dirty(),
+        source_snapshot=_source_snapshot(),
     )
-    print(json.dumps(result, indent=2))
+    print(json.dumps(train.remote(config), indent=2))

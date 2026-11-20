@@ -13,27 +13,17 @@ import argparse
 import json
 from pathlib import Path
 
+from sbc_vision.perception.datasets.records import read_corpus
 from sbc_vision.perception.datasets.subsets import evaluation_subset
-from sbc_vision.perception.detector import Detector
+from sbc_vision.perception.detector import load_detector
+from sbc_vision.perception.elements import read_threshold
+from sbc_vision.perception.evaluation.metrics import LEVELS
 from sbc_vision.perception.evaluation.runner import (
     evaluate,
-    load_ground_truth,
+    ground_truth,
     load_predictions,
     run_detector,
 )
-
-
-def load_detector(spec: str) -> Detector:
-    kind, _, path = spec.partition(":")
-    if kind == "opencv":
-        from sbc_vision.perception.baselines.opencv_baseline import OpenCVBaseline
-
-        return OpenCVBaseline.load(Path(path))
-    if kind == "yolo":
-        from sbc_vision.perception.detectors.yolo_onnx import YoloOnnxDetector
-
-        return YoloOnnxDetector(Path(path))
-    raise ValueError(f"détecteur inconnu : {kind}")
 
 
 def main() -> None:
@@ -41,7 +31,7 @@ def main() -> None:
     parser.add_argument("--corpus", type=Path, required=True)
     parser.add_argument("--split", required=True)
     parser.add_argument("--data-root", type=Path, required=True)
-    parser.add_argument("--count", type=int)
+    parser.add_argument("--count", type=int, help="nombre de sites ou de pages ; tous sinon")
     parser.add_argument(
         "--one-per",
         choices=("domain", "group"),
@@ -49,9 +39,12 @@ def main() -> None:
         help="une capture par site (WebUI) ou par page (test vérifié : toutes ses captures)",
     )
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--detector", required=True)
-    parser.add_argument("--threshold", type=float)
-    parser.add_argument("--threshold-from", type=Path)
+    parser.add_argument("--detector", required=True, help="opencv:<modèle.pkl> ou yolo:<.onnx>")
+    threshold = parser.add_mutually_exclusive_group()
+    threshold.add_argument("--threshold", type=float)
+    threshold.add_argument(
+        "--threshold-from", type=Path, help="rapport de validation dont reprendre le seuil"
+    )
     parser.add_argument("--bootstrap", type=int, default=500)
     parser.add_argument(
         "--bootstrap-by",
@@ -67,28 +60,28 @@ def main() -> None:
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
 
+    corpus = read_corpus(args.corpus, args.split)
     subset = evaluation_subset(
         args.corpus, args.split, args.count, args.seed, args.near_duplicate_max, args.one_per
     )
-    wanted = {record.image_id for record in subset.records}
-    truth = load_ground_truth(args.corpus / f"{args.split}.coco.json")
-    images = [image for image in truth.images if image["id"] in wanted]
-
     detector = load_detector(args.detector)
     predictions_path = args.out / "predictions.jsonl"
-    run_detector(detector, images, args.data_root, predictions_path)
+    run_detector(detector, subset.records, args.data_root, predictions_path)
     predictions, latencies = load_predictions(predictions_path)
-
-    threshold = args.threshold
-    if args.threshold_from:
-        threshold = json.loads(args.threshold_from.read_text(encoding="utf-8"))["threshold"]
+    threshold = read_threshold(args.threshold_from) if args.threshold_from else args.threshold
     report = evaluate(
-        truth, predictions, latencies, subset.records, threshold, args.bootstrap, args.bootstrap_by
+        subset.records,
+        ground_truth(corpus),
+        predictions,
+        latencies,
+        threshold,
+        args.bootstrap,
+        args.bootstrap_by,
     )
     report["detector"] = {"name": detector.name, "spec": args.detector}
     report["subset"] = {
         "split": args.split,
-        "count": len(images),
+        "count": len(subset.records),
         "seed": args.seed,
         "one_per": args.one_per,
         "bootstrap_by": args.bootstrap_by,
@@ -108,7 +101,7 @@ def main() -> None:
                         "mAP50_95": round(report[level]["mAP50_95"], 3),
                         "F1": round(report[level]["operating_point"]["_all"]["f1"], 3),
                     }
-                    for level in ("kind", "action", "interactive")
+                    for level in LEVELS
                 },
                 "latency_ms": {k: round(v, 1) for k, v in report["latency_ms"].items()},
             },

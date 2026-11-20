@@ -1,7 +1,13 @@
 import pytest
 
 from sbc_vision.contracts.perception import ElementKind
-from sbc_vision.perception.datasets.records import BoxRecord, ImageRecord, coco_document
+from sbc_vision.perception.datasets.records import (
+    BoxRecord,
+    ImageRecord,
+    coco_document,
+    read_corpus,
+    write_corpus,
+)
 from sbc_vision.perception.datasets.webui import label_page, viewport_scale
 
 
@@ -114,7 +120,7 @@ def test_viewport_and_capture_of_different_proportions_are_rejected():
 
 
 def test_coco_export_uses_one_based_categories_and_xywh():
-    image = ImageRecord(1, "a.webp", 1280, 720, "webui", "train", "x.org", "1", "d", "0" * 64)
+    image = ImageRecord(1, "a.webp", 1280, 720, "webui", "train", "x.org", "1", "d", "0" * 64, 1.0)
     document = coco_document([image], [BoxRecord(1, ElementKind.BUTTON, (10, 20, 110, 60))])
     [annotation] = document["annotations"]
     assert annotation["category_id"] == 1
@@ -127,3 +133,18 @@ def test_page_with_valueless_styles_is_rejected():
     boxes = {"1": rect(0, 0, 1280, 720), "2": rect(10, 10, 80, 30)}
     with pytest.raises(ValueError):
         page(nodes, boxes, styles={"2": ["display", "opacity"]})
+
+
+def test_corpus_reads_back_what_was_written(tmp_path):
+    images = [
+        ImageRecord(1, "a.webp", 1280, 720, "webui", "val", "x.org", "1", "d", "0" * 64, 1.0),
+        ImageRecord(2, "b.webp", 1280, 720, "webui", "val", "y.org", "2", "d", "1" * 64, 2.0),
+    ]
+    boxes = [
+        BoxRecord(1, ElementKind.BUTTON, (10, 20, 110, 60), {"role": "button"}),
+        BoxRecord(1, ElementKind.SLOT, (0, 0, 5, 5)),
+    ]
+    write_corpus(tmp_path, "val", images, boxes)
+    corpus = read_corpus(tmp_path, "val")
+    assert corpus.images == images
+    assert corpus.boxes == {1: boxes, 2: []}

@@ -13,39 +13,22 @@ import json
 from dataclasses import replace
 from pathlib import Path
 
-from sbc_vision.perception.datasets.records import (
-    BoxRecord,
-    kind_from_category_id,
-    read_manifest,
-    write_corpus,
-)
+from sbc_vision.perception.datasets.records import read_corpus, write_corpus
 
 
 def split_corpus(corpus: Path, split: str, assignment: dict[str, str]) -> dict[str, int]:
-    images = read_manifest(corpus / f"{split}.manifest.jsonl")
-    groups = {image.group for image in images}
+    source = read_corpus(corpus, split)
+    groups = {image.group for image in source.images}
     if groups != set(assignment):
         missing, unknown = sorted(groups - set(assignment)), sorted(set(assignment) - groups)
         raise ValueError(f"affectation incomplète : sans partie {missing}, inconnues {unknown}")
-    document = json.loads((corpus / f"{split}.coco.json").read_text(encoding="utf-8"))
-    boxes_of: dict[int, list[BoxRecord]] = {}
-    for annotation in sorted(document["annotations"], key=lambda a: a["id"]):
-        x, y, w, h = annotation["bbox"]
-        boxes_of.setdefault(annotation["image_id"], []).append(
-            BoxRecord(
-                annotation["image_id"],
-                kind_from_category_id(annotation["category_id"]),
-                (x, y, x + w, y + h),
-                annotation.get("extra", {}),
-            )
-        )
     counts = {}
     for part in sorted(set(assignment.values())):
         name = f"{split}-{part}"
         records = [
-            replace(image, split=name) for image in images if assignment[image.group] == part
+            replace(image, split=name) for image in source.images if assignment[image.group] == part
         ]
-        boxes = [box for image in records for box in boxes_of.get(image.image_id, [])]
+        boxes = [box for image in records for box in source.boxes[image.image_id]]
         write_corpus(corpus, name, records, boxes)
         counts[name] = len(records)
     return counts

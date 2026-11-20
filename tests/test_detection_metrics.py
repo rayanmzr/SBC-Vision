@@ -70,7 +70,9 @@ def test_recall_by_size_uses_coco_area_buckets():
 def test_bootstrap_interval_brackets_a_stable_statistic():
     rng = np.random.default_rng(1)
     values = rng.normal(0.6, 0.05, 200)
-    low, high = bootstrap_interval(lambda idx: float(values[list(idx)].mean()), len(values))
+    low, high = bootstrap_interval(
+        lambda idx: float(values[list(idx)].mean()), len(values), None, samples=1000
+    )
     assert low < values.mean() < high
     assert high - low < 0.03
 
@@ -165,6 +167,6 @@ def test_map_matches_pycocotools():
     reference_50 = float(np.mean([np.mean(precision[0, :, k]) for k in range(len(classes))]))
     reference = float(np.mean(precision))
 
-    summary = match_dataset(gts, preds, "kind", max_dets=300).summary()
+    summary = match_dataset(gts, preds, "kind").summary()
     assert summary["mAP50"] == pytest.approx(reference_50, abs=1e-9)
     assert summary["mAP50_95"] == pytest.approx(reference, abs=1e-9)

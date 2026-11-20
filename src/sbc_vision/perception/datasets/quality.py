@@ -29,7 +29,9 @@ class PageQuality:
 def box_std(gray: np.ndarray, box: tuple[float, float, float, float]) -> float:
     x1, y1, x2, y2 = box
     crop = gray[int(y1) : int(np.ceil(y2)), int(x1) : int(np.ceil(x2))]
-    return float(crop.std()) if crop.size else 0.0
+    if not crop.size:
+        raise ValueError(f"boîte vide ou hors de l'image : {box}")
+    return float(crop.std())
 
 
 def assess_page(gray: np.ndarray, boxes: list[tuple[float, float, float, float]]) -> PageQuality:

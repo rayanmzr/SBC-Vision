@@ -9,7 +9,7 @@ from sbc_vision.perception.datasets.split_corpus import split_corpus
 
 def image(image_id, group):
     return ImageRecord(
-        image_id, f"{group}/a.webp", 100, 100, "web", "near", "x.org", group, "d", "0"
+        image_id, f"{group}/a.webp", 100, 100, "capture", "near", "x.org", group, "d", "0", 1.0
     )
 
 

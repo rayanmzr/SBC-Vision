@@ -17,7 +17,8 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from sbc_vision.perception.boxes import nms_per_class
+from sbc_vision.perception.boxes import area, clip, to_detections
+from sbc_vision.perception.detector import Detection
 
 BACKGROUND = "background"
 
@@ -78,22 +79,11 @@ class Maps:
         return integral[y2, x2] - integral[y1, x2] - integral[y2, x1] + integral[y1, x1]
 
     def mean(self, name: str, boxes: np.ndarray) -> np.ndarray:
-        return self._sum(name, boxes) / np.maximum(_area(boxes), 1)
+        return self._sum(name, boxes) / np.maximum(area(boxes), 1)
 
     def ring_mean(self, name: str, outer: np.ndarray, inner: np.ndarray) -> np.ndarray:
         ring = self._sum(name, outer) - self._sum(name, inner)
-        return ring / np.maximum(_area(outer) - _area(inner), 1)
-
-
-def _area(boxes: np.ndarray) -> np.ndarray:
-    return (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
-
-
-def _clip(boxes: np.ndarray, width: int, height: int) -> np.ndarray:
-    clipped = boxes.copy()
-    clipped[:, [0, 2]] = np.clip(clipped[:, [0, 2]], 0, width)
-    clipped[:, [1, 3]] = np.clip(clipped[:, [1, 3]], 0, height)
-    return clipped
+        return ring / np.maximum(area(outer) - area(inner), 1)
 
 
 def build_maps(
@@ -129,9 +119,7 @@ def _rects(mask: np.ndarray) -> np.ndarray:
     return rects
 
 
-def propose(
-    rgb: np.ndarray, params: ProposalParams = DEFAULT_PARAMS
-) -> tuple[np.ndarray, np.ndarray, Maps]:
+def propose(rgb: np.ndarray, params: ProposalParams) -> tuple[np.ndarray, np.ndarray, Maps]:
     """Boîtes candidates (n, 4) en pixels entiers, leur origine (0 contours, 1 texte), cartes."""
     maps, gray, edges, text = build_maps(rgb, params)
     soft = cv2.Canny(gray, params.soft_canny_low, params.soft_canny_high)
@@ -141,7 +129,7 @@ def propose(
     phrases = cv2.morphologyEx(text, cv2.MORPH_CLOSE, np.ones((3, params.phrase_gap), np.uint8))
     tight = np.vstack([_rects(words), _rects(phrases)])
     padded = [tight + np.array([-dx, -dy, dx, dy]) for dx, dy in params.text_paddings]
-    from_text = _clip(np.vstack(padded), maps.width, maps.height)
+    from_text = clip(np.vstack(padded), maps.width, maps.height)
     boxes = np.vstack([from_contours, from_text])
     source = np.concatenate([np.zeros(len(from_contours)), np.ones(len(from_text))])
 
@@ -158,7 +146,7 @@ def propose(
     boxes, source = boxes[unique], source[unique]
     if len(boxes) > params.max_proposals:
         # Garder les plus grandes : les éléments interactifs sont rarement minuscules.
-        order = np.argsort(-_area(boxes))[: params.max_proposals]
+        order = np.argsort(-area(boxes))[: params.max_proposals]
         boxes, source = boxes[order], source[order]
     return boxes, source, maps
 
@@ -193,7 +181,7 @@ def features(boxes: np.ndarray, source: np.ndarray, maps: Maps) -> np.ndarray:
     inner[:, 1] += shrink
     inner[:, 2] -= shrink
     inner[:, 3] -= shrink
-    outer = _clip(boxes + np.array([-3, -3, 3, 3]), W, H)
+    outer = clip(boxes + np.array([-3, -3, 3, 3]), W, H)
 
     gray_mean = maps.mean("gray", boxes)
     gray_std = np.sqrt(np.maximum(maps.mean("gray2", boxes) - gray_mean**2, 0))
@@ -226,27 +214,23 @@ def features(boxes: np.ndarray, source: np.ndarray, maps: Maps) -> np.ndarray:
     return np.stack(columns, axis=1).astype(np.float32)
 
 
+# Candidats gardés pour la mesure (le seuil final se choisit sur la validation), recouvrement
+# au-delà duquel deux propositions de même classe sont un doublon, plafond par image.
+MIN_SCORE = 0.05
+NMS_IOU = 0.5
+MAX_DETECTIONS = 300
+
+
 class OpenCVBaseline:
     """Détecteur de l'approche A ; `classifier` est un modèle scikit-learn entraîné."""
 
-    def __init__(
-        self,
-        classifier,
-        classes: tuple[str, ...],
-        params: ProposalParams = DEFAULT_PARAMS,
-        min_score: float = 0.05,
-        nms_iou: float = 0.5,
-        max_detections: int = 300,
-    ):
+    def __init__(self, classifier, classes: tuple[str, ...], params: ProposalParams):
         self.classifier = classifier
         self.classes = classes  # ordre des colonnes de predict_proba ; contient BACKGROUND
-        self.params = params
-        self.min_score = min_score
-        self.nms_iou = nms_iou
-        self.max_detections = max_detections
+        self.params = params  # ceux des propositions vues à l'entraînement
         self.name = "opencv-gbdt"
 
-    def detect(self, image: np.ndarray):
+    def detect(self, image: np.ndarray) -> list[Detection]:
         boxes, source, maps = propose(image, self.params)
         if len(boxes) == 0:
             return []
@@ -255,11 +239,9 @@ class OpenCVBaseline:
         probabilities[:, background] = -1
         best = probabilities.argmax(axis=1)
         scores = probabilities[np.arange(len(best)), best]
-        keep = scores >= self.min_score
-        boxes, best, scores = boxes[keep], best[keep], scores[keep]
-        kinds = [self.classes[i] for i in best]
-        order = nms_per_class(boxes, kinds, scores, self.nms_iou, self.max_detections)
-        return [(kinds[i], tuple(float(v) for v in boxes[i]), float(scores[i])) for i in order]
+        keep = scores >= MIN_SCORE
+        kinds = [self.classes[i] for i in best[keep]]
+        return to_detections(boxes[keep], kinds, scores[keep], NMS_IOU, MAX_DETECTIONS)
 
     def save(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)

@@ -17,13 +17,15 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from sbc_vision.contracts.perception import ElementKind
-from sbc_vision.perception.boxes import iou_matrix
+from sbc_vision.perception.boxes import area, iou_matrix
 from sbc_vision.perception.ontology import primary_action
 
 IOU_THRESHOLDS = np.round(np.arange(0.5, 0.96, 0.05), 2)
 RECALL_POINTS = np.linspace(0.0, 1.0, 101)
 # Seuils de taille de COCO, en pixels de la capture (aire de la boîte).
 SIZE_BUCKETS = (("small", 0, 32**2), ("medium", 32**2, 96**2), ("large", 96**2, float("inf")))
+MAX_DETECTIONS = 300  # par étiquette et par image, comme COCO
+BOOTSTRAP_SEED = 0
 
 
 def kind_label(kind: str) -> str | None:
@@ -103,29 +105,27 @@ def _relabel(item: ImageBoxes, mapping: Callable[[str], str | None]):
 
 
 def match_image(
-    gt: ImageBoxes, pred: ImageBoxes, mapping: Callable[[str], str | None], max_dets: int
+    gt: ImageBoxes, pred: ImageBoxes, mapping: Callable[[str], str | None]
 ) -> ImageMatches:
     gt_labels, gt_boxes, _ = _relabel(gt, mapping)
     pred_labels, pred_boxes, pred_scores = _relabel(pred, mapping)
     result = ImageMatches()
     for label in set(gt_labels) | set(pred_labels):
         g = np.array([x == label for x in gt_labels], dtype=bool)
-        # Comme COCO : tri par score et limite `max_dets` par étiquette et par image.
+        # Comme COCO : tri par score et limite de détections par étiquette et par image.
         p = np.flatnonzero([x == label for x in pred_labels])
-        p = p[np.argsort(-pred_scores[p], kind="mergesort")][:max_dets]
+        p = p[np.argsort(-pred_scores[p], kind="mergesort")][:MAX_DETECTIONS]
         ious = iou_matrix(pred_boxes[p], gt_boxes[g])
         tp = np.zeros((len(p), len(IOU_THRESHOLDS)), dtype=bool)
-        hit_05 = np.full(int(g.sum()), -1)
         for t, threshold in enumerate(IOU_THRESHOLDS):
             pred_match, gt_match = greedy_match(ious, threshold)
             tp[:, t] = pred_match >= 0
-            if t == 0:
+            if t == 0:  # IoU 0,5
                 hit_05 = gt_match
-        boxes = gt_boxes[g]
         result.labels[label] = _PerLabel(
             scores=pred_scores[p],
             tp=tp,
-            gt_areas=(boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1]),
+            gt_areas=area(gt_boxes[g]),
             gt_hit_05=hit_05,
         )
     return result
@@ -180,13 +180,19 @@ class MatchedSet:
     def summary(self, indices: Sequence[int] | None = None) -> dict:
         per_label = self.average_precision(indices)
         valid = {label: ap for label, ap in per_label.items() if not np.isnan(ap[0])}
-        stacked = np.array(list(valid.values())) if valid else np.full((1, 10), np.nan)
+        stacked = (
+            np.array(list(valid.values())) if valid else np.full((1, len(IOU_THRESHOLDS)), np.nan)
+        )
         return {
             "mAP50": float(np.mean(stacked[:, 0])),
             "mAP50_95": float(np.mean(stacked)),
             "AP50": {label: float(ap[0]) for label, ap in valid.items()},
             "AP50_95": {label: float(ap.mean()) for label, ap in valid.items()},
         }
+
+    def map50(self, indices: Sequence[int]) -> float:
+        """Statistique rééchantillonnée par le bootstrap."""
+        return self.summary(indices)["mAP50"]
 
     def operating_point(self, threshold: float, indices: Sequence[int] | None = None) -> dict:
         """Précision, rappel et F1 à IoU 0,5 pour les prédictions de score ≥ `threshold`."""
@@ -207,10 +213,10 @@ class MatchedSet:
         hits = {name: [0, 0] for name, _, _ in SIZE_BUCKETS}
         for i in indices:
             for part in self.images[i].labels.values():
-                for area, rank in zip(part.gt_areas, part.gt_hit_05, strict=True):
+                for gt_area, rank in zip(part.gt_areas, part.gt_hit_05, strict=True):
                     found = rank >= 0 and part.scores[rank] >= threshold
                     for name, low, high in SIZE_BUCKETS:
-                        if low <= area < high:
+                        if low <= gt_area < high:
                             hits[name][0] += int(found)
                             hits[name][1] += 1
         return {
@@ -236,13 +242,16 @@ def _prf(tp: int, n_pred: int, n_gt: int) -> dict:
     }
 
 
-def match_dataset(
-    gts: Sequence[ImageBoxes], preds: Sequence[ImageBoxes], level: str, max_dets: int = 300
-) -> MatchedSet:
+def match_dataset(gts: Sequence[ImageBoxes], preds: Sequence[ImageBoxes], level: str) -> MatchedSet:
     mapping = LEVELS[level]
     return MatchedSet(
-        images=[match_image(g, p, mapping, max_dets) for g, p in zip(gts, preds, strict=True)],
+        images=[match_image(g, p, mapping) for g, p in zip(gts, preds, strict=True)],
     )
+
+
+def match_levels(gts: Sequence[ImageBoxes], preds: Sequence[ImageBoxes]) -> dict[str, MatchedSet]:
+    """Appariements aux trois niveaux (classe, action, interactif)."""
+    return {level: match_dataset(gts, preds, level) for level in LEVELS}
 
 
 def confusion_matrix(
@@ -272,44 +281,41 @@ def confusion_matrix(
     return matrix
 
 
+def _resamples(n_images: int, groups: Sequence[str] | None, samples: int):
+    """Tirages avec remise. Avec `groups`, on tire des groupes entiers (un site, une page) : les
+    captures d'un même groupe ne sont pas indépendantes."""
+    rng = np.random.default_rng(BOOTSTRAP_SEED)
+    clusters = _clusters(n_images, groups)
+    for _ in range(samples):
+        picked = rng.integers(0, len(clusters), len(clusters))
+        yield [i for c in picked for i in clusters[c]]
+
+
 def bootstrap_interval(
     statistic: Callable[[Sequence[int]], float],
     n_images: int,
-    groups: Sequence[str] | None = None,
-    samples: int = 1000,
-    seed: int = 0,
-    level: float = 0.95,
+    groups: Sequence[str] | None,
+    samples: int,
 ) -> tuple[float, float]:
-    """Intervalle percentile. Avec `groups`, on rééchantillonne des groupes entiers (un site, une
-    session) : les captures d'un même groupe ne sont pas indépendantes."""
-    rng = np.random.default_rng(seed)
-    clusters = _clusters(n_images, groups)
-    values = []
-    for _ in range(samples):
-        picked = rng.integers(0, len(clusters), len(clusters))
-        values.append(statistic([i for c in picked for i in clusters[c]]))
-    values = np.array([v for v in values if not np.isnan(v)])
-    alpha = (1 - level) / 2
-    return float(np.quantile(values, alpha)), float(np.quantile(values, 1 - alpha))
+    """Intervalle percentile à 95 %. Un tirage sans aucune vérité n'a pas de mAP : il est
+    écarté, comme dans `paired_bootstrap`."""
+    values = np.array([statistic(indices) for indices in _resamples(n_images, groups, samples)])
+    values = values[~np.isnan(values)]
+    return float(np.quantile(values, 0.025)), float(np.quantile(values, 0.975))
 
 
 def paired_bootstrap(
     statistic_a: Callable[[Sequence[int]], float],
     statistic_b: Callable[[Sequence[int]], float],
     n_images: int,
-    groups: Sequence[str] | None = None,
-    samples: int = 1000,
-    seed: int = 0,
+    groups: Sequence[str] | None,
+    samples: int,
 ) -> dict:
-    """Écart A − B sur les mêmes rééchantillonnages, et part des tirages où A ne fait pas mieux."""
-    rng = np.random.default_rng(seed)
-    clusters = _clusters(n_images, groups)
-    diffs = []
-    for _ in range(samples):
-        picked = rng.integers(0, len(clusters), len(clusters))
-        indices = [i for c in picked for i in clusters[c]]
-        diffs.append(statistic_a(indices) - statistic_b(indices))
-    diffs = np.array(diffs)
+    """Écart A − B sur les mêmes tirages, et part des tirages où A ne fait pas mieux."""
+    diffs = np.array(
+        [statistic_a(i) - statistic_b(i) for i in _resamples(n_images, groups, samples)]
+    )
+    diffs = diffs[~np.isnan(diffs)]
     return {
         "mean_diff": float(diffs.mean()),
         "ci95": (float(np.quantile(diffs, 0.025)), float(np.quantile(diffs, 0.975))),

@@ -18,6 +18,7 @@ import numpy as np
 
 from sbc_vision.contracts.perception import ElementKind
 from sbc_vision.perception.boxes import iou_matrix
+from sbc_vision.perception.datasets.records import ImageRecord
 
 ROLE_TO_KIND: dict[str, ElementKind] = {
     "button": ElementKind.BUTTON,
@@ -185,6 +186,20 @@ def label_page(
     return kept
 
 
+# Fichiers d'une capture au format WebUI, dans le dossier de sa page.
+SCREENSHOT_FILE, AXTREE_FILE, BOXES_FILE, STYLES_FILE, URL_FILE = (
+    "screenshot.webp",
+    "axtree.json.gz",
+    "bb.json.gz",
+    "style.json.gz",
+    "url.txt",
+)
+
+
+def capture_file(folder: Path, device: str, kind: str) -> Path:
+    return folder / f"{device}-{kind}"
+
+
 @dataclass(frozen=True)
 class WebUIPage:
     sample_id: str
@@ -192,41 +207,66 @@ class WebUIPage:
     screenshot: Path
     url: str
 
+    @classmethod
+    def from_record(cls, record: ImageRecord, data_root: Path) -> "WebUIPage":
+        """La page d'une capture d'un corpus."""
+        screenshot = data_root / record.file_name
+        return cls(record.group, record.device, screenshot, record.extra["url"])
+
     @property
     def domain(self) -> str:
         host = urlsplit(self.url).hostname
         if not host:
-            raise ValueError(f"URL sans domaine : {self.url}")
+            raise ValueError(f"URL_FILE sans domaine : {self.url}")
         return host.removeprefix("www.")
 
-    def _read_json(self, suffix: str) -> dict:
-        path = self.screenshot.with_name(f"{self.device}-{suffix}")
+    def _read_json(self, kind: str) -> dict:
+        path = capture_file(self.screenshot.parent, self.device, kind)
         with gzip.open(path, "rt", encoding="utf-8") as handle:
             return json.load(handle)
 
+    def accessibility_tree(self) -> dict:
+        return self._read_json(AXTREE_FILE)
+
+    def node_boxes(self) -> dict[str, dict]:
+        """Boîte de chaque nœud mis en page, en pixels CSS, par identifiant DOM."""
+        return self._read_json(BOXES_FILE)
+
+    def layout_boxes(self, scale: float) -> list[tuple[float, float, float, float]]:
+        """Boîtes non vides de tous les nœuds mis en page, en pixels de la capture."""
+        return [
+            (
+                b["x"] * scale,
+                b["y"] * scale,
+                (b["x"] + b["width"]) * scale,
+                (b["y"] + b["height"]) * scale,
+            )
+            for b in self.node_boxes().values()
+            if b["width"] > 0 and b["height"] > 0
+        ]
+
     def labels(self, image_size: tuple[int, int]) -> tuple[float, list[LabeledElement]]:
         """Échelle de la capture et éléments étiquetés."""
-        axtree, boxes = self._read_json("axtree.json.gz"), self._read_json("bb.json.gz")
+        axtree, boxes = self.accessibility_tree(), self.node_boxes()
         scale = viewport_scale(axtree, boxes, image_size)
-        return scale, label_page(axtree, boxes, self._read_json("style.json.gz"), image_size, scale)
+        return scale, label_page(axtree, boxes, self._read_json(STYLES_FILE), image_size, scale)
 
 
 def iter_pages(sample_dir: Path) -> list[WebUIPage]:
     """Captures d'ordinateur d'un échantillon dont tous les fichiers nécessaires sont présents."""
     pages = []
     for device in DESKTOP_DEVICES:
-        files = [
-            sample_dir / f"{device}-{suffix}"
-            for suffix in ("screenshot.webp", "axtree.json.gz", "bb.json.gz", "style.json.gz")
-        ]
-        url_file = sample_dir / f"{device}-url.txt"
-        if all(path.is_file() for path in files) and url_file.is_file():
+        files = {
+            kind: capture_file(sample_dir, device, kind)
+            for kind in (SCREENSHOT_FILE, AXTREE_FILE, BOXES_FILE, STYLES_FILE, URL_FILE)
+        }
+        if all(path.is_file() for path in files.values()):
             pages.append(
                 WebUIPage(
                     sample_id=sample_dir.name,
                     device=device,
-                    screenshot=files[0],
-                    url=url_file.read_text(encoding="utf-8").strip(),
+                    screenshot=files[SCREENSHOT_FILE],
+                    url=files[URL_FILE].read_text(encoding="utf-8").strip(),
                 )
             )
     return pages

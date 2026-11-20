@@ -11,7 +11,8 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from sbc_vision.perception.boxes import nms_per_class
+from sbc_vision.perception.boxes import clip, to_detections
+from sbc_vision.perception.detector import Detection
 from sbc_vision.perception.ontology import DETECTOR_CLASSES
 
 
@@ -27,48 +28,47 @@ def letterbox(image: np.ndarray, size: int) -> tuple[np.ndarray, float, tuple[fl
     return canvas, scale, (left, top)
 
 
+# Point de fonctionnement de l'inférence : candidats gardés pour la mesure (le seuil final se
+# choisit sur la validation), recouvrement au-delà duquel deux boîtes de même classe sont un
+# doublon, plafond par image comme COCO, fils de calcul sur processeur.
+MIN_SCORE = 0.01
+NMS_IOU = 0.6
+MAX_DETECTIONS = 300
+THREADS = 4
+
+
 class YoloOnnxDetector:
-    def __init__(
-        self,
-        path: Path,
-        min_score: float = 0.01,
-        nms_iou: float = 0.6,
-        max_detections: int = 300,
-        threads: int = 4,
-    ):
+    def __init__(self, path: Path):
         import onnxruntime
 
         options = onnxruntime.SessionOptions()
-        options.intra_op_num_threads = threads
+        options.intra_op_num_threads = THREADS
         self.session = onnxruntime.InferenceSession(
             str(path), options, providers=["CPUExecutionProvider"]
         )
-        input_meta = self.session.get_inputs()[0]
+        input_meta, output_meta = self.session.get_inputs()[0], self.session.get_outputs()[0]
+        if output_meta.shape[:2] != [1, 4 + len(DETECTOR_CLASSES)]:
+            raise ValueError(
+                f"sortie ONNX {output_meta.shape} : (1, {4 + len(DETECTOR_CLASSES)}, N) attendue"
+            )
         self.input_name = input_meta.name
         self.size = int(input_meta.shape[2])
-        self.min_score = min_score
-        self.nms_iou = nms_iou
-        self.max_detections = max_detections
         self.name = f"yolo-onnx:{Path(path).stem}"
 
-    def detect(self, image: np.ndarray):
+    def detect(self, image: np.ndarray) -> list[Detection]:
         canvas, scale, (left, top) = letterbox(image, self.size)
         blob = canvas.transpose(2, 0, 1)[None].astype(np.float32) / 255.0
         predictions = self.session.run(None, {self.input_name: blob})[0][0].T  # (N, 4 + classes)
         centers, class_scores = predictions[:, :4], predictions[:, 4:]
         classes = class_scores.argmax(axis=1)
         scores = class_scores[np.arange(len(classes)), classes]
-        keep = scores >= self.min_score
+        keep = scores >= MIN_SCORE
         centers, scores, classes = centers[keep], scores[keep], classes[keep]
         boxes = np.concatenate(
             [centers[:, :2] - centers[:, 2:] / 2, centers[:, :2] + centers[:, 2:] / 2], axis=1
         )
-        boxes = (boxes - np.array([left, top, left, top])) / scale
         height, width = image.shape[:2]
-        boxes[:, [0, 2]] = boxes[:, [0, 2]].clip(0, width)
-        boxes[:, [1, 3]] = boxes[:, [1, 3]].clip(0, height)
+        boxes = clip((boxes - np.array([left, top, left, top])) / scale, width, height)
         valid = (boxes[:, 2] > boxes[:, 0]) & (boxes[:, 3] > boxes[:, 1])
-        boxes, scores, classes = boxes[valid], scores[valid], classes[valid]
-        kinds = [DETECTOR_CLASSES[c].value for c in classes]
-        order = nms_per_class(boxes, kinds, scores, self.nms_iou, self.max_detections)
-        return [(kinds[i], tuple(float(v) for v in boxes[i]), float(scores[i])) for i in order]
+        kinds = [DETECTOR_CLASSES[c].value for c in classes[valid]]
+        return to_detections(boxes[valid], kinds, scores[valid], NMS_IOU, MAX_DETECTIONS)
