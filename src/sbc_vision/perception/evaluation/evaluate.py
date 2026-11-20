@@ -54,6 +54,12 @@ def main() -> None:
     parser.add_argument("--threshold-from", type=Path)
     parser.add_argument("--bootstrap", type=int, default=500)
     parser.add_argument(
+        "--bootstrap-by",
+        choices=("domain", "group"),
+        default="domain",
+        help="unité rééchantillonnée : le site, ou la page pour un test tiré d'un seul site",
+    )
+    parser.add_argument(
         "--near-duplicate-max",
         type=int,
         help="écarter les pages à cette distance (bits) ou moins d'une page d'entraînement",
@@ -76,13 +82,16 @@ def main() -> None:
     threshold = args.threshold
     if args.threshold_from:
         threshold = json.loads(args.threshold_from.read_text(encoding="utf-8"))["threshold"]
-    report = evaluate(truth, predictions, latencies, subset.records, threshold, args.bootstrap)
+    report = evaluate(
+        truth, predictions, latencies, subset.records, threshold, args.bootstrap, args.bootstrap_by
+    )
     report["detector"] = {"name": detector.name, "spec": args.detector}
     report["subset"] = {
         "split": args.split,
         "count": len(images),
         "seed": args.seed,
         "one_per": args.one_per,
+        "bootstrap_by": args.bootstrap_by,
         "near_duplicate_max": args.near_duplicate_max,
         "pages_excluded_near_duplicates": subset.pages_excluded,
     }

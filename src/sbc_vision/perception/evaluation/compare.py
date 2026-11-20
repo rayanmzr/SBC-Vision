@@ -19,17 +19,25 @@ from sbc_vision.perception.evaluation.runner import load_ground_truth, load_pred
 
 
 def compare(
-    corpus: Path, split: str, report_a: Path, report_b: Path, bootstrap_samples: int
+    corpus: Path,
+    split: str,
+    report_a: Path,
+    report_b: Path,
+    bootstrap_samples: int,
+    bootstrap_by: str = "domain",
 ) -> dict:
     truth = load_ground_truth(corpus / f"{split}.coco.json")
-    domains = {r.image_id: r.domain for r in read_manifest(corpus / f"{split}.manifest.jsonl")}
+    units = {
+        r.image_id: getattr(r, bootstrap_by)
+        for r in read_manifest(corpus / f"{split}.manifest.jsonl")
+    }
     predictions_a, _ = load_predictions(report_a / "predictions.jsonl")
     predictions_b, _ = load_predictions(report_b / "predictions.jsonl")
     if predictions_a.keys() != predictions_b.keys():
         raise ValueError("les deux évaluations ne portent pas sur les mêmes captures")
     image_ids = [image["id"] for image in truth.images if image["id"] in predictions_a]
     gts = [truth.boxes[i] for i in image_ids]
-    groups = [domains[i] for i in image_ids]
+    groups = [units[i] for i in image_ids]
     names = [json.loads((r / "report.json").read_text())["detector"] for r in (report_a, report_b)]
     result: dict = {"split": split, "images": len(image_ids), "a": names[0], "b": names[1]}
     for level in LEVELS:
@@ -56,9 +64,10 @@ def main() -> None:
     parser.add_argument("--a", type=Path, required=True, help="dossier d'évaluation du détecteur A")
     parser.add_argument("--b", type=Path, required=True, help="dossier d'évaluation du détecteur B")
     parser.add_argument("--bootstrap", type=int, default=500)
+    parser.add_argument("--bootstrap-by", choices=("domain", "group"), default="domain")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
-    result = compare(args.corpus, args.split, args.a, args.b, args.bootstrap)
+    result = compare(args.corpus, args.split, args.a, args.b, args.bootstrap, args.bootstrap_by)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(json.dumps(result, indent=2))

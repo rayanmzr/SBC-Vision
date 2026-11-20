@@ -125,12 +125,15 @@ def evaluate(
     manifest: Sequence[ImageRecord] | None = None,
     threshold: float | None = None,
     bootstrap_samples: int = 500,
+    bootstrap_by: str = "domain",
 ) -> dict:
+    """Rapport complet. Le bootstrap rééchantillonne des sites (`domain`) ou, pour un test
+    tiré d'un seul site, des pages (`group`)."""
     image_ids = [image["id"] for image in truth.images if image["id"] in predictions]
     gts = [truth.boxes[i] for i in image_ids]
     preds = [predictions[i] for i in image_ids]
     records = {record.image_id: record for record in manifest or []}
-    groups = [records[i].domain for i in image_ids] if records else None
+    groups = [getattr(records[i], bootstrap_by) for i in image_ids] if records else None
 
     levels = {
         level: match_dataset(gts, preds, level) for level in ("kind", "action", "interactive")
