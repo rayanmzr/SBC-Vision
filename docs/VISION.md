@@ -119,8 +119,9 @@ sont donc publiés à côté des moyennes.
   bouton reste un clic ; interactif ou non, pour comparer un détecteur sans classes (OmniParser).
 - **Point de fonctionnement** : précision, rappel et F1 au seuil de score qui maximise le F1 sur
   la validation, réutilisé tel quel sur les tests.
-- **Intervalles de confiance à 95 %** par rééchantillonnage de pages entières (bootstrap), et
-  écarts appariés entre deux approches.
+- **Intervalles de confiance à 95 %** par rééchantillonnage de sites entiers (bootstrap ; de
+  pages pour un test tiré d'un seul site, `--bootstrap-by group`), et écarts appariés entre
+  deux approches (`compare`).
 - **Matrice de confusion** avec une ligne et une colonne « fond » : confusions entre classes,
   éléments manqués, fausses détections.
 - **Rappel par taille** (seuils de COCO : 32², 96² pixels) et **latence** (médiane, 95ᵉ centile).
@@ -278,8 +279,8 @@ contournement.
 défis obtenues en cliquant « Créer les solutions », fiches joueurs, évolutions), capturées le
 20/11/2026 ; 48 passent le contrôle automatique. Le code de la page ne connaît ni carte ni
 emplacement : ils sont proposés depuis les images aux proportions d'une carte (une image qui
-remplit un bouton du terrain fait de ce bouton un emplacement), puis toutes les pages sont
-revues (`data/manifests/near-corrections.json`, règles dans le
+remplit un bouton du terrain fait de ce bouton un emplacement, `propose_cards`), puis toutes
+les pages sont revues (`data/manifests/near-corrections.json`, règles dans le
 [guide d'annotation](ANNOTATION.md)) : 1 102 éléments, dont 92 emplacements et 50 cartes.
 Découpage par type de page, un tiers en test (`data/manifests/near-split.json`,
 `perception/datasets/split_corpus.py`) : 25 pages d'entraînement, 7 de validation, 16 de test.
@@ -310,17 +311,18 @@ web générique ; elle ne mesure pas la reconnaissance sur la vraie Web App, don
 | Module | Rôle |
 | --- | --- |
 | `ontology.py` | Classes du détecteur (ordre fixe) et action de chaque classe |
-| `boxes.py` | IoU et suppression des non-maxima, communes aux données, aux détecteurs et à la mesure |
-| `detector.py` | Interface commune : une image RGB → `(classe, boîte, score)` |
-| `elements.py` | Détections → `DetectedElement` du contrat, au seuil choisi sur la validation |
-| `datasets/` | WebUI, captures de sites, contrôles, quasi-doublons, corrections, découpages, export YOLO |
+| `boxes.py` | Aire, rognage, IoU, suppression des non-maxima : données, détecteurs, mesure |
+| `detector.py` | Interface commune (une image RGB → `(classe, boîte, score)`) et chargement d'un détecteur |
+| `elements.py` | Détections → `DetectedElement` du contrat, au seuil lu dans le rapport de validation |
+| `datasets/` | Format des corpus (`records.py`, seule lecture et écriture), WebUI, captures de sites, contrôles, quasi-doublons, propositions de cartes, corrections, découpages, export YOLO |
 | `baselines/` | Approche A (propositions OpenCV, gradient boosting) et son entraînement |
 | `detectors/` | Approche B à l'inférence : YOLO exporté en ONNX, sur processeur |
 | `evaluation/` | Mesure commune (`evaluate`), métriques COCO, comparaison appariée (`compare`) |
 
-Pour l'API, un détecteur (`YoloOnnxDetector`) rend toutes ses détections ; `to_elements` garde
-celles dont le score atteint le `threshold` du rapport de validation (0,30 pour le YOLO26s web),
-les classe par score et les met au format du contrat (boîte en pixels entiers, action). Le
+Pour l'API : `load_detector("yolo:<modèle.onnx>")` charge le détecteur, qui rend toutes ses
+détections ; `to_elements` garde celles dont le score atteint le seuil du rapport de validation
+(`read_threshold`, 0,30 pour le YOLO26s web), les classe par score et les met au format du
+contrat (boîte en pixels entiers, action). Le
 texte de chaque élément reste vide : l'OCR le remplit. L'assemblage avec l'OCR et le
 raccordement à la route `/api/v1/perception/analyze` relèvent du pipeline commun (#14).
 
@@ -331,7 +333,7 @@ python -m pip install -c requirements.lock -e '.[dev,vision]'
 
 # Corpus (captures d'ordinateur) : idem pour val_split_webui → val et test_split_webui → test.
 python -m sbc_vision.perception.datasets.build_webui --pages <extrait>/train_split_web7k \
-    --data-root <extrait> --split train --out <corpus>
+    --data-root <extrait> --split train --source webui --out <corpus>
 # Quasi-doublons de la validation et du test par rapport à l'entraînement.
 python -m sbc_vision.perception.datasets.near_duplicates --corpus <corpus> --data-root <extrait> \
     --reference train --check val test
@@ -346,28 +348,55 @@ python -m sbc_vision.perception.evaluation.evaluate --corpus <corpus> --split te
     --near-duplicate-max 18 --threshold-from reports/opencv/val/report.json \
     --data-root <extrait> --detector opencv:models/opencv-gbdt.pkl --out reports/opencv/test
 
-# B : exporter au format YOLO, entraîner sur Modal (scripts/modal_train_yolo.py), puis évaluer
-# le modèle ONNX avec les mêmes commandes et `--detector yolo:<best.onnx>`.
+# B : exporter au format YOLO (dossier neuf), l'archiver dans le volume Modal et entraîner
+# (scripts/modal_train_yolo.py, client `modal`), puis évaluer le modèle ONNX avec les mêmes
+# commandes et `--detector yolo:<best.onnx>`.
 python -m sbc_vision.perception.datasets.export_yolo --corpus <corpus> --data-root <extrait> \
     --out <exports>/webui-desktop --train train:all --val val:500 --near-duplicate-max 18
 
-# Test vérifié : capture (Chromium de Playwright : `playwright install chromium`),
-# pré-annotation, corrections, évaluation de toutes les captures.
+# Écart apparié entre deux approches évaluées sur les mêmes captures.
+python -m sbc_vision.perception.evaluation.compare --corpus <corpus> --split test \
+    --a reports/yolo/test --b reports/opencv/test --out reports/compare/yolo-vs-opencv-test.json
+```
+
+Test vérifié à la main et adaptation EasySBC (outils de capture : `pip install -e '.[capture]'`,
+puis `playwright install chromium`) :
+
+```bash
+# Capture, pré-annotation, corrections de la revue, évaluation de toutes les captures.
 python -m sbc_vision.perception.datasets.capture_web --sites data/manifests/ood-sites.json \
-    --out <captures>
-python -m sbc_vision.perception.datasets.build_webui --pages <captures> --data-root <captures> \
-    --split ood-auto --out <corpus-ood>
+    --out <captures-ood>
+python -m sbc_vision.perception.datasets.build_webui --pages <captures-ood> \
+    --data-root <captures-ood> --split ood-auto --source capture --out <corpus-ood>
 python -m sbc_vision.perception.datasets.corrections --corpus <corpus-ood> --split ood-auto \
-    --out-split ood --data-root <captures> --corrections data/manifests/ood-corrections.json
+    --out-split ood --data-root <captures-ood> --corrections data/manifests/ood-corrections.json
 python -m sbc_vision.perception.evaluation.evaluate --corpus <corpus-ood> --split ood \
-    --one-per group --data-root <captures> --threshold-from reports/opencv/val/report.json \
-    --detector opencv:models/opencv-gbdt.pkl --out reports/opencv/ood
+    --one-per group --data-root <captures-ood> --threshold-from reports/yolo/val/report.json \
+    --detector yolo:<best.onnx> --out reports/yolo/ood
+
+# EasySBC : même capture et pré-annotation (near-sites.json, split near-auto), cartes et
+# emplacements proposés (à revoir), corrections, découpage, export d'adaptation.
+python -m sbc_vision.perception.datasets.propose_cards --corpus <corpus-near> --split near-auto \
+    --data-root <captures-near> --out <propositions.json>
+python -m sbc_vision.perception.datasets.corrections --corpus <corpus-near> --split near-auto \
+    --out-split near --data-root <captures-near> --corrections data/manifests/near-corrections.json
+python -m sbc_vision.perception.datasets.split_corpus --corpus <corpus-near> --split near \
+    --assignment data/manifests/near-split.json
+python -m sbc_vision.perception.datasets.export_yolo --corpus <corpus> --data-root <extrait> \
+    --out <exports>/webui-easysbc --train train:3000 --val val:500 --near-duplicate-max 18 \
+    --add train <corpus-near> <captures-near> near-train 30 \
+    --add val <corpus-near> <captures-near> near-val 20
+# Mesure sur un seul site : une capture par page, rééchantillonnage des pages.
+python -m sbc_vision.perception.evaluation.evaluate --corpus <corpus-near> --split near-test \
+    --one-per group --bootstrap-by group --data-root <captures-near> \
+    --threshold-from reports/yolo-easysbc/near-val/report.json \
+    --detector yolo:<best.onnx> --out reports/yolo-easysbc/near-test
 ```
 
 Les corrections désignent les boîtes pré-annotées par leur rang : elles valent pour les captures
-du 19/11/2026, gardées hors de Git avec le reste des données (une nouvelle capture demande une
-nouvelle revue).
+des 19 et 20/11/2026, gardées hors de Git avec le reste des données (une nouvelle capture
+demande une nouvelle revue).
 
 Ni les captures, ni les corpus, ni les modèles ne sont versionnés dans Git : les sous-ensembles
 d'évaluation se retrouvent à l'identique depuis le corpus (graine 0), et chaque entraînement est
-tracé dans MLflow (commit, données, paramètres, métriques, poids).
+tracé dans MLflow (commit, sources, données, paramètres, métriques, poids).
