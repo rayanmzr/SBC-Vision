@@ -1,5 +1,14 @@
 # Extension Chrome SBC Vision — SBV-015
 
+L'accueil courant est limité à **Scanner mon club** et **Compléter ce SBC**. La connexion
+se fait lors de l'action, sans bouton intermédiaire. Options regroupe budget, plafond
+par carte et configuration du serveur. Le diagnostic ouvre les vues de développement
+décrites ci-dessous ; elles ne sont plus l'accueil de l'extension.
+
+Le bouton SBC lit les conditions courantes dans le DOM puis calcule la proposition ;
+le placement réel reste à raccorder. Aucun achat, échange ou confirmation finale
+n'est exécuté par ce parcours.
+
 Responsable : Samy Allali. Cette version permet de capturer l'onglet actif depuis le popup,
 de joindre l'API, d'envoyer manuellement une image et d'examiner son JSON.
 L'espace **Équipe** charge l'inventaire de

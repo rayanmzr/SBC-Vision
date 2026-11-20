@@ -26,15 +26,15 @@ notamment le parcours de démonstration avec cartes fictives et véritable calcu
 
 ## Extension Chrome
 
-La [version React](frontend/README.md) reçoit les captures et affiche les résultats JSON.
-Les pages **Analyser**, **Équipe** et **Réglages** reprennent le visuel A1 — Stade.
-L’espace Équipe charge l’inventaire par HTTP, enregistre les protections et
-appelle le véritable solveur. Il présente les cartes retenues, conditions et coûts.
-Les exemples fictifs restent identifiés. Le popup prépare la capture manuelle de l'onglet
-avec son repère de coordonnées ; voir le [guide de capture](docs/TAB_CAPTURE.md).
-Le [laboratoire du contrôleur](docs/LOCAL_CONTROLLER.md) ajoute des clics et leur vérification
-sur une scène fictive locale. Le détecteur est raccordé à l'analyse EA. Le scan hybride parcourt les pages du club
-par `Next` et conserve les observations ; le placement réel reste à développer.
+L'accueil contient deux actions : **Scanner mon club** et **Compléter ce SBC**.
+Le scan combine l'OCR visible et les lignes HTML, puis enregistre les cartes identifiées
+sous protection. L'action SBC lit les conditions de l'écran courant et lance le calcul ;
+le placement automatique reste à raccorder et aucun échange n'est soumis.
+
+Le budget, le plafond par carte, l'adresse et la clé du serveur sont dans **Options**.
+Le lien « Diagnostic et protections des cartes » ouvre les anciennes vues Analyser,
+Équipe et Réglages, utiles pour les lectures incertaines et les tests de l'équipe.
+Les cartes sont protégées par défaut ; leur protection se règle explicitement dans ce diagnostic.
 
 ## Démarrage local
 
@@ -63,9 +63,9 @@ La commande lance le lint, les tests hors ligne et la vérification du schéma J
 
 ## Moteur SBC
 
-Le bouton **Scanner le club depuis la première page** combine OCR des cartes visibles
+Le bouton **Scanner mon club** combine OCR des cartes visibles
 et lecture du HTML des autres lignes, puis passe à `Next` sans défiler. Les observations
-sont sauvegardées côté serveur. La confirmation d'un parcours complet importe uniquement
+sont sauvegardées côté serveur. Un parcours complet importe uniquement
 les versions identifiées, hors prêts, avec protection activée ; les autres restent en
 attente. Voir les limites du comptage local et les essais dans [le guide API SBC](docs/SBC_API.md#scan-hybride-du-club-ea).
 
@@ -82,7 +82,7 @@ SBC_ENGINE_MODE=local SBC_ENGINE_DATABASE=data/processed/futbin_fc27.sqlite3 \
 uvicorn sbc_vision.api.main:app --host 127.0.0.1 --port 8000
 ```
 
-Dans `chrome://extensions`, charger le dossier `frontend/dist` non empaqueté. Régler l'API sur `http://127.0.0.1:8000`, ouvrir « Analyser » et choisir une capture EA ou capturer l'onglet à la demande. Le serveur détecte les cartes, place leurs régions puis lance l'OCR. Les lectures incertaines restent visibles ; aucun exemplaire ni SBC n'est confirmé automatiquement. Les exemplaires ajoutés explicitement sont protégés par défaut. Les conditions ne passent au solveur que si elles sont disponibles et complètes.
+Dans `chrome://extensions`, charger le dossier `frontend/dist` non empaqueté. Régler l'API sur `http://127.0.0.1:8000`, ouvrir Options → Diagnostic, puis Analyser et choisir une capture EA ou capturer l'onglet à la demande. Le serveur détecte les cartes, place leurs régions puis lance l'OCR. Les lectures incertaines restent visibles ; aucun exemplaire ni SBC n'est confirmé automatiquement. Les exemplaires ajoutés explicitement sont protégés par défaut. Les conditions ne passent au solveur que si elles sont disponibles et complètes.
 
 Le poids livré par Saber sert de point de départ ; son entraînement initial ne constitue pas une validation sur EA. Sur une capture EA de développement, trois miniatures sont détectées et leurs lectures sont exploitables ; une version reste ambiguë. Sur une capture de composition, seuls quatre des onze emplacements sont détectés et les régions des conditions ne sont pas produites automatiquement. Les régions manuelles restent utilisables par la route OCR pour diagnostiquer ces erreurs. Ce petit lot a servi au réglage, pas à une évaluation indépendante. Ces limites doivent être corrigées et mesurées sur EA avant d'annoncer un parcours autonome.
 
@@ -176,3 +176,15 @@ L'importeur FUTBIN découvre les identifiants, récupère les cartes par lots et
 Le développement commence sur nos machines. Le cloud et le budget de calcul seront choisis en équipe.
 
 Le projet est publié sous licence GNU AGPL v3 ([LICENSE](LICENSE)), choisie en équipe : les détecteurs dérivent des poids YOLO d'Ultralytics, eux-mêmes sous AGPL-3.0. Les bibliothèques et données tierces conservent leurs propres licences ; aucun droit de redistribution général des contenus EA ou FUTBIN n'est supposé.
+
+### Catalogue local avec Chrome
+
+Si l'import HTTP répond 403, ouvrir normalement [le catalogue FUTBIN](https://www.futbin.com/27/players)
+dans Chrome sur macOS, puis utiliser `import --browser --pages 2`. Cette option garde
+le même protocole, le cache et les délais ; elle ne résout aucun CAPTCHA et s'arrête
+sur un refus du navigateur. Chrome doit autoriser JavaScript dans les événements
+AppleScript. Aucun cookie ni identifiant de session n'est exporté.
+
+`import --browser --scan chemin/releve.json` actualise les versions recherchées depuis
+les noms d'un scan sauvegardé ; les prêts sont ignorés. Le catalogue reste local et
+les prix absents restent inconnus. Voir [DATA.md](docs/DATA.md).

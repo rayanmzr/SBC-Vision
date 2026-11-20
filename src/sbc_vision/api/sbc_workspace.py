@@ -54,6 +54,15 @@ class SolveRequest(BaseModel):
     challenge: Challenge | None = None
 
 
+class SbcReadingRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    source: Literal["dom"]
+    requirements: str = Field(min_length=1, max_length=16000)
+    positions: list[str] = Field(min_length=1, max_length=11)
+    market: Literal["pc", "ps"] = "pc"
+    budget: int = Field(ge=0, le=1_000_000_000)
+
+
 class InventoryChoice(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
     instance_id: str = Field(min_length=1, max_length=256)
@@ -394,6 +403,24 @@ def update_protection(
 def solve_workspace(body: SolveRequest, service: Annotated[SbcWorkspace, Depends(get_workspace)]):
     """Appeler le vrai solveur CP-SAT ; le corps contient uniquement du JSON."""
     return database_call(service.solve, body)
+
+
+@router.post("/read")
+def read_sbc(body: SbcReadingRequest, service: Annotated[SbcWorkspace, Depends(get_workspace)]):
+    """Interpréter le texte courant du DOM, sans lui attribuer une confiance OCR."""
+    from sbc_vision.sbc_engine.ocr import parse_requirements
+
+    with closing(service.players.open_database(service.config.database)) as db:
+        return {
+            "source": "dom",
+            **parse_requirements(
+                body.requirements,
+                db,
+                positions=body.positions,
+                market=body.market,
+                budget=body.budget,
+            ),
+        }
 
 
 @router.post("/inventory", response_model=WorkspaceSnapshot)

@@ -147,6 +147,25 @@ def test_ocr_dom_agreement_counts_visible_rows_once_and_keeps_the_sources_distin
     assert "confidence" not in response.json()["cards"][0]["reading"]
 
 
+def test_current_sbc_dom_conditions_are_dynamic_and_unknown_rules_block_the_calculation(client):
+    body = {
+        "source": "dom",
+        "requirements": "Rare players: Min. 1\nNumber of Players in the Squad: 3",
+        "positions": ["ST", "CM", "CAM"],
+        "market": "pc",
+        "budget": 5000,
+    }
+    response = client.post("/api/v1/sbc/read", json=body)
+    assert response.status_code == 200
+    assert response.json()["ready"] is True
+    assert response.json()["source"] == "dom"
+    assert response.json()["challenge"]["positions"] == body["positions"]
+    body["requirements"] += "\nNew unsupported rule: Min. 2"
+    response = client.post("/api/v1/sbc/read", json=body)
+    assert response.json()["ready"] is False
+    assert response.json()["challenge"] is None
+
+
 FIXTURES = Path(__file__).resolve().parents[1] / "data/fixtures"
 
 

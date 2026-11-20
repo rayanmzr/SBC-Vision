@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { clubPageInTab, scanClub } from './club-scan';
+import { clubPageInTab, scanClub, sbcInTab } from './club-scan';
 import { activeContext, captureActiveTab } from './tab-capture';
 import { analyzeImage } from './api';
 
@@ -68,6 +68,21 @@ it('refuse les autres écrans et une ligne encore incomplète', () => {
     document.querySelector('h1')!.textContent = 'My Club Players';
     document.querySelector('.rating')!.textContent = '';
     expect(() => clubPageInTab()).toThrow('incomplète');
+});
+
+it('lit toutes les conditions du SBC courant une seule fois et sans cliquer sur un échange', () => {
+    const rules = '<li>Rare players: Min. 1</li><li>Number of Players: 3</li>';
+    document.body.innerHTML = `<ul class="sbc-requirements-checklist"></ul><ul class="sbc-requirements-checklist">${rules}</ul><ul class="sbc-requirements-checklist">${rules}</ul>${['ST', 'CM', 'CAM'].map((p) => `<div class="ut-squad-slot-pedestal-view"><span class="label">${p}</span></div>`).join('')}<button>Submit</button>`;
+    const click = vi.fn();
+    document.querySelector('button')!.addEventListener('click', click);
+    expect(sbcInTab()).toEqual({
+        source: 'dom',
+        requirements: 'Rare players: Min. 1\nNumber of Players: 3',
+        positions: ['ST', 'CM', 'CAM'],
+    });
+    expect(click).not.toHaveBeenCalled();
+    document.querySelectorAll('.sbc-requirements-checklist').forEach((e) => e.remove());
+    expect(() => sbcInTab()).toThrow('conditions');
 });
 
 function controller() {

@@ -12,6 +12,7 @@ import pytest
 
 from sbc_vision.sbc_engine.players import (
     BASE_URL,
+    ChromeFutbin,
     Futbin,
     import_catalog,
     import_file,
@@ -58,6 +59,81 @@ def card(raw, card_id=900001):
     raw = deepcopy(raw)
     raw["id"]["playerCardId"]["value"] = card_id
     return normalize(raw, datetime.now(UTC).isoformat())
+
+
+def test_browser_import_uses_the_public_endpoint_without_cookies(monkeypatch):
+    from types import SimpleNamespace
+
+    runner = Mock(
+        side_effect=[
+            SimpleNamespace(stdout="started"),
+            SimpleNamespace(stdout=json.dumps({"status": 200, "text": '{"cards":[]}'})),
+            SimpleNamespace(stdout="cleared"),
+        ]
+    )
+    monkeypatch.setattr("sbc_vision.sbc_engine.players.subprocess.run", runner)
+    with httpx.Client(base_url=BASE_URL) as http:
+        response = ChromeFutbin(http).get("/siteapi/27/get-squad", [("playerCardIds", 900001)])
+        assert response.json() == {"cards": []}
+        with pytest.raises(ValueError):
+            ChromeFutbin(http).get("https://other.test/private")
+    js = runner.call_args_list[0].args[0][-1]
+    assert "/siteapi/27/get-squad?playerCardIds=900001" in js
+    assert "cookie" not in js.lower()
+    assert runner.call_count == 3
+
+
+def test_browser_http_denial_remains_an_error_and_is_not_retried(monkeypatch):
+    from types import SimpleNamespace
+
+    runner = Mock(
+        side_effect=[
+            SimpleNamespace(stdout="started"),
+            SimpleNamespace(stdout=json.dumps({"status": 403, "text": "Denied"})),
+            SimpleNamespace(stdout="cleared"),
+        ]
+    )
+    monkeypatch.setattr("sbc_vision.sbc_engine.players.subprocess.run", runner)
+    with httpx.Client(base_url=BASE_URL) as http, pytest.raises(httpx.HTTPStatusError):
+        ChromeFutbin(http).get("/27/players", {"page": 1})
+    assert runner.call_count == 3
+
+
+def test_scan_import_keeps_dom_provenance_without_faking_ocr_confidence(
+    db, tmp_path, raw_card, monkeypatch
+):
+    from sbc_vision.sbc_engine.__main__ import main
+
+    monkeypatch.setattr(Futbin, "page", Mock(return_value=([900001], 1)))
+    monkeypatch.setattr(Futbin, "cards", Mock(return_value=[card(raw_card)]))
+    scan = {
+        "capture_id": "synthetic-dom",
+        "pages": [
+            {
+                "cards": [
+                    {
+                        "loan": False,
+                        "reading": {
+                            "capture_id": "synthetic-dom",
+                            "element_id": "row-1",
+                            "name": "Joueur fictif",
+                            "rating": 80,
+                            "position": "CM",
+                        },
+                    }
+                ]
+            }
+        ],
+    }
+    source, output = tmp_path / "scan.json", tmp_path / "matched.json"
+    source.write_text(json.dumps(scan))
+    database = db.execute("PRAGMA database_list").fetchone()[2]
+    assert main(["import", "--scan", str(source), "--db", database, "--output", str(output)]) == 0
+    report = json.loads(output.read_text())
+    assert report["source"] == "dom"
+    assert report["cards"][0]["candidate_ids"] == [900001]
+    assert "confidence" not in report["cards"][0]["reading"]
+    assert db.execute("SELECT COUNT(*) FROM club_items").fetchone()[0] == 0
 
 
 @pytest.mark.parametrize("price", [None, 0, -1, "800", True])

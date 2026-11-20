@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor, act } from '@testing-libra
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import fixture from '../../data/fixtures/perception.synthetic.json';
 import sbcFixture from '../../data/fixtures/workspace-api.synthetic.json';
-import App from './App';
+import App from './Diagnostics';
 import { readImage } from './lib/api';
 import { sessionApiHeaders } from './lib/api-key';
 

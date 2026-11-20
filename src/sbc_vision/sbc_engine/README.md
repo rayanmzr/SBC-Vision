@@ -260,3 +260,16 @@ rescan remet les cartes importées sous protection. Ce comptage par version ne f
 pas les identifiants internes d'exemplaires EA et refuse le mélange avec les copies
 créées manuellement. Le [guide API](../../../docs/SBC_API.md#scan-hybride-du-club-ea)
 décrit la navigation, le stockage et les résultats de développement.
+
+### Import dans Chrome
+
+Si le serveur reçoit un refus, l'option locale macOS `import --browser` utilise
+l'onglet public `https://www.futbin.com/27/players` déjà ouvert dans Chrome. Le
+navigateur doit avoir l'autorisation JavaScript via AppleScript. Les cookies ne
+sortent pas du navigateur ; aucun accès EA privé n'est utilisé. Un nouveau refus
+arrête l'import. Le format, la base et le cache restent ceux de l'import HTTP.
+
+`import --browser --scan releve.json` recherche les versions des noms d'un relevé
+HTML sauvegardé. Les prêts sont ignorés et la provenance reste `dom`, sans confiance
+OCR inventée. Rejouer le scan après enrichissement recalcule les candidats et permet
+d'importer les nouvelles correspondances uniques ; cela ne déprotège aucune carte.

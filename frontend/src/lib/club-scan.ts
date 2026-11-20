@@ -1,5 +1,8 @@
 import { analyzeImage, type Perception } from './api';
 import { activeContext, captureActiveTab } from './tab-capture';
+import { requestJson } from './api';
+import { solveWorkspace, type Workspace } from './sbc-api';
+import type { SolverReport } from './sbc-report';
 
 export type DomCard = {
     name: string;
@@ -219,4 +222,66 @@ export async function scanClub(
         if (page.signature === previous) throw new Error('La page suivante ne se charge pas.');
     }
     return scan;
+}
+
+// Le SBC courant est lu dans le DOM ; cette lecture n'est pas comptée comme un résultat OCR.
+export function sbcInTab() {
+    if (
+        !['ea.com', 'www.ea.com'].includes(location.hostname) ||
+        !location.pathname.includes('/ultimate-team/web-app/')
+    )
+        throw new Error('Ouvrir un SBC dans la Web App EA.');
+    const checklist = Array.from(document.querySelectorAll('.sbc-requirements-checklist')).find(
+        (e) => e.children.length > 0,
+    );
+    const positions = Array.from(document.querySelectorAll('.ut-squad-slot-pedestal-view .label'))
+        .filter((e) => e.getBoundingClientRect().width > 0)
+        .map((e) => e.textContent?.trim() ?? '');
+    const requirements = checklist
+        ? Array.from(checklist.children)
+              .map((e) => e.textContent?.trim())
+              .join('\n')
+        : '';
+    if (!requirements || !positions.length || positions.length > 11)
+        throw new Error('Ouvrir l’écran de composition et afficher les conditions du SBC.');
+    return { source: 'dom', requirements, positions };
+}
+
+export async function prepareSbc(
+    base: string,
+    workspace: Workspace,
+    budget: number,
+    cap: number,
+    signal: AbortSignal,
+    progress: (message: string) => void,
+): Promise<SolverReport> {
+    progress('Lecture des conditions du SBC…');
+    const context = await activeContext(signal);
+    const results = await chrome.scripting.executeScript({
+        target: { tabId: context.tabId, documentIds: [context.documentId] },
+        func: sbcInTab,
+    });
+    const observed = results.find((r) => r.frameId === 0)?.result;
+    if (!observed) throw new Error('Aucune condition lisible sur cet écran.');
+    const reading = (await requestJson(
+        base,
+        '/api/v1/sbc/read',
+        {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...observed, budget, market: 'pc' }),
+        },
+        signal,
+        15000,
+    )) as { ready: boolean; challenge: SolverReport['challenge']; issues: string[] };
+    if (!reading.ready || !reading.challenge)
+        throw new Error('Conditions à relire : ' + reading.issues.join(' ; '));
+    progress('Recherche de la composition la moins chère…');
+    const result = await solveWorkspace(
+        base,
+        { ...workspace, challenge: { ...reading.challenge, max_card_value: cap } },
+        budget,
+        signal,
+    );
+    return result.report;
 }

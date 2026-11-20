@@ -152,3 +152,21 @@ Essai supplémentaire depuis le popup de l'extension chargée dans Chrome : neuf
 concordent avec des lignes entièrement visibles. Ce second passage utilise la capture
 native de l'onglet et ne remplace pas le premier relevé par capture du bureau. Les deux
 comptages OCR restent séparés ; aucun score indépendant de précision n'est annoncé.
+
+## Accueil simplifié et SBC courant
+
+`POST /api/v1/sbc/read` reçoit `source: "dom"`, le texte des conditions de l'écran,
+les postes, le budget et la série de marché. Le parseur dynamique refuse les règles
+non reconnues et ne leur attribue aucune confiance OCR. L'extension envoie ensuite
+le Challenge au solveur. Les valeurs ne sont pas codées pour un nom de défi.
+
+L'accueil automatique du scan confirme seulement le comptage local des versions
+uniques d'un parcours complet ; il n'échange aucune carte sur EA. Les prix et
+protections restent ceux du moteur. Le diagnostic conserve le parcours manuel.
+
+Après l'actualisation du catalogue, le même relevé privé a été rapproché de nouveau :
+119 copies hors prêt ont été enregistrées dans le club local, toutes protégées. Les
+six prêts, sept ambiguïtés et 31 absences restent hors du pool confirmé. Le solveur
+a reçu les sept conditions et onze postes du SBC courant via `/sbc/read` ; avec un
+budget de 5 000 et un plafond par carte de 1 000, le pool observé ne fournit aucune
+solution. Aucune condition n'est assouplie et aucune carte n'est placée.

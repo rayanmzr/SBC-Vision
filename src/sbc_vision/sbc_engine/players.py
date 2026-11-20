@@ -4,12 +4,14 @@ import json
 import math
 import re
 import sqlite3
+import subprocess
 import time
 import unicodedata
+import uuid
 from collections import Counter
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, urlencode, urlsplit
 
 import httpx
 from bs4 import BeautifulSoup
@@ -242,6 +244,64 @@ class Futbin:
         return cards
 
 
+class ChromeFutbin(Futbin):
+    """Import local via un onglet public FUTBIN ouvert normalement dans Chrome (macOS)."""
+
+    def get(self, path, params=None):
+        if path not in {"/27/players", "/siteapi/27/get-squad"}:
+            raise ValueError("Seuls l'index public et ses données de cartes sont acceptés.")
+        script = """on run argv
+            tell application "Google Chrome"
+                repeat with w in windows
+                    repeat with t in tabs of w
+                        if URL of t starts with "https://www.futbin.com/27/" then
+                            return execute t javascript item 1 of argv
+                        end if
+                    end repeat
+                end repeat
+            end tell
+            error "Ouvrir https://www.futbin.com/27/players dans Chrome."
+        end run"""
+
+        def evaluate(js):
+            try:
+                return subprocess.run(
+                    ["osascript", "-e", script, js],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                    timeout=10,
+                ).stdout.strip()
+            except (OSError, subprocess.SubprocessError) as exc:
+                raise ValueError(
+                    "Ouvrir FUTBIN dans Chrome et autoriser JavaScript via AppleScript."
+                ) from exc
+
+        time.sleep(max(0, self.interval - (time.monotonic() - self.last_request)))
+        self.last_request = time.monotonic()
+        url, key = path + "?" + urlencode(params or {}, doseq=True), "sbc_" + uuid.uuid4().hex
+        evaluate(
+            f"(()=>{{window[{json.dumps(key)}]=null;fetch({json.dumps(url)})"
+            f".then(async r=>window[{json.dumps(key)}]={{status:r.status,text:await r.text()}})"
+            f".catch(()=>window[{json.dumps(key)}]={{status:502,text:''}});return 'started'}})()"
+        )
+        deadline = time.monotonic() + 30
+        while time.monotonic() < deadline:
+            value = evaluate(f"JSON.stringify(window[{json.dumps(key)}])")
+            if value and value != "null":
+                result = json.loads(value)
+                evaluate(f"delete window[{json.dumps(key)}];'cleared'")
+                response = httpx.Response(
+                    result["status"],
+                    text=result["text"],
+                    request=httpx.Request("GET", BASE_URL + url),
+                )
+                response.raise_for_status()
+                return response
+            time.sleep(0.2)
+        raise TimeoutError("Le catalogue public n'a pas répondu dans Chrome.")
+
+
 def normalize(raw: dict, observed_at: str) -> dict:
     """Garde les champs utiles, sans les images ni les gros blocs d'affichage."""
     prices = {}
@@ -397,7 +457,8 @@ def import_readings(db, source, report, *, pages=2, refresh=False):
     for card in cards:
         if card.get("issues") or not card.get("reading"):
             continue
-        reading = CardReading.model_validate(card["reading"])
+        model = CardObservation if report.get("source") == "dom" else CardReading
+        reading = model.model_validate(card["reading"])
         if reading.capture_id != report["capture_id"] or reading.element_id != card["element_id"]:
             raise ValueError("La lecture ne correspond pas à sa capture et à son élément.")
         if refresh or not find_candidates(db, reading):

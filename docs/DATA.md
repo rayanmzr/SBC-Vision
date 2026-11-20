@@ -78,3 +78,39 @@ Trois captures réelles de Chrome ont été conservées uniquement en local dans
 L'écran d'un SBC à sept conditions a aussi été collecté, dont une vue en plein écran utilisée pour les annotations. Les sept conditions et les onze postes sont lus. L'import limité de deux pages a apporté uniquement 62 versions or ; il ne couvre pas les cinq cartes argent requises par ce défi. Ce manque de couverture reste distinct de la validité des contraintes et de la disponibilité du point d'accès FUTBIN.
 
 L'import a ensuite été étendu aux filtres publics `version=silver` et `version=bronze`, sur cinq pages chacun : la base contient 362 versions (62 or, 150 argent, 150 bronze). Les requêtes restent espacées et les pages déjà indexées sont réutilisées dans leur propre filtre. Aucun catalogue complet ni couverture exhaustive des versions n'est annoncé. Les données, historiques de prix et propositions nominatives restent dans la base et les rapports locaux ignorés par Git.
+
+## Accès local par le navigateur
+
+Les appels HTTP depuis Python peuvent être refusés alors que les mêmes listes et
+données publiques répondent dans un onglet Chrome ordinaire. `ChromeFutbin` réutilise
+ces deux points d'accès dans cet onglet : `/27/players` et `/siteapi/27/get-squad`.
+L'option `--browser` est locale à macOS/Chrome ; le service cloud ne dépend pas d'un
+navigateur personnel. L'import ne demande aucun compte FUTBIN, n'exporte aucun cookie,
+espace les requêtes et conserve les mêmes erreurs, index et relevés datés. Il ne
+résout pas de challenge et ne réessaie pas un 403 par un autre accès automatiquement.
+
+```bash
+python -m sbc_vision.sbc_engine import --browser --pages 2
+python -m sbc_vision.sbc_engine import --browser --scan data/processed/mon-releve.json
+```
+
+Le second format accepte le document `observation` du dernier relevé ou le scan
+direct avec ses pages. La recherche propose toutes les versions compatibles et
+n'invente pas de confiance OCR pour les lignes HTML. Les listes de noms ne prouvent
+jamais l'identité d'une carte évoluée.
+
+Sources de repli examinées : la [base officielle EA](https://www.ea.com/games/ea-sports-fc/ratings)
+est accessible pour les cartes de base, mais ne fournit ni les cartes spéciales ni
+les prix UT. Le point d'accès générique de notes peut renvoyer une édition différente
+de la page FC 27 : ne pas l'importer sans vérifier l'édition. [FUT-DB](https://fut-db.com/)
+propose une API avec clé, mais réserve les prix et certains attributs à son offre
+payante. FUT.GG et FUTWIZ ont répondu 403 dans l'essai serveur. Aucune clé payante
+ni source alternative incomplète n'a été substituée silencieusement au catalogue.
+
+L'actualisation locale par Chrome a réussi : 1 099 versions en cache, dont
+1 086 actualisées et 955 avec un prix PC connu au moment de la lecture. Le relevé
+du club est passé de 1 à 119 copies identifiées sur 163 observations : six prêts,
+sept versions ambiguës et 31 sans correspondance restent en attente. Ce cache couvre
+les noms recherchés et quinze pages par qualité cumulées, pas tout le catalogue.
+L'index public observé annonce 795 pages générales ; une importation exhaustive
+reste possible avec `--pages`, mais n'est pas revendiquée ici.

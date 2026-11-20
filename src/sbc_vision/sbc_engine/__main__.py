@@ -14,6 +14,7 @@ from .models import Challenge, ClubItem, OcrInput
 from .players import (
     ATTRIBUTION,
     BASE_URL,
+    ChromeFutbin,
     Futbin,
     confirm_readings,
     import_catalog,
@@ -31,7 +32,7 @@ from .solver import alternatives, greedy, recheck, shopping_list, solve, verific
 
 
 def run_import(args):
-    if (args.ids or args.file or args.reading) and args.quality != "all":
+    if (args.ids or args.file or args.reading or args.scan) and args.quality != "all":
         raise ValueError("Le filtre de qualité s'applique à l'index, pas aux IDs ou aux fichiers.")
     if args.pages < 1 or args.max_age < 0 or (args.ids and min(args.ids) < 1):
         raise ValueError("Pages et identifiants positifs ; durée du cache positive ou nulle.")
@@ -45,12 +46,30 @@ def run_import(args):
             follow_redirects=True,
             headers={"User-Agent": "SBC-Vision/0.1 (projet etudiant)", "Accept-Encoding": "gzip"},
         ) as http:
-            source = Futbin(http, float(os.getenv("FUTBIN_MIN_INTERVAL_SECONDS", "2")))
-            if args.reading:
+            provider = ChromeFutbin if args.browser else Futbin
+            source = provider(http, float(os.getenv("FUTBIN_MIN_INTERVAL_SECONDS", "2")))
+            if args.reading or args.scan:
+                document = json.loads((args.reading or args.scan).read_text())
+                if args.scan:
+                    scan = document.get("observation", document)
+                    document = {
+                        "source": "dom",
+                        "capture_id": scan["capture_id"],
+                        "cards": [
+                            {
+                                "element_id": c["reading"]["element_id"],
+                                "reading": c["reading"],
+                                "issues": [],
+                            }
+                            for page in scan["pages"]
+                            for c in page["cards"]
+                            if not c["loan"]
+                        ],
+                    }
                 report = import_readings(
                     db,
                     source,
-                    json.loads(args.reading.read_text()),
+                    document,
                     pages=args.pages,
                     refresh=args.refresh,
                 )
@@ -365,11 +384,17 @@ def main(argv=None):
     demo.set_defaults(demo=False, seconds=5, alternatives=2, max_age=24)
     market = commands.add_parser("import", parents=[common], help="Importer FUTBIN.")
     market.add_argument("--pages", type=int, default=2)
+    market.add_argument(
+        "--browser", action="store_true", help="Lire l'onglet public FUTBIN dans Chrome sur macOS."
+    )
     market.add_argument("--quality", choices=["all", "gold", "silver", "bronze"], default="all")
     imports = market.add_mutually_exclusive_group()
     imports.add_argument("--ids", type=int, nargs="+")
     imports.add_argument("--file", type=Path, help="Export JSON normalisé, sans accès réseau.")
     imports.add_argument("--reading", type=Path, help="Chercher les cartes d'un rapport OCR.")
+    imports.add_argument(
+        "--scan", type=Path, help="Actualiser les versions d'un relevé HTML du club."
+    )
     market.add_argument(
         "--output", type=Path, default=Path("data/processed/catalogue_matches.json")
     )
@@ -513,7 +538,14 @@ def main(argv=None):
             "check": run_check,
             "demo": run_demo,
         }[args.command](args)
-    except (OSError, ValueError, KeyError, TypeError, sqlite3.Error, httpx.HTTPError) as error:
+    except (
+        OSError,
+        ValueError,
+        KeyError,
+        TypeError,
+        sqlite3.Error,
+        httpx.HTTPError,
+    ) as error:
         print(f"Erreur : {error}")
         return 1
     except KeyboardInterrupt:

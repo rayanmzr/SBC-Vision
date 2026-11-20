@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import App from './App';
+import App from './Diagnostics';
 import { captureActiveTab, type TabCapture } from './lib/tab-capture';
 import perception from '../../data/fixtures/perception.synthetic.json';
 import workspaceFixture from '../../data/fixtures/workspace-api.synthetic.json';
