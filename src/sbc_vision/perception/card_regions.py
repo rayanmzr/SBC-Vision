@@ -22,16 +22,28 @@ FIELDS: dict[str, tuple[float, float, float, float]] = {
 }
 
 
-def card_regions(element: DetectedElement) -> list[dict]:
+def card_regions(element: DetectedElement, layout="card") -> list[dict]:
     """Régions `rating`, `position`, `name` et `stats` d'une carte, en pixels de la capture."""
     if element.kind is not ElementKind.CARD:
         raise ValueError(f"{element.id} n'est pas une carte ({element.kind})")
     box = element.bbox
     aspect = box.width / box.height
-    if not CARD_ASPECT[0] <= aspect <= CARD_ASPECT[1]:
+    limits = (0.58, 0.85) if layout == "club-list" else CARD_ASPECT
+    if layout not in {"card", "club-list"}:
+        raise ValueError("Présentation attendue : card ou club-list.")
+    if not limits[0] <= aspect <= limits[1]:
         raise ValueError(f"{element.id} : proportions {aspect:.2f}, pas une carte entière")
+    fields = FIELDS
+    if layout == "club-list":
+        # Dans la liste du club, nom et statistiques sont imprimés à droite de la miniature.
+        fields = {
+            "rating": (0.15, 0.26, 0.40, 0.41),
+            "position": (0.10, 0.40, 0.36, 0.49),
+            "name": (1.04, 0.10, 3.55, 0.40),
+            "stats": (1.04, 0.54, 3.55, 0.84),
+        }
     regions = []
-    for field, (left, top, right, bottom) in FIELDS.items():
+    for field, (left, top, right, bottom) in fields.items():
         x, y = box.x + round(left * box.width), box.y + round(top * box.height)
         width = round((right - left) * box.width)
         height = round((bottom - top) * box.height)

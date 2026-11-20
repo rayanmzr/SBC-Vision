@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import demoPayload from '../../data/fixtures/perception.synthetic.json';
 import demoImage from '../../data/fixtures/perception.synthetic.png';
 import SbcWorkspace from './SbcWorkspace';
+import type { SolverReport } from './lib/sbc-report';
 import ApiSettings from './ApiSettings';
 import PerceptionWorkspace, {
     type CaptureSelection as Selection,
@@ -57,6 +58,7 @@ export default function App() {
         () => (location.hash === '#connection-title' ? 'settings' : 'perception'),
     );
     const [controllerRunning, setControllerRunning] = useState(false);
+    const [ocrChallenge, setOcrChallenge] = useState<SolverReport['challenge'] | null>(null);
     const [apiUrl, setApiUrl] = useState(DEFAULT_API_URL);
     const [apiKey, setApiKey] = useState('');
     const [apiSession, setApiSession] = useState(0);
@@ -106,6 +108,7 @@ export default function App() {
         setBusy(operation);
         setNotice(null);
         setResult(null);
+        if (operation !== 'connection') setOcrChallenge(null);
         return controller;
     }
 
@@ -244,6 +247,7 @@ export default function App() {
         setNotice(null);
     }
     function changeUrl(value: string) {
+        setOcrChallenge(null);
         clearSessionApiKey();
         setApiKey('');
         setApiSession((previous) => previous + 1);
@@ -253,6 +257,7 @@ export default function App() {
         setNotice(null);
     }
     function changeKey(value: string) {
+        setOcrChallenge(null);
         clearSessionApiKey();
         setApiKey(value);
         setApiSession((previous) => previous + 1);
@@ -395,6 +400,11 @@ export default function App() {
                         onChoose={chooseFile}
                         onCapture={captureTab}
                         onAnalyze={analyze}
+                        apiUrl={apiUrl}
+                        onChallenge={(challenge) => {
+                            setOcrChallenge(challenge);
+                            navigate('sbc');
+                        }}
                         onExample={showExample}
                         onSettings={() => navigate('settings')}
                         onClear={() => {
@@ -410,6 +420,7 @@ export default function App() {
                         apiUrl={apiUrl}
                         connected={!!connection}
                         onConnect={connect}
+                        ocrChallenge={ocrChallenge}
                     />
                 </div>
                 {workspace === 'controller' && (

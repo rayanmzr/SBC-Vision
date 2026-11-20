@@ -2,6 +2,7 @@
 import { cleanup, fireEvent, render, screen, waitFor, act } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import fixture from '../../data/fixtures/perception.synthetic.json';
+import sbcFixture from '../../data/fixtures/workspace-api.synthetic.json';
 import App from './App';
 import { readImage } from './lib/api';
 import { sessionApiHeaders } from './lib/api-key';
@@ -63,6 +64,85 @@ async function connectAndChoose() {
     });
     await screen.findByText('capture.png');
 }
+
+it('attend le choix de version et transmet les conditions OCR au solveur', async () => {
+    const challenge = { ...structuredClone(sbcFixture.workspace.challenge), budget: 4321 };
+    const fetchMock = vi.fn(async (url: string) => {
+        const captureId = new URL(url, 'http://localhost').searchParams.get('capture_id');
+        const value = url.endsWith('/health')
+            ? { status: 'ok', version: '0.1.0', model_loaded: true }
+            : url.endsWith('/capabilities')
+              ? { perception: true, ocr: true }
+              : url.includes('/perception/analyze')
+                ? {
+                      ...fixture,
+                      capture_id: captureId,
+                      elements: [{ ...fixture.elements[0], id: 'card-1', kind: 'card' }],
+                      ocr: {
+                          capture_id: captureId,
+                          image: fixture.image,
+                          engine_version: 'synthetic-test',
+                          language: 'eng',
+                          automatic_detection: true,
+                          region_source: 'detected',
+                          minimum_confidence: 0.75,
+                          regions: [],
+                          positions: [],
+                          cards: [
+                              {
+                                  element_id: 'card-1',
+                                  candidate_ids: [900001, 900002],
+                                  issues: [],
+                                  needs_confirmation: true,
+                                  reading: {
+                                      capture_id: captureId,
+                                      element_id: 'card-1',
+                                      name: 'Alex Exemple',
+                                      rating: 83,
+                                      confidence: 0.99,
+                                  },
+                              },
+                          ],
+                          challenge_ready: true,
+                          challenge,
+                          challenge_issues: [],
+                      },
+                  }
+                : sbcFixture.workspace;
+        return new Response(JSON.stringify(value));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    render(<App />);
+    await connectAndChoose();
+    fireEvent.click(screen.getByRole('button', { name: /Envoyer à l’API/ }));
+    await screen.findByText('Versions candidates : 900001, 900002', { exact: false });
+    expect(fetchMock.mock.calls.some(([url]) => url.endsWith('/inventory'))).toBe(false);
+    fireEvent.change(screen.getByLabelText('Alex Exemple : identifiant de l’exemplaire'), {
+        target: { value: 'copy-1' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmer l’ajout au club local' }));
+    await screen.findByText('Choisir une version et un identifiant d’exemplaire.');
+    expect(fetchMock.mock.calls.some(([url]) => url.endsWith('/inventory'))).toBe(false);
+    fireEvent.change(screen.getByLabelText('Version vérifiée'), { target: { value: '900002' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmer l’ajout au club local' }));
+    await screen.findByText('Lectures enregistrées dans le club local, avec protection activée.');
+    const [, options] = vi
+        .mocked(fetch)
+        .mock.calls.find(([url]) => String(url).endsWith('/inventory'))!;
+    expect(JSON.parse(String(options?.body))).toMatchObject({
+        expected_revision: sbcFixture.workspace.revision,
+        confirmed: true,
+        choices: { 'card-1': { instance_id: 'copy-1', card_id: 900002, protected: true } },
+    });
+    fireEvent.click(
+        screen.getByRole('button', { name: 'Utiliser ces conditions dans le solveur' }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Charger l’inventaire' }));
+    await screen.findByText('API de démonstration · Cartes fictives, calcul réel');
+    expect(
+        (screen.getByLabelText('Budget d’achat pour le solveur API') as HTMLInputElement).value,
+    ).toBe('4321');
+});
 
 it('attend un geste utilisateur et présente explicitement la fixture', async () => {
     render(<App />);

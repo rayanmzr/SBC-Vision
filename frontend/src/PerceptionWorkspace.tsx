@@ -3,6 +3,10 @@ import { StadiumIcon } from './design-a1/StadiumKit';
 import { isExtension } from './lib/platform';
 import { imagePointToViewport, type TabCapture } from './lib/tab-capture';
 import type { ElementKind, Perception } from './lib/api';
+import { requestJson } from './lib/api';
+import { loadWorkspace } from './lib/sbc-api';
+import { DEFAULT_API_URL } from './lib/platform';
+import type { SolverReport } from './lib/sbc-report';
 
 export type CaptureSelection = {
     file: File;
@@ -23,6 +27,8 @@ type Props = {
     onExample: () => void;
     onSettings: () => void;
     onClear: () => void;
+    apiUrl?: string;
+    onChallenge?: (challenge: SolverReport['challenge']) => void;
 };
 const kinds: Record<ElementKind, string> = {
     button: 'Bouton',
@@ -47,6 +53,8 @@ export default function PerceptionWorkspace({
     onExample,
     onSettings,
     onClear,
+    apiUrl = DEFAULT_API_URL,
+    onChallenge,
 }: Props) {
     const fileInput = useRef<HTMLInputElement>(null);
     const [sourcesOpen, setSourcesOpen] = useState(false);
@@ -425,6 +433,50 @@ export default function PerceptionWorkspace({
                                             </li>
                                         ))}
                                     </ol>
+                                    {result.data.ocr && (
+                                        <section aria-label="Lecture des cartes">
+                                            <h4>Lecture des cartes</h4>
+                                            <p>Versions à vérifier avant ajout à l’inventaire.</p>
+                                            <ul>
+                                                {result.data.ocr.cards.map((card) => (
+                                                    <li key={card.element_id}>
+                                                        {card.reading
+                                                            ? `${card.reading.name} · ${card.reading.rating}`
+                                                            : 'Carte à relire'}
+                                                        {' — '}
+                                                        {card.issues.length
+                                                            ? card.issues.join(' ; ')
+                                                            : card.candidate_ids.length
+                                                              ? `Versions candidates : ${card.candidate_ids.join(', ')}`
+                                                              : 'Version absente du catalogue local'}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            <OcrInventory
+                                                key={result.data.capture_id}
+                                                apiUrl={apiUrl}
+                                                report={result.data.ocr}
+                                            />
+                                            {result.data.ocr.challenge_ready &&
+                                                result.data.ocr.challenge && (
+                                                    <button
+                                                        onClick={() =>
+                                                            onChallenge?.(
+                                                                result.data.ocr!.challenge!,
+                                                            )
+                                                        }
+                                                    >
+                                                        Utiliser ces conditions dans le solveur
+                                                    </button>
+                                                )}
+                                            {result.data.ocr.challenge_issues.length > 0 && (
+                                                <p role="status">
+                                                    Conditions incomplètes :{' '}
+                                                    {result.data.ocr.challenge_issues.join(' ; ')}
+                                                </p>
+                                            )}
+                                        </section>
+                                    )}
                                     {selected && (
                                         <details className="analysis-coordinates">
                                             <summary>Coordonnées de l’élément sélectionné</summary>
@@ -480,6 +532,110 @@ export default function PerceptionWorkspace({
                 </section>
             </div>
         </section>
+    );
+}
+
+function OcrInventory({
+    apiUrl,
+    report,
+}: {
+    apiUrl: string;
+    report: NonNullable<Perception['ocr']>;
+}) {
+    const [ids, setIds] = useState<Record<string, string>>({});
+    const [versions, setVersions] = useState<Record<string, string>>({});
+    const [message, setMessage] = useState('');
+    const [saving, setSaving] = useState(false);
+    const cards = report.cards.filter(
+        (c) => c.reading && !c.issues.length && c.candidate_ids.length,
+    );
+    async function save() {
+        setSaving(true);
+        try {
+            const controller = new AbortController();
+            const workspace = await loadWorkspace(apiUrl, controller.signal);
+            const choices = Object.fromEntries(
+                cards
+                    .filter(
+                        (c) =>
+                            ids[c.element_id]?.trim() &&
+                            (versions[c.element_id] || c.candidate_ids.length === 1),
+                    )
+                    .map((c) => [
+                        c.element_id,
+                        {
+                            instance_id: ids[c.element_id].trim(),
+                            card_id: Number(versions[c.element_id] || c.candidate_ids[0]),
+                            protected: true,
+                        },
+                    ]),
+            );
+            if (!Object.keys(choices).length)
+                throw new Error('Choisir une version et un identifiant d’exemplaire.');
+            await requestJson(
+                apiUrl,
+                '/api/v1/sbc/inventory',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        expected_revision: workspace.revision,
+                        report,
+                        choices,
+                        confirmed: true,
+                    }),
+                },
+                controller.signal,
+                15000,
+            );
+            setMessage('Lectures enregistrées dans le club local, avec protection activée.');
+        } catch (error) {
+            setMessage(error instanceof Error ? error.message : 'Enregistrement impossible.');
+        } finally {
+            setSaving(false);
+        }
+    }
+    if (!cards.length) return null;
+    return (
+        <fieldset disabled={saving}>
+            <legend>Confirmer les exemplaires du club local</legend>
+            <p>
+                Réutilise le même identifiant pour une carte déjà observée ; une autre copie doit
+                avoir un autre identifiant.
+            </p>
+            {cards.map((card) => (
+                <div key={card.element_id}>
+                    <label>
+                        {card.reading!.name} : identifiant de l’exemplaire
+                        <input
+                            value={ids[card.element_id] || ''}
+                            onChange={(e) => setIds({ ...ids, [card.element_id]: e.target.value })}
+                        />
+                    </label>
+                    <label>
+                        Version vérifiée
+                        <select
+                            value={
+                                versions[card.element_id] ||
+                                (card.candidate_ids.length === 1 ? card.candidate_ids[0] : '')
+                            }
+                            onChange={(e) =>
+                                setVersions({ ...versions, [card.element_id]: e.target.value })
+                            }
+                        >
+                            <option value="">Choisir la version</option>
+                            {card.candidate_ids.map((id) => (
+                                <option key={id} value={id}>
+                                    {id}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                </div>
+            ))}
+            <button onClick={save}>Confirmer l’ajout au club local</button>
+            {message && <p role="status">{message}</p>}
+        </fieldset>
     );
 }
 

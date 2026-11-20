@@ -2,17 +2,17 @@
 
 ## Ce qui a été vérifié
 
-La [PR #23 de Rayan](https://github.com/rayanmzr/SBC-Vision/pull/23), branche `feat/rayan-sbc-engine`, contient un OCR fonctionnel. Le commit publié `e244b8e` est déjà un ancêtre de notre branche d'intégration ; les fichiers du moteur et ses tests étaient identiques au début de ce travail. Aucun nouveau lecteur de cartes n'a été réécrit.
+Le moteur `sbc_engine/ocr.py` lit les cartes et conditions depuis des régions d'image.
 
 Le lecteur existant conserve textes, mots, boîtes et confiances ; il relit certains petits champs, normalise les cartes, cherche les versions candidates et interprète les conditions. Ses commandes `demo` et `evaluate` sont exécutables sans compte EA. Une lecture ne confirme pas un exemplaire possédé.
 
-Le raccord manquant était HTTP : `/api/v1/perception/analyze` n'utilisait pas cet OCR. La nouvelle route **`POST /api/v1/ocr/analyze`** appelle les fonctions `analyze` et `challenge_from_ocr` existantes. Le seul changement dans le lecteur est l'export du fichier de régions de sa démo.
+La route **`POST /api/v1/ocr/analyze`** appelle les fonctions `analyze` et `challenge_from_ocr` avec des régions fournies. Le mode `detector` de `/api/v1/perception/analyze` produit désormais les régions des cartes puis appelle le même lecteur.
 
 ## Frontière avec la détection
 
-L'OCR sait lire **dans des zones fournies** ; il ne sait pas encore les trouver sur n'importe quelle capture. La requête contient donc l'image et un `OcrInput` avec les régions, annotées manuellement aujourd'hui et à fournir par le détecteur de Saber ensuite. Les textes attendus ne sont pas transmis au lecteur.
+La route OCR séparée attend l'image et un `OcrInput` avec les régions. Le pipeline automatique les dérive des cartes détectées avec `card_regions`, selon le profil `card` ou `club-list`. Les régions des conditions et des postes doivent encore être fournies explicitement. Les textes attendus ne sont jamais transmis au lecteur.
 
-La réponse annonce `region_source: "provided"` et `automatic_detection: false`. Le bouton habituel d'analyse de l'extension continue d'appeler `/perception/analyze` : cette nouvelle route ne le transforme pas en détecteur automatique. Le client Python ci-dessous permet de tester le raccord dès maintenant. Aucun clic, scan de compte, ajout d'exemplaire ni appel du solveur n'est effectué par la route OCR.
+La route séparée annonce `region_source: "provided"` et `automatic_detection: false` ; le pipeline détecteur annonce `detected` et `true`. Le bouton d'analyse de l'extension utilise ce dernier quand il est activé. Aucun clic, scan de compte, ajout d'exemplaire ni appel du solveur n'est effectué par l'analyse OCR. L'ajout au club local passe ensuite par une confirmation explicite, décrite dans [SBC_API.md](SBC_API.md).
 
 ## Installation et activation
 
@@ -27,7 +27,7 @@ SBC_OCR_MODE=tesseract-regions SBC_OCR_LANG=eng \
 
 L'image Docker installe déjà Tesseract et ses données anglaises. Pour d'autres langues, installer leurs données puis configurer par exemple `SBC_OCR_LANG=eng+fra`. Un moteur ou une langue absents provoquent une erreur de démarrage explicite quand ce mode est demandé. Le mode par défaut reste `disabled`.
 
-`/api/v1/capabilities` expose `ocr`, `ocr_mode` et `ocr_regions_required`. L'OCR peut être disponible alors que `perception` et `model_loaded` restent faux : aucun détecteur entraîné n'est chargé par ce raccord.
+`/api/v1/capabilities` expose `ocr`, `ocr_mode` et `ocr_regions_required`. En mode détecteur, les régions de cartes sont produites automatiquement et `ocr_regions_required` vaut faux. Activer seulement l'OCR ne charge aucun détecteur.
 
 ## Premier essai sans compte
 
@@ -52,7 +52,7 @@ Pour une image publique déjà collectée, utiliser le fichier `*.regions.json` 
 
 - Requête multipart : fichier `image` PNG/JPEG et champ `metadata` contenant un `OcrAnalysisRequest` encodé en JSON : dimensions, `specification` au format `OcrInput`, seuil, marché et budget facultatifs.
 - Schémas versionnés : `contracts/ocr-request.schema.json`, `contracts/ocr-response.schema.json`. Le schéma d'entrée est aussi accessible à `/api/v1/contracts/ocr-request` et le multipart est documenté dans OpenAPI.
-- Limites : corps complet de 5 Mio avec l'enveloppe multipart, métadonnées de 64 Kio, 32 régions, identifiant de 128 caractères, 4 millions de pixels, 4 096 pixels par côté. La limite de pixels tient compte des agrandissements internes du lecteur. Les dimensions déclarées doivent correspondre au fichier, et toutes les régions doivent y tenir.
+- Limites : corps complet de 5 Mio avec l'enveloppe multipart, métadonnées de 64 Kio, 128 régions, identifiant de 128 caractères, 4 millions de pixels, 4 096 pixels par côté. La limite de pixels tient compte des agrandissements internes du lecteur. Les dimensions déclarées doivent correspondre au fichier, et toutes les régions doivent y tenir.
 - Réponse : moteur/version/langue, régions brutes et mots, cartes normalisées ou incertaines, candidats à confirmer, conditions et `challenge_ready`. Ce dernier décrit seulement l'interprétation des conditions, jamais la validité d'une équipe ou la possession de cartes. Une confiance Tesseract n'est pas une probabilité calibrée de lecture correcte.
 - `422` : régions invalides ou mauvaise taille déclarée ; `429 ocr_busy` : lecteur occupé ; `502 ocr_failed` : problème du moteur ou du catalogue ; `503 ocr_unavailable` : mode non activé ; `504 ocr_timeout` : délai de 15 secondes dépassé. Les erreurs du décodeur PNG/JPEG restent distinctes. L'authentification et les limites globales du service s'appliquent aussi à cette route.
 - Une seule lecture par processus serveur. Un timeout HTTP ne tue pas le thread ni le sous-processus Tesseract en cours ; le verrou reste détenu jusqu'à leur fin. Ne pas multiplier les workers sans mesurer mémoire et latence. Pour un cloud plus exposé, prévoir un worker isolé annulable avant d'augmenter la charge.
@@ -79,4 +79,4 @@ Les images et rapports complets restent locaux et ignorés par Git, dans `data/r
 
 ## Suite du raccordement
 
-Le développement de l'OCR de Rayan est livré ; sa robustesse reste à mesurer/améliorer. Prochaines étapes : régions produites par Saber, reprise des petits chiffres et des postes, puis présentation de ces lectures dans l'extension et confirmation des versions/exemplaires avant toute alimentation du solveur. L'issue #14 reste partiellement réalisée tant que la capture entière ne traverse pas le détecteur et l'OCR ensemble.
+La détection des cartes, les profils de régions, l'affichage des lectures et la confirmation locale des exemplaires sont raccordés. Le profil `club-list` a été réglé sur une capture EA privée : trois lectures exploitables, dont une version ambiguë. La ponctuation finale des pictogrammes est retirée du nom normalisé, avec texte brut conservé. Ce résultat de développement ne remplace pas les mesures indépendantes ci-dessus. Il reste à extraire automatiquement toutes les conditions et à fiabiliser les emplacements sur EA, puis à gérer le suivi des copies lors d'un scan réel.

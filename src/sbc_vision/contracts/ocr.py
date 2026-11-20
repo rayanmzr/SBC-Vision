@@ -4,7 +4,7 @@ from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from sbc_vision.contracts.perception import ImageSize
+from sbc_vision.contracts.geometry import ImageSize
 from sbc_vision.sbc_engine.models import CardReading, Challenge, OcrInput, TextRegion
 
 
@@ -19,8 +19,8 @@ class OcrAnalysisRequest(BaseModel):
 
     @model_validator(mode="after")
     def bounded_regions(self) -> Self:
-        if len(self.specification.capture_id) > 128 or len(self.specification.regions) > 32:
-            raise ValueError("Identifiant limité à 128 caractères et à 32 régions par capture.")
+        if len(self.specification.capture_id) > 128 or len(self.specification.regions) > 128:
+            raise ValueError("Identifiant limité à 128 caractères et à 128 régions par capture.")
         for region in self.specification.regions:
             box = region.bbox
             if (
@@ -63,8 +63,8 @@ class OcrAnalysisResponse(BaseModel):
     engine: Literal["rayan-tesseract"] = "rayan-tesseract"
     engine_version: str
     language: str
-    region_source: Literal["provided"] = "provided"
-    automatic_detection: Literal[False] = False
+    region_source: Literal["provided", "detected"] = "provided"
+    automatic_detection: bool = False
     minimum_confidence: float
     regions: list[RegionReading]
     cards: list[OcrCard]

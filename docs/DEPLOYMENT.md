@@ -17,12 +17,20 @@ Compose publie uniquement `127.0.0.1:8000`. `/health` vérifie le processus HTTP
 et l'inventaire sont désactivés : installer les dépendances ne charge pas de modèle.
 Le développement local reste accessible sans clé.
 
-L'image contient l'API, Pillow, le moteur SQLite/OR-Tools et Tesseract anglais.
+L'image contient l'API, Pillow, le moteur SQLite/OR-Tools, ONNX Runtime et Tesseract anglais.
 Elle s'exécute avec l'utilisateur `10001`. Compose rend son système de fichiers
 en lecture seule, fournit `/tmp` en mémoire et réserve un volume pour les données.
 Les limites locales sont de 2 CPU, 2 Gio et 128 processus. Les captures du poste,
 les bases personnelles, `.env*`, `.secrets/` et les modèles locaux sont exclus du build.
 Seules deux fixtures JSON fictives sont intégrées pour la démonstration.
+
+Pour la perception EA, monter le modèle ONNX en lecture seule, puis configurer
+`SBC_PERCEPTION_MODE=detector`, `SBC_DETECTOR=yolo:/chemin/modele.onnx`,
+`SBC_OCR_MODE=tesseract-regions` et `SBC_CARD_LAYOUT=club-list` pour la liste du club.
+Le modèle n'est pas téléchargé par le conteneur. La base se monte séparément avec
+`SBC_ENGINE_MODE=local` et `SBC_ENGINE_DATABASE=/chemin/catalogue.sqlite3`.
+Les poids et les données privées restent hors de l'image ; le profil de la carte
+et la qualité sur EA doivent être vérifiés avant d'envisager des interactions réelles.
 
 Python et les dépendances applicatives sont versionnés avec le tag et
 `requirements.lock`. Les paquets système et outils de build peuvent évoluer : un
@@ -100,8 +108,8 @@ un limiteur distribué. La santé reste disponible quand le service est occupé.
 L'analyse d'image conserve ses limites plus strictes : 8 192 pixels par côté,
 20 millions de pixels, 10 secondes de réception et 15 secondes d'inférence. Le
 solveur garde son propre verrou et son budget de calcul. L'annulation ne peut pas
-tuer arbitrairement un thread de calcul : l'adaptateur du futur modèle devra prévoir
-son isolation. Voir [le contrat HTTP](API.md).
+tuer arbitrairement un thread de calcul : le pipeline conserve son verrou jusqu'à la fin
+du worker. Son isolation reste à prévoir avant montée en charge. Voir [le contrat HTTP](API.md).
 
 Les images sont traitées en mémoire, sans écriture par la route d'analyse. Le solveur
 reçoit les données structurées ; il ne reçoit pas les captures. Uvicorn désactive les

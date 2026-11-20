@@ -68,6 +68,16 @@ def read_regions(path, spec: OcrInput, *, lang="eng") -> list[dict]:
                 selected.append(word)
                 lines[word["line"]].append(word["text"])
         method = "global"
+        if region.field == "name":
+            # Les pictogrammes isolés à côté du nom ne sont pas des lettres du joueur.
+            selected = [w for w in selected if any(c.isalpha() for c in w["text"])]
+        elif region.field == "rating":
+            numbers = [w for w in selected if re.fullmatch(r"[1-9]\d?", w["text"])]
+            if len(numbers) == 1:
+                selected = numbers
+        lines = defaultdict(list)
+        for word in selected:
+            lines[word["line"]].append(word["text"])
         rating_bad = region.field == "rating" and not re.fullmatch(
             r"[1-9]\d?", " ".join(w["text"] for w in selected)
         )
@@ -93,6 +103,27 @@ def read_regions(path, spec: OcrInput, *, lang="eng") -> list[dict]:
                 x=box.x - margin,
                 y=box.y - margin,
             )
+            if region.field == "name" and retry and not retry[-1]["text"][-1].isalpha():
+                # Un pictogramme collé au nom peut être relu comme « @ » : rogner ses caractères,
+                # puis laisser Tesseract recalculer la confiance sur les lettres, sans la forcer.
+                chars = pytesseract.image_to_boxes(
+                    crop,
+                    lang=lang,
+                    config="--psm 7",
+                    output_type=pytesseract.Output.DICT,
+                    timeout=20,
+                )
+                letters = [i for i, c in enumerate(chars["char"]) if c.isalpha()]
+                if letters and letters[-1] < len(chars["char"]) - 1:
+                    right = max(chars["right"][: letters[-1] + 1])
+                    retry = ocr_words(
+                        crop.crop((0, 0, right, crop.height)),
+                        lang=lang,
+                        scale=scale,
+                        psm=7,
+                        x=box.x,
+                        y=box.y,
+                    )
             # Une seconde lecture ne devient jamais fiable simplement parce qu'elle est différente.
             retry_valid = region.field != "rating" or re.fullmatch(
                 r"[1-9]\d?", " ".join(w["text"] for w in retry)
@@ -138,6 +169,9 @@ def analyze(path, spec: OcrInput, db, *, lang="eng", minimum=0.75, regions=None)
         reading = None
         if not issues:
             name, rating = fields["name"]["text"].strip(), fields["rating"]["text"].strip()
+            # Retirer la ponctuation d'un pictogramme final ; le texte OCR brut reste dans regions.
+            while name and not name[-1].isalpha():
+                name = name[:-1]
             if not any(c.isalpha() for c in name) or not re.fullmatch(r"[1-9]\d?", rating):
                 issues.append("Le nom ou la note doit être relu.")
             else:

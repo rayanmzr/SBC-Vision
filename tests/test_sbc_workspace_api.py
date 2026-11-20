@@ -54,6 +54,78 @@ def snapshot(client):
     return response.json()
 
 
+def inventory_request(client):
+    return {
+        "expected_revision": snapshot(client)["revision"],
+        "confirmed": True,
+        "report": {
+            "capture_id": "synthetic-import",
+            "image": {"width": 800, "height": 340},
+            "engine_version": "synthetic-test",
+            "language": "eng",
+            "minimum_confidence": 0.75,
+            "regions": [],
+            "positions": [],
+            "challenge_ready": False,
+            "challenge": None,
+            "challenge_issues": ["Conditions absentes."],
+            "cards": [
+                {
+                    "element_id": "card-1",
+                    "reading": {
+                        "capture_id": "synthetic-import",
+                        "element_id": "card-1",
+                        "name": "Alex Exemple",
+                        "rating": 83,
+                        "confidence": 0.95,
+                    },
+                    "candidate_ids": [900001, 900002],
+                    "issues": [],
+                    "needs_confirmation": True,
+                }
+            ],
+        },
+        "choices": {"card-1": {"instance_id": "tracked-copy", "card_id": 900001}},
+    }
+
+
+def test_confirmed_ocr_reaches_inventory_without_duplicate_copies(client):
+    body = inventory_request(client)
+    first = client.post("/api/v1/sbc/inventory", json=body)
+    assert first.status_code == 200, first.text
+    assert len(first.json()["items"]) == 4
+    item = next(c for c in first.json()["items"] if c["key"] == "club:tracked-copy")
+    assert item["protected"] is True
+    assert client.post("/api/v1/sbc/inventory", json=body).status_code == 409
+    body["expected_revision"] = first.json()["revision"]
+    assert len(client.post("/api/v1/sbc/inventory", json=body).json()["items"]) == 4
+
+
+@pytest.mark.parametrize("problem", ["unconfirmed", "uncertain", "version"])
+def test_inventory_import_never_accepts_uncertain_or_unconfirmed_cards(client, problem):
+    body = inventory_request(client)
+    if problem == "unconfirmed":
+        body["confirmed"] = False
+    elif problem == "uncertain":
+        body["report"]["cards"][0]["issues"] = ["Note à relire."]
+    else:
+        body["choices"]["card-1"]["card_id"] = 900003
+    assert client.post("/api/v1/sbc/inventory", json=body).status_code == 422
+    assert len(snapshot(client)["items"]) == 3
+
+
+def test_solver_uses_the_current_request_conditions_instead_of_a_fixed_sbc(client):
+    workspace = snapshot(client)
+    challenge = {**workspace["challenge"], "positions": ["GK"], "conditions": []}
+    response = client.post(
+        "/api/v1/sbc/solve",
+        json={"expected_revision": workspace["revision"], "challenge": challenge},
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["report"]["challenge"]["positions"] == ["GK"]
+    assert response.json()["report"]["solution"]["status"] == "infeasible"
+
+
 def protect(client, revision, protected=True):
     return client.put(
         "/api/v1/sbc/protections",

@@ -2,7 +2,6 @@
   "$defs": {
     "BoundingBox": {
       "additionalProperties": false,
-      "description": "Boîte dans la capture : x, y en haut à gauche ; largeur/hauteur en pixels.",
       "properties": {
         "x": {
           "minimum": 0,
@@ -585,13 +584,15 @@
       "type": "string"
     },
     "region_source": {
-      "const": "provided",
       "default": "provided",
+      "enum": [
+        "provided",
+        "detected"
+      ],
       "title": "Region Source",
       "type": "string"
     },
     "automatic_detection": {
-      "const": false,
       "default": false,
       "title": "Automatic Detection",
       "type": "boolean"

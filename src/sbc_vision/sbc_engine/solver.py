@@ -360,9 +360,17 @@ def solve(challenge: Challenge, pool: list[Candidate], *, seconds=5.0) -> Solver
                     by_slot[slot].append((i, variable))
                     by_card[i].append(variable)
                     by_player[card.base_id].append(variable)
-        for slot in range(len(challenge.positions)):
+        previous_slot = {}
+        for slot, position in enumerate(challenge.positions):
             model.add_exactly_one(v for i, v in by_slot[slot])
             ratings.append(sum(cards[i].rating * v for i, v in by_slot[slot]))
+            # Deux postes identiques n'ont pas besoin d'explorer toutes les permutations.
+            if position in previous_slot:
+                previous = previous_slot[position]
+                model.add(
+                    sum(i * v for i, v in by_slot[previous]) < sum(i * v for i, v in by_slot[slot])
+                )
+            previous_slot[position] = slot
         for variables in by_player.values():
             model.add_at_most_one(variables)
         used = [sum(variables) for variables in by_card]

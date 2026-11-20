@@ -10,7 +10,8 @@ Le 30 octobre, le superviseur a donné son accord pour commencer et demandé de 
 
 ## Produit visé
 
-- Inventorier automatiquement le club par captures, détection et OCR.
+- Inventorier le club avec un scan hybride : détection/OCR sur les cartes visibles,
+  puis lecture du HTML pour les autres cartes déjà présentes sur la page.
 - Lire les conditions et les emplacements du SBC.
 - Protéger les cartes importantes ; comparer valeur sacrifiée et achats nécessaires.
 - Suggérer directement des cartes exactes, avec leur version, prix, plafond d'achat et alternatives.
@@ -23,6 +24,12 @@ Le solveur optimise la composition entière, pas chaque poste indépendamment. U
 
 La vision repère les éléments. L'OCR lit les textes. Le contrôleur scripté consomme le JSON et choisit les interactions. OR-Tools recherche une composition respectant les règles que nous programmons explicitement ; il ne connaît pas EA FC à l'origine.
 
+Pour le scan du club, Rayan indique le 20 novembre que la démonstration attendue peut
+utiliser le HTML en complément des lectures visibles. Le contrôleur passe de page en
+page sans défilement si le DOM contient toutes les cartes de la page. Une carte absente
+du DOM ne doit pas être inventée. La provenance OCR/DOM et les identifiants des copies
+doivent rester distincts ; les données HTML ne comptent pas dans les scores OCR.
+
 Les données de marché sont un complément du solveur, pas une substitution au travail de vision. L'évaluation hors domaine porte sur le parseur d'interface générique ; la logique SBC reste propre à EA FC.
 
 ## Périmètre et arbitrages
@@ -30,7 +37,7 @@ Les données de marché sont un complément du solveur, pas une substitution au 
 - Cible principale : la vraie Web App.
 - Les captures d'entraînement incluent de vraies captures collectées lors de navigations manuelles.
 - L'exécution automatisée sur le service réel dépend des autorisations d'EA. Le superviseur valide le périmètre pédagogique, pas les droits d'utilisation du service.
-- À défaut, un démonstrateur local minimal reproduit uniquement les écrans nécessaires ; Samy en est responsable. Il ne constitue pas une reproduction complète du produit EA.
+- Le laboratoire local sert aux tests avec des scènes fictives. Le parcours utilisateur vise uniquement la Web App EA.
 - Premier parcours : un SBC à composition d'équipe, un club limité et un sous-ensemble de règles documenté.
 - Troisième référence OmniParser optionnelle selon les ressources ; aucune API LLM payante n'est imposée.
 

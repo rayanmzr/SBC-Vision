@@ -3,7 +3,7 @@ ENV PIP_NO_CACHE_DIR=1
 WORKDIR /build
 COPY pyproject.toml README.md requirements.lock ./
 COPY src/ ./src/
-RUN python -m pip wheel --wheel-dir /wheels -c requirements.lock '.[data,solver,ocr]'
+RUN python -m pip wheel --wheel-dir /wheels -c requirements.lock '.[data,solver,ocr,vision]'
 
 FROM python:3.11.14-slim-bookworm AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends tesseract-ocr \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --create-home --uid 10001 sbc
 COPY --from=dependencies /wheels /wheels
-RUN python -m pip install --no-index --find-links=/wheels 'sbc-vision[data,solver,ocr]' \
+RUN python -m pip install --no-index --find-links=/wheels 'sbc-vision[data,solver,ocr,vision]' \
     && rm -rf /wheels
 WORKDIR /app
 COPY scripts/prepare_api_demo.py ./scripts/prepare_api_demo.py

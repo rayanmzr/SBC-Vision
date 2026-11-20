@@ -51,8 +51,11 @@ Un [laboratoire du contrôleur](LOCAL_CONTROLLER.md) teste les clics et la véri
 après action avec une vision déterministe par couleurs et des cartes fictives.
 Le choix de source relie aussi cette boucle à la route de perception Python via le
 [pipeline HTTP du laboratoire](LAB_PERCEPTION_API.md), désactivé par défaut.
-L'inférence réelle, le scan du club et le contrôleur sur les données de l'API restent
-à raccorder. Les capacités `controller` et `live_actions_enabled` restent donc fausses.
+Le mode `SBC_PERCEPTION_MODE=detector` relie le modèle aux régions de cartes puis à l'OCR.
+La réponse de perception transporte un rapport OCR typé facultatif, affiché par l'extension.
+L'ajout local d'exemplaires passe par `/api/v1/sbc/inventory`, avec choix explicites et contrôle
+de révision. Le solveur accepte les conditions courantes de la requête. Le scan autonome et les
+actions sur EA ne sont pas validés ; `controller` et `live_actions_enabled` restent faux.
 
 Les conditions sont transmises dynamiquement par l'OCR au contrat `dynamic-v1`. Le solveur distingue composition et Item Score, traite les contraintes reconnues et vérifie ses résultats séparément. La note d'équipe est limitée à onze emplacements et le collectif à un profil standard sans bonus particuliers. Les autres cas sont rejetés. Le [guide](../src/sbc_vision/sbc_engine/README.md) précise les limites et l'interface entre les membres.
 

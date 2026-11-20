@@ -1,130 +1,96 @@
-# Première étape de SBV-014 : transporter une capture
+# API de perception
 
-Les routes d'inventaire, protections et résolution sont décrites dans [SBC_API.md](SBC_API.md).
-Elles utilisent le moteur de Rayan et ne modifient pas le raccordement encore attendu
-du détecteur à cette route d'analyse d'image.
+Le bouton « Envoyer à l’API » de l’extension appelle `POST /api/v1/perception/analyze`.
+Le mode `SBC_PERCEPTION_MODE=detector` relie le détecteur de Saber aux régions puis à
+l’OCR de Rayan. Les poids restent côté Python. La cible produit est la Web App EA.
 
-Cette branche prépare l'API de perception. Le détecteur de Saber et l'OCR de Rayan ne sont
-pas encore raccordés. **Une installation normale renvoie donc HTTP 503 à une analyse valide.**
-Les tests utilisent un pipeline fictif clairement nommé ; ils ne mesurent aucune performance
-de vision. L'issue #14 reste ouverte jusqu'au raccordement et à son évaluation.
+## Activation
 
-Le mode explicite `SBC_PERCEPTION_MODE=lab-colors` permet maintenant de tester la vraie
-chaîne image → pipeline Python → JSON sur la page locale du contrôleur. Il ne reconnaît
-pas les joueurs EA et reste désactivé par défaut : [guide du pipeline de laboratoire](LAB_PERCEPTION_API.md).
-
-## Comprendre le trajet de l'image
-
-1. Le contrôleur capture le viewport du navigateur, c'est-à-dire la zone visible.
-2. Il envoie les octets PNG ou JPEG à `POST /api/v1/perception/analyze`.
-3. L'API vérifie le format annoncé, la taille reçue, puis ouvre réellement l'image pour
-   contrôler son intégrité et ses dimensions. Changer seulement l'extension ne suffit pas.
-4. Le pipeline reçoit une image RGB et son identifiant. L'API ne la redimensionne pas et
-   ne change pas son orientation : les coordonnées concernent les pixels du fichier reçu.
-5. Le pipeline devra enchaîner détection, OCR et normalisation vers `PerceptionResponse`.
-6. L'API revalide le JSON : identifiants uniques, coordonnées dans l'image, même taille
-   et même identifiant de capture que la demande. Un résultat incohérent est refusé.
-7. Le contrôleur reçoit le JSON. L'inventaire et les règles structurées alimenteront le
-   solveur ; cette route ne lui transmet aucune capture et ne réalise aucun clic.
-
-La validation du JSON vérifie la cohérence des données, pas leur vérité visuelle. Une
-mauvaise lecture peut respecter le schéma ; les annotations servent à mesurer ce problème.
-Le lien entre pixels de capture et coordonnées de clic reste à traiter dans #16.
-
-## Requête et réponse
-
-En mode partagé, les routes `/api/v1/*` exigent `Authorization: Bearer …` ; une clé
-absente ou incorrecte produit `401 authentication_required`. La santé et la documentation
-restent publiques. Le [guide de déploiement](DEPLOYMENT.md) décrit la génération de clé,
-les limites globales (`429`, délai de 30 secondes) et la connexion depuis l'extension.
-Les exemples ci-dessous utilisent le mode de développement local sans clé.
-
-Le corps est le **fichier binaire brut**, sans enveloppe JSON, base64 ou multipart.
-`Content-Type` vaut `image/png` ou `image/jpeg`. Le paramètre de requête `capture_id`
-est facultatif, non vide et limité à 128 caractères ; sinon l'API génère un UUID.
-Utiliser un identifiant technique sans information personnelle.
+Installer les options `data,solver,ocr,vision`, Tesseract et un modèle ONNX de la
+[release modeles-v1](https://github.com/rayanmzr/SBC-Vision/releases/tag/modeles-v1).
+Vérifier son empreinte avant de le placer sous `data/processed/models/`, hors Git.
 
 ```bash
-source .venv/bin/activate
-uvicorn sbc_vision.api.main:app --reload
+SBC_PERCEPTION_MODE=detector \
+SBC_DETECTOR=yolo:data/processed/models/yolo26s-easysbc-ft-s0.onnx \
+SBC_CARD_LAYOUT=club-list SBC_OCR_MODE=tesseract-regions \
+SBC_ENGINE_MODE=local SBC_ENGINE_DATABASE=data/processed/futbin_fc27.sqlite3 \
+uvicorn sbc_vision.api.main:app --host 127.0.0.1 --port 8000
 ```
 
-Dans un autre terminal, depuis la même racine et avec le même environnement :
+`SBC_DETECTION_THRESHOLD` vaut 0,61 par défaut ; ce seuil doit encore être évalué sur EA.
+`SBC_CARD_LAYOUT=club-list` lit les noms et statistiques à droite des miniatures de la
+liste du club. Le profil `card` vise une carte complète. Une disposition inconnue ou
+une région hors image reste à relire ; les profils ne s’interchangent pas automatiquement.
+Sans OCR activé, le mode détecteur renvoie uniquement ses éléments.
+
+`/health` indique si le modèle est chargé ; `/api/v1/capabilities` annonce les fonctions
+activées. Par défaut la perception est désactivée et une analyse valide renvoie
+`503 perception_unavailable`. Le mode explicite `lab-colors` sert aux scènes fictives
+locales, décrites dans [LAB_PERCEPTION_API.md](LAB_PERCEPTION_API.md).
+
+## Entrée et réponse
+
+Le corps est le fichier binaire PNG/JPEG, avec `Content-Type: image/png` ou `image/jpeg`.
+Le type annoncé doit correspondre aux octets réels. `capture_id` est facultatif, non vide,
+limité à 128 caractères ; sinon le serveur génère un UUID.
 
 ```bash
-python scripts/analyze_image.py data/fixtures/perception.synthetic.png \
-  --url http://127.0.0.1:8000 --capture-id synthetic-screen-001
+python scripts/analyze_image.py chemin/capture-ea.png \
+  --url http://127.0.0.1:8000 --capture-id ea-screen-001
 ```
 
-Équivalent sans le client Python :
+La réponse `200` suit `contracts/perception.schema.json` : capture, dimensions, modèle et
+éléments avec type, boîte en pixels d’origine, texte, confiance et actions possibles.
+Le champ facultatif `ocr` contient les mots/régions, cartes et versions candidates,
+les conditions interprétées et leurs limites. La réponse est revalidée : les identifiants
+sont uniques, les boîtes restent dans l’image, et l’OCR se rapporte aux cartes de la même
+capture. Un JSON conforme peut néanmoins contenir une erreur visuelle.
 
-```bash
-curl --fail-with-body -X POST \
-  'http://127.0.0.1:8000/api/v1/perception/analyze?capture_id=synthetic-screen-001' \
-  -H 'Content-Type: image/png' \
-  --data-binary @data/fixtures/perception.synthetic.png
-```
-
-La réponse attendue **avant raccordement** est une erreur `503` avec
-`detail.code = "perception_unavailable"`, jamais le contenu de la fixture JSON.
-La documentation interactive `/docs` et le fichier `/openapi.json` décrivent la route.
-
-Après raccordement, la réponse `200` suit le contrat déjà versionné dans
-`contracts/perception.schema.json` : `capture_id`, taille de l'image, nom du modèle et
-éléments avec boîtes `{x, y, width, height}`, texte, confiance et actions possibles.
-Une liste `elements: []` signifie que l'analyse a réussi sans élément détecté ; elle ne
-remplace jamais une erreur technique.
+L’extension affiche les lectures puis propose une confirmation locale des exemplaires
+et le transfert des conditions complètes au solveur. Les routes de l’inventaire, des
+protections et du calcul sont décrites dans [SBC_API.md](SBC_API.md). Cette analyse ne
+crée aucun exemplaire, n’appelle pas FUTBIN et n’exécute aucun clic sur EA.
 
 ## Limites et erreurs
 
-Valeurs du socle dans `AnalysisLimits` : 5 Mio reçus, 8 192 pixels au maximum par côté,
-20 millions de pixels au total, 10 secondes pour recevoir le corps et 15 secondes pour
-l'inférence. Aucun fichier image n'est écrit sur disque et aucun octet d'image n'est journalisé
-par cette route. Pillow est ajouté aux dépendances du service pour décoder les captures.
+Limites : 5 Mio, 8 192 pixels par côté, 20 millions de pixels, 10 secondes de réception,
+15 secondes d’inférence. Le pipeline conserve une copie de l’image pour son worker ;
+une annulation HTTP ne libère pas le modèle pendant que ce worker calcule encore.
+Un seul calcul de détection/OCR est admis à la fois par pipeline. Le délai ne tue pas
+le thread ni Tesseract ; une isolation annulable reste nécessaire avant partage à forte charge.
 
 | Statut | Signification |
 | --- | --- |
-| 400 | Fichier vide, invalide ou tronqué |
-| 408 | Délai de réception dépassé |
-| 413 | Trop d'octets ou trop de pixels |
-| 415 | Format non pris en charge, animé, ou différent du type annoncé |
-| 422 | Paramètres de requête invalides, selon la validation standard FastAPI |
-| 502 | Échec du pipeline ou résultat incompatible avec la capture |
-| 503 | Pipeline non configuré |
-| 504 | Délai d'inférence dépassé |
+| 400 / 408 | Image invalide ou réception trop lente |
+| 413 | Taille ou dimensions dépassées |
+| 415 | Format non pris en charge ou différent du type annoncé |
+| 422 | Identifiant de requête invalide |
+| 429 | Pipeline occupé ; réessayer après le calcul en cours |
+| 502 | Échec de l’inférence ou résultat incohérent |
+| 503 | Pipeline absent |
+| 504 | Délai d’inférence dépassé |
 
-Les erreurs applicatives contiennent `detail.code` et `detail.message` ; les erreurs
-de paramètres `422` conservent la liste de détails standard FastAPI. Aucun résultat du
-pipeline n'est renvoyé en cas d'échec.
+Les erreurs applicatives contiennent `detail.code` et `detail.message`.
+Les images sont traitées en mémoire ; aucune capture ni rapport n’est conservé par la
+route. Les outils OCR peuvent employer des fichiers temporaires système. Les logs
+n’incluent pas les octets des captures. En mode partagé, les routes métier exigent une
+clé Bearer ; voir [DEPLOYMENT.md](DEPLOYMENT.md).
 
-Le délai d'inférence est une annulation **coopérative** de la coroutine : le pipeline doit
-être asynchrone et non bloquant. Un calcul synchrone lourd doit être isolé dans un worker
-avec ses propres limites. Ce délai ne tue pas un thread ni un GPU bloqué ; la gestion
-de concurrence et l'isolation seront à vérifier avec les véritables modèles avant partage cloud.
+## Contrôles et limites EA
 
-## Raccordement avec Saber et Rayan
+Les tests hors ligne vérifient le transport, les refus, les délais, le verrou et la
+chaîne détecteur → régions → OCR avec un moteur fictif explicite. Le raccord séparé
+`POST /api/v1/ocr/analyze` accepte aussi des régions fournies, voir [OCR_API.md](OCR_API.md).
 
-Le [raccord HTTP de l'OCR de Rayan](OCR_API.md) est disponible séparément à
-`POST /api/v1/ocr/analyze`, avec capture et régions fournies. Il ne remplace pas le
-détecteur de `/perception/analyze` ; son activation et ses résultats sont documentés.
+Sur le lot privé de développement EA du 20 novembre : une capture du club donne trois
+miniatures et trois lectures exploitables, dont une version ambiguë ; une capture de
+composition donne seulement quatre des onze emplacements. Les régions des conditions
+ne sont pas générées automatiquement. L’OCR global retrouve les onze libellés de poste,
+mais cette lecture n’est pas encore reliée à une extraction complète et vérifiée des règles.
+Ce lot a servi aux réglages ; ces observations ne mesurent pas la généralisation.
 
-`src/sbc_vision/perception/pipeline.py` définit le point d'entrée commun :
-`async analyze(capture: Capture) -> PerceptionResponse`.
-L'adaptateur de détection/OCR sera chargé au démarrage, puis affecté à
-`app.state.perception_pipeline`. Les erreurs du moteur restent distinctes des détections.
-Cette affectation ne charge aucun modèle à elle seule.
-
-`/health` et `/api/v1/capabilities` continuent à signaler l'absence de modèle du socle.
-La readiness devra refléter le véritable chargement dans le prochain lot d'intégration.
-
-À terminer pour #14 : intégrer le détecteur #6 et l'OCR #9, vérifier leurs sorties sur
-une image partageable, mesurer la latence réelle et éprouver leur comportement en cas
-d'annulation. Les régions OCR préparées à la main sur la branche de Rayan ne constituent
-pas encore une détection automatique de l'écran entier.
-
-## Vérification locale
-
-`make check` vérifie le style, les tests et l'absence de dérive du schéma existant.
-`tests/test_perception_api.py` teste le succès du transport, une détection vide, le modèle
-absent, les formats, les limites, les délais et les résultats incohérents. Le pipeline
-fictif est injecté uniquement dans les tests ; l'API normale n'active aucun mode de simulation.
+L’extension empaquetée a été chargée dans un Chromium isolé : connexion à l’API locale,
+calcul CP-SAT sur données fictives, protection persistante et analyse de la capture EA
+ont été exercés. Cela ne valide ni la capture depuis le bouton de Chrome sur le compte EA,
+ni le scan, ni le placement réel. `controller` et `live_actions_enabled` restent faux.

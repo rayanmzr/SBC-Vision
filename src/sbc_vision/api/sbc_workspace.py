@@ -15,6 +15,7 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
+from sbc_vision.contracts.ocr import OcrAnalysisResponse
 from sbc_vision.sbc_engine.models import Candidate, Challenge
 
 router = APIRouter(prefix="/api/v1/sbc", tags=["sbc"])
@@ -50,6 +51,22 @@ class SolveRequest(BaseModel):
     budget: int | None = Field(default=None, ge=0, le=1_000_000_000)
     max_card_value: int | None = Field(default=None, gt=0, le=1_000_000_000)
     seconds: float = Field(default=3.0, gt=0, le=5)
+    challenge: Challenge | None = None
+
+
+class InventoryChoice(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    instance_id: str = Field(min_length=1, max_length=256)
+    card_id: int = Field(gt=0)
+    protected: bool = True
+
+
+class InventoryRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    expected_revision: str = Field(pattern="^[0-9a-f]{64}$")
+    report: OcrAnalysisResponse
+    choices: dict[str, InventoryChoice]
+    confirmed: Literal[True]
 
 
 class SolveResponse(BaseModel):
@@ -198,11 +215,34 @@ class SbcWorkspace:
             self.players.set_protected(db, request.instance_id, request.protected)
         return self.snapshot()
 
+    def record(self, request: InventoryRequest) -> WorkspaceSnapshot:
+        document, challenge, _ = self.challenge_document()
+        reference = self.reference_time(document)
+        with closing(self.players.open_database(self.config.database)) as db:
+            db.execute("BEGIN IMMEDIATE")
+            revision, _ = self.read_state(db, document, challenge, reference)
+            self.require_revision(revision, request.expected_revision)
+            try:
+                self.players.confirm_readings(
+                    db,
+                    request.report.model_dump(),
+                    {k: v.model_dump() for k, v in request.choices.items()},
+                    confirmed=True,
+                )
+            except (ValueError, KeyError, TypeError) as exc:
+                raise fail(
+                    422,
+                    "invalid_inventory_choice",
+                    "Relire la carte, sa version et son identifiant d'exemplaire.",
+                ) from exc
+        return self.snapshot()
+
     def solve(self, request: SolveRequest) -> SolveResponse:
         if not solve_slot.acquire(blocking=False):
             raise fail(429, "solver_busy", "Un calcul est déjà en cours. Réessayer après sa fin.")
         try:
-            document, challenge, _ = self.challenge_document()
+            document, configured, _ = self.challenge_document()
+            challenge = request.challenge or configured
             if challenge is None:
                 raise fail(
                     409,
@@ -218,8 +258,9 @@ class SbcWorkspace:
             reference = self.reference_time(document)
             with closing(self.players.open_database(self.config.database)) as db:
                 db.execute("BEGIN")
-                revision, pool = self.read_state(db, document, challenge, reference)
+                revision, _ = self.read_state(db, document, configured, reference)
                 self.require_revision(revision, request.expected_revision)
+                pool = self.players.load_pool(db, challenge.market, now=reference)
             outcome = self.solver.solve(challenge, pool, seconds=request.seconds)
             report = {
                 "challenge": challenge.model_dump(),
@@ -242,6 +283,7 @@ class SbcWorkspace:
                     db, latest_document, latest_challenge, latest_reference
                 )
                 self.require_revision(latest_revision, revision)
+                current = self.players.load_pool(db, challenge.market, now=latest_reference)
             if (
                 outcome.status in {"optimal", "feasible"}
                 and not self.solver.recheck(report, current)["valid"]
@@ -297,3 +339,11 @@ def update_protection(
 def solve_workspace(body: SolveRequest, service: Annotated[SbcWorkspace, Depends(get_workspace)]):
     """Appeler le vrai solveur CP-SAT ; le corps contient uniquement du JSON."""
     return database_call(service.solve, body)
+
+
+@router.post("/inventory", response_model=WorkspaceSnapshot)
+def record_readings(
+    body: InventoryRequest, service: Annotated[SbcWorkspace, Depends(get_workspace)]
+):
+    """Enregistrer les versions et exemplaires explicitement confirmés ; aucun clic EA."""
+    return database_call(service.record, body)

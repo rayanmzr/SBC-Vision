@@ -171,6 +171,83 @@ def test_isolated_retry_restores_original_coordinates_without_faking_confidence(
     assert result[0]["confidence"] == 0.55
 
 
+def test_name_icons_and_a_nearby_position_do_not_replace_the_read_name_or_rating(
+    tmp_path, monkeypatch
+):
+    path = tmp_path / "synthetic.png"
+    Image.new("RGB", (800, 230), "white").save(path)
+    words = [
+        {
+            "text": text,
+            "confidence": confidence,
+            "x": x,
+            "y": y,
+            "width": 20,
+            "height": 20,
+            "line": (1, 1, y),
+        }
+        for text, confidence, x, y in [
+            ("Alex", 0.93, 30, 25),
+            ("&)", 0.10, 100, 25),
+            ("83", 0.94, 30, 95),
+            ("CM", 0.88, 100, 95),
+        ]
+    ]
+    reader = Mock(return_value=words)
+    monkeypatch.setattr("sbc_vision.sbc_engine.ocr.ocr_words", reader)
+    spec = OcrInput(capture_id="icons", regions=specification().regions[:2])
+    results = read_regions(path, spec)
+    assert [(r["text"], r["confidence"]) for r in results] == [("Alex", 0.93), ("83", 0.94)]
+    assert reader.call_count == 1
+
+
+def test_normalized_name_keeps_letters_and_preserves_the_raw_ocr_text(db):
+    regions = [
+        {"element_id": "card-1", "field": field, "text": text, "confidence": 0.99}
+        for field, text in [("name", "Alex Exemple@)"), ("rating", "83")]
+    ]
+    report = analyze("unused.png", specification(), db, regions=regions)
+    assert report["cards"][0]["reading"]["name"] == "Alex Exemple"
+    assert report["cards"][0]["candidate_ids"] == [900001, 900002]
+    assert report["regions"][0]["text"] == "Alex Exemple@)"
+
+
+@pytest.mark.parametrize("last_confidence", [0.72, 0.96])
+def test_attached_name_icon_is_cropped_and_the_new_confidence_remains_measured(
+    tmp_path, monkeypatch, last_confidence
+):
+    path = tmp_path / "synthetic.png"
+    Image.new("RGB", (800, 230), "white").save(path)
+    word = {
+        "text": "Alex@",
+        "confidence": 0.4,
+        "x": 30,
+        "y": 25,
+        "width": 100,
+        "height": 30,
+        "line": (1, 1, 1),
+    }
+    reader = Mock(
+        side_effect=[
+            [word],
+            [{**word, "confidence": 0.6}],
+            [{**word, "text": "Alex", "confidence": last_confidence}],
+        ]
+    )
+    monkeypatch.setattr("sbc_vision.sbc_engine.ocr.ocr_words", reader)
+    monkeypatch.setattr(
+        "sbc_vision.sbc_engine.ocr.pytesseract.image_to_boxes",
+        Mock(return_value={"char": list("Alex@"), "right": [20, 40, 60, 80, 100]}),
+    )
+    spec = OcrInput(capture_id="attached-icon", regions=specification().regions[:1])
+    result = read_regions(path, spec)[0]
+    assert result["text"] == "Alex"
+    assert result["confidence"] == last_confidence
+    assert result["method"] == "region"
+    assert reader.call_args.args[0].width == 80
+    assert reader.call_args.kwargs["x"] == 10
+
+
 @pytest.mark.parametrize(
     "first, first_conf, second, second_conf, accepted",
     [

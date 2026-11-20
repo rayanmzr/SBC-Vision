@@ -6,7 +6,7 @@ Le client prévu est une **extension Chrome avec interface React**, reliée à l
 
 Le modèle transforme une capture en une liste JSON d'éléments et d'actions possibles. Un contrôleur exploite ce résultat pour inventorier le club, préparer une composition et vérifier les écrans. Le solveur cherche à réduire les dépenses et la valeur des cartes sacrifiées, en préservant les cartes protégées.
 
-**Avancement :** transport des captures par l’API, OCR local, import FUTBIN, inventaire SQLite et solveur dynamique. Le détecteur reste à raccorder ; le parcours sur la vraie Web App reste à vérifier. Voir le [guide API](docs/API.md).
+**Avancement :** l'extension, l'API, le détecteur ONNX, l'OCR, l'inventaire SQLite et le solveur sont raccordés. La cible du parcours est uniquement la vraie Web App EA. Les essais sur les captures EA montrent encore des versions ambiguës et des emplacements manqués : le scan autonome et le remplissage réel ne sont pas validés. Voir le [guide API](docs/API.md).
 
 ## Équipe
 
@@ -33,8 +33,8 @@ appelle le véritable solveur. Il présente les cartes retenues, conditions et c
 Les exemples fictifs restent identifiés. Le popup prépare la capture manuelle de l'onglet
 avec son repère de coordonnées ; voir le [guide de capture](docs/TAB_CAPTURE.md).
 Le [laboratoire du contrôleur](docs/LOCAL_CONTROLLER.md) ajoute des clics et leur vérification
-sur une scène fictive locale. Le détecteur et le contrôleur sur les données réelles
-restent à raccorder.
+sur une scène fictive locale. Le détecteur est raccordé à l'analyse EA ; le contrôleur
+réel et le suivi des exemplaires entre captures restent à développer.
 
 ## Démarrage local
 
@@ -53,7 +53,7 @@ Avec Python 3.12, remplacer `python3.11` par `python3.12`. Pour l'OCR, installer
 - Documentation API : <http://127.0.0.1:8000/docs>
 - Capacités implémentées : <http://127.0.0.1:8000/api/v1/capabilities>
 - Schéma de perception : <http://127.0.0.1:8000/api/v1/contracts/perception>
-- Analyse : `POST /api/v1/perception/analyze` (PNG/JPEG ; `503` avant raccordement du détecteur).
+- Analyse : `POST /api/v1/perception/analyze` (PNG/JPEG ; `503` sans modèle configuré).
 
 ```bash
 make check
@@ -62,6 +62,22 @@ make check
 La commande lance le lint, les tests hors ligne et la vérification du schéma JSON.
 
 ## Moteur SBC
+
+### Lecture d'une capture EA dans l'extension
+
+Installer les options `.[dev,data,solver,ocr,vision,explain]`, Tesseract et construire l'extension avec `cd frontend && pnpm install --frozen-lockfile && pnpm build`. Télécharger les poids de la release `modeles-v1` et vérifier leur empreinte avec `SHA256SUMS` ; ils restent hors de Git.
+
+```bash
+SBC_PERCEPTION_MODE=detector \
+SBC_DETECTOR=yolo:data/processed/models/yolo26s-easysbc-ft-s0.onnx \
+SBC_CARD_LAYOUT=club-list SBC_OCR_MODE=tesseract-regions \
+SBC_ENGINE_MODE=local SBC_ENGINE_DATABASE=data/processed/futbin_fc27.sqlite3 \
+uvicorn sbc_vision.api.main:app --host 127.0.0.1 --port 8000
+```
+
+Dans `chrome://extensions`, charger le dossier `frontend/dist` non empaqueté. Régler l'API sur `http://127.0.0.1:8000`, ouvrir « Analyser » et choisir une capture EA ou capturer l'onglet à la demande. Le serveur détecte les cartes, place leurs régions puis lance l'OCR. Les lectures incertaines restent visibles ; aucun exemplaire ni SBC n'est confirmé automatiquement. Les exemplaires ajoutés explicitement sont protégés par défaut. Les conditions ne passent au solveur que si elles sont disponibles et complètes.
+
+Le poids livré par Saber sert de point de départ ; son entraînement initial ne constitue pas une validation sur EA. Sur une capture EA de développement, trois miniatures sont détectées et leurs lectures sont exploitables ; une version reste ambiguë. Sur une capture de composition, seuls quatre des onze emplacements sont détectés et les régions des conditions ne sont pas produites automatiquement. Les régions manuelles restent utilisables par la route OCR pour diagnostiquer ces erreurs. Ce petit lot a servi au réglage, pas à une évaluation indépendante. Ces limites doivent être corrigées et mesurées sur EA avant d'annoncer un parcours autonome.
 
 ```bash
 # Import limité avec cache, si la source est accessible.

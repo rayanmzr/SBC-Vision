@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { normalizeApiUrl } from './lib/platform';
 import { ApiError } from './lib/api';
-import { credits } from './lib/sbc-report';
+import { credits, type SolverReport } from './lib/sbc-report';
 import {
     loadWorkspace,
     updateProtection,
@@ -18,6 +18,7 @@ type Props = {
     onStart: () => number;
     onReport: (proposal: ApiProposal, token: number) => void;
     onReset: () => void;
+    ocrChallenge?: SolverReport['challenge'] | null;
 };
 
 export default function SbcApiPanel({
@@ -28,6 +29,7 @@ export default function SbcApiPanel({
     onStart,
     onReport,
     onReset,
+    ocrChallenge,
 }: Props) {
     const [workspace, setWorkspace] = useState<Workspace | null>(null);
     const [budget, setBudget] = useState('');
@@ -56,7 +58,7 @@ export default function SbcApiPanel({
             current.current?.abort();
             current.current = null;
         };
-    }, [base, active, onReset]);
+    }, [base, active, onReset, ocrChallenge]);
 
     function begin(type: NonNullable<typeof operation>) {
         current.current?.abort();
@@ -92,8 +94,12 @@ export default function SbcApiPanel({
             if (current.current !== controller) return;
             const data = await loadWorkspace(base, controller.signal);
             if (current.current === controller) {
-                setWorkspace(data);
-                setBudget(String(data.challenge?.budget ?? 0));
+                setWorkspace(
+                    ocrChallenge
+                        ? { ...data, challenge: ocrChallenge, challenge_issues: [] }
+                        : data,
+                );
+                setBudget(String(ocrChallenge?.budget ?? data.challenge?.budget ?? 0));
                 setVisible(50);
             }
         } catch (failure) {
@@ -108,7 +114,11 @@ export default function SbcApiPanel({
         try {
             const updated = await updateProtection(base, workspace, key, value, controller.signal);
             if (current.current === controller) {
-                setWorkspace(updated);
+                setWorkspace(
+                    ocrChallenge
+                        ? { ...updated, challenge: ocrChallenge, challenge_issues: [] }
+                        : updated,
+                );
                 setSaved(true);
             }
         } catch (failure) {

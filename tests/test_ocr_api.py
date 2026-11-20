@@ -101,7 +101,7 @@ def test_bad_regions_are_rejected_before_the_reader(client, capture, failing_rea
         regions.append(regions[0])
     elif problem == "count":
         metadata["specification"]["regions"] = [
-            {**regions[0], "element_id": f"card-{i}"} for i in range(33)
+            {**regions[0], "element_id": f"card-{i}"} for i in range(129)
         ]
     else:
         metadata["minimum_confidence"] = float("nan")

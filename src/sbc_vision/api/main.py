@@ -4,7 +4,7 @@ import os
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
 from fastapi.openapi.utils import get_openapi
 
 from sbc_vision import __version__
@@ -19,26 +19,37 @@ from sbc_vision.contracts.ocr import OcrAnalysisRequest
 from sbc_vision.contracts.perception import PerceptionResponse
 from sbc_vision.perception.lab_colors import LabColorPipeline
 from sbc_vision.perception.ocr_regions import RegionOcrReader, load_ocr_reader
-from sbc_vision.perception.pipeline import PerceptionPipeline
+from sbc_vision.perception.pipeline import DetectorPipeline, PerceptionPipeline
 
 
 @asynccontextmanager
 async def lifespan(application: FastAPI):
     application.state.access_config = load_access_config()
     mode = os.getenv("SBC_PERCEPTION_MODE", "disabled")
-    if mode not in {"disabled", "lab-colors"}:
-        raise RuntimeError("SBC_PERCEPTION_MODE doit valoir disabled ou lab-colors.")
+    if mode not in {"disabled", "lab-colors", "detector"}:
+        raise RuntimeError("SBC_PERCEPTION_MODE doit valoir disabled, lab-colors ou detector.")
     previous = getattr(application.state, "perception_pipeline", None)
     previous_ocr = getattr(application.state, "ocr_reader", None)
     application.state.ocr_reader = load_ocr_reader()
     if mode == "lab-colors":
         application.state.perception_pipeline = LabColorPipeline()
+    elif mode == "detector":
+        if not os.getenv("SBC_DETECTOR"):
+            raise RuntimeError("Configurer SBC_DETECTOR avec le type et le chemin du modèle.")
+        config = get_sbc_config()
+        application.state.perception_pipeline = DetectorPipeline(
+            os.environ["SBC_DETECTOR"],
+            float(os.getenv("SBC_DETECTION_THRESHOLD", "0.61")),
+            application.state.ocr_reader,
+            config.database if config else None,
+            layout=os.getenv("SBC_CARD_LAYOUT", "card"),
+        )
     try:
         yield
     finally:
         application.state.access_config = None
         application.state.ocr_reader = previous_ocr
-        if mode == "lab-colors":
+        if mode in {"lab-colors", "detector"}:
             application.state.perception_pipeline = previous
 
 
@@ -79,13 +90,15 @@ app.openapi = protected_openapi
 
 
 @app.get("/health", tags=["system"])
-def health() -> dict[str, str | bool]:
+def health(request: Request) -> dict[str, str | bool]:
     """Indique l'état du processus HTTP ; aucune readiness de modèle n'est présumée."""
     return {
         "status": "ok",
         "version": __version__,
         "environment": os.getenv("SBC_ENV", "development"),
-        "model_loaded": False,
+        "model_loaded": isinstance(
+            getattr(request.app.state, "perception_pipeline", None), DetectorPipeline
+        ),
     }
 
 
@@ -102,13 +115,15 @@ def capabilities(
         "perception_mode": (
             "lab-colors"
             if isinstance(pipeline, LabColorPipeline)
+            else "detector"
+            if isinstance(pipeline, DetectorPipeline)
             else "custom"
             if pipeline
             else "disabled"
         ),
         "ocr": reader is not None,
         "ocr_mode": "tesseract-regions" if reader else "disabled",
-        "ocr_regions_required": reader is not None,
+        "ocr_regions_required": reader is not None and not isinstance(pipeline, DetectorPipeline),
         "inventory": engine,
         "solver": engine,
         "sbc_workspace": engine,

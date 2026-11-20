@@ -2,7 +2,6 @@
   "$defs": {
     "BoundingBox": {
       "additionalProperties": false,
-      "description": "Boîte dans la capture : x, y en haut à gauche ; largeur/hauteur en pixels.",
       "properties": {
         "x": {
           "minimum": 0,

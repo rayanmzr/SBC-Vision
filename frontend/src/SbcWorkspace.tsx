@@ -39,10 +39,12 @@ export default function SbcWorkspace({
     apiUrl = DEFAULT_API_URL,
     connected = false,
     onConnect = noConnection,
+    ocrChallenge,
 }: {
     apiUrl?: string;
     connected?: boolean;
     onConnect?: () => Promise<boolean>;
+    ocrChallenge?: SolverReport['challenge'] | null;
 }) {
     const [source, setSource] = useState<'api' | 'file' | 'example'>('api');
     const [document, setDocument] = useState<Document | null>(null);
@@ -246,6 +248,7 @@ export default function SbcWorkspace({
                     </nav>
                     <div hidden={source !== 'api'}>
                         <SbcApiPanel
+                            ocrChallenge={ocrChallenge}
                             apiUrl={apiUrl}
                             connected={connected}
                             active={source === 'api'}

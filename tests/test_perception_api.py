@@ -23,6 +23,78 @@ from sbc_vision.contracts.perception import PerceptionResponse
 FIXTURES = Path(__file__).resolve().parents[1] / "data/fixtures"
 
 
+def test_detector_is_connected_to_card_regions_and_ocr(monkeypatch):
+    from sbc_vision.contracts.ocr import OcrAnalysisResponse
+    from sbc_vision.perception.pipeline import Capture, DetectorPipeline
+
+    class Detector:
+        name = "synthetic-detector"
+
+        def detect(self, image):
+            assert image.shape == (400, 800, 3)
+            return [("card", (100, 50, 244, 250), 0.95), ("button", (300, 20, 450, 70), 0.9)]
+
+    class Reader:
+        def analyze(self, data, request, database):
+            assert data.startswith(b"\x89PNG")
+            assert len(request.specification.regions) == 4
+            element = request.specification.regions[0].element_id
+            return OcrAnalysisResponse(
+                capture_id=request.specification.capture_id,
+                image=request.image,
+                engine_version="synthetic-test",
+                language="eng",
+                minimum_confidence=0.75,
+                regions=[],
+                positions=[],
+                challenge_ready=False,
+                challenge=None,
+                challenge_issues=["Conditions non détectées."],
+                cards=[
+                    {
+                        "element_id": element,
+                        "reading": {
+                            "capture_id": request.specification.capture_id,
+                            "element_id": element,
+                            "name": "Alex Exemple",
+                            "rating": 83,
+                            "confidence": 0.95,
+                        },
+                        "candidate_ids": [900001],
+                        "issues": [],
+                        "needs_confirmation": True,
+                    }
+                ],
+            )
+
+    monkeypatch.setattr("sbc_vision.perception.detector.load_detector", lambda _: Detector())
+    pipeline = DetectorPipeline("test", reader=Reader())
+    image = Image.new("RGB", (800, 400), "white")
+    response = asyncio.run(pipeline.analyze(Capture("synthetic-linked", image)))
+    assert image.getpixel((0, 0)) == (
+        255,
+        255,
+        255,
+    )  # La copie du worker a été refermée, pas l'original.
+    assert response.ocr.automatic_detection is True
+    assert response.ocr.region_source == "detected"
+    assert response.elements[0].text == "Alex Exemple · 83"
+    assert response.ocr.challenge_ready is False
+
+
+def test_busy_detector_is_reported_without_running_in_parallel(monkeypatch):
+    from sbc_vision.perception.pipeline import Capture, DetectorPipeline, PipelineBusyError
+
+    monkeypatch.setattr("sbc_vision.perception.detector.load_detector", lambda _: None)
+    pipeline = DetectorPipeline("test")
+    pipeline.slot.acquire()
+    try:
+        with pytest.raises(PipelineBusyError):
+            asyncio.run(pipeline.analyze(Capture("busy", Image.new("RGB", (20, 20)))))
+    finally:
+        pipeline.slot.release()
+
+
 class FixturePipeline:
     def __init__(self):
         self.payload = json.loads((FIXTURES / "perception.synthetic.json").read_text())

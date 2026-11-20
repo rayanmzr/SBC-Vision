@@ -4,7 +4,7 @@ from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from sbc_vision.contracts.perception import BoundingBox
+from sbc_vision.contracts.geometry import BoundingBox
 
 
 class StrictModel(BaseModel):

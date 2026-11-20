@@ -1,6 +1,7 @@
 import validateSchema from '../generated/perception-validator.js';
 import { requestUrl } from './platform';
 import { sessionApiHeaders } from './api-key';
+import type { SolverReport } from './sbc-report';
 
 export type ElementKind =
     'button' | 'input' | 'link' | 'menu' | 'checkbox' | 'card' | 'slot' | 'text';
@@ -18,6 +19,21 @@ export interface Perception {
         confidence: number;
         actions?: ActionKind[];
     }>;
+    ocr?: {
+        capture_id: string;
+        image: { width: number; height: number };
+        automatic_detection: boolean;
+        cards: Array<{
+            element_id: string;
+            reading: { name: string; rating: number; position?: string | null } | null;
+            candidate_ids: number[];
+            issues: string[];
+            needs_confirmation: true;
+        }>;
+        challenge_ready: boolean;
+        challenge: SolverReport['challenge'] | null;
+        challenge_issues: string[];
+    } | null;
 }
 export interface Connection {
     version: string;
@@ -57,6 +73,17 @@ export function validatePerception(
         }
         ids.add(element.id);
     }
+    if (
+        result.ocr &&
+        (result.ocr.capture_id !== result.capture_id ||
+            result.ocr.image.width !== result.image.width ||
+            result.ocr.image.height !== result.image.height ||
+            result.ocr.cards.some(
+                (card) =>
+                    !result.elements.some((e) => e.id === card.element_id && e.kind === 'card'),
+            ))
+    )
+        throw invalid();
     if (
         expected &&
         (result.capture_id !== expected.captureId ||

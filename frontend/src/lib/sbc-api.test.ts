@@ -110,7 +110,7 @@ describe('proposition du véritable solveur', () => {
         expect(() => parseSolverReport(verified)).toThrow();
     });
 
-    it('envoie seulement le budget et la révision en JSON et lit le calcul de la fixture', async () => {
+    it('transmet conditions, budget et révision puis lit le calcul de la fixture', async () => {
         const fetchMock = vi.fn(async () => json(fixture.proposal));
         vi.stubGlobal('fetch', fetchMock);
         const proposal = await solveWorkspace(DEFAULT_API_URL, workspace(), 2000, signal());
@@ -127,10 +127,11 @@ describe('proposition du véritable solveur', () => {
         expect(JSON.parse(String(options.body))).toEqual({
             expected_revision: fixture.workspace.revision,
             budget: 2000,
+            challenge: fixture.workspace.challenge,
         });
     });
 
-    it.each(['revision', 'mode', 'budget', 'provenance'])(
+    it.each(['revision', 'mode', 'budget', 'provenance', 'conditions', 'formation'])(
         'refuse une réponse associée à un autre contexte : %s',
         async (fault) => {
             const proposal = structuredClone(fixture.proposal);
@@ -138,6 +139,8 @@ describe('proposition du véritable solveur', () => {
             if (fault === 'mode') proposal.mode = 'local';
             if (fault === 'budget') proposal.report.challenge.budget = 9999;
             if (fault === 'provenance') proposal.report.data_kind = 'local';
+            if (fault === 'conditions') proposal.report.challenge.conditions[0].value += 1;
+            if (fault === 'formation') proposal.report.challenge.positions.reverse();
             vi.stubGlobal(
                 'fetch',
                 vi.fn(async () => json(proposal)),

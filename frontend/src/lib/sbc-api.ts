@@ -13,6 +13,18 @@ export type Workspace = {
 };
 export type ApiProposal = { mode: 'demo' | 'local'; revision: string; report: SolverReport };
 
+// L'ordre des clés JSON peut varier entre la capture et la réponse Python.
+function ordered(value: unknown): unknown {
+    if (Array.isArray(value)) return value.map(ordered);
+    if (value && typeof value === 'object')
+        return Object.fromEntries(
+            Object.entries(value)
+                .sort()
+                .map(([k, v]) => [k, ordered(v)]),
+        );
+    return value;
+}
+
 export function parseWorkspace(value: unknown): Workspace {
     if (!validateWorkspace(value))
         throw new ApiError('L’inventaire reçu ne respecte pas le contrat API.', 'invalid_response');
@@ -97,7 +109,11 @@ export async function solveWorkspace(
         {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ expected_revision: workspace.revision, budget }),
+            body: JSON.stringify({
+                expected_revision: workspace.revision,
+                budget,
+                challenge: workspace.challenge,
+            }),
         },
         signal,
         30_000,
@@ -116,11 +132,12 @@ export async function solveWorkspace(
     const parsed = parseSolverReport(response.report);
     if (
         parsed.kind !== 'solver' ||
-        parsed.report.challenge.budget !== budget ||
+        JSON.stringify(ordered(parsed.report.challenge)) !==
+            JSON.stringify(ordered({ ...workspace.challenge, budget })) ||
         parsed.report.data_kind !== (response.mode === 'demo' ? 'synthetic' : 'local')
     ) {
         throw new ApiError(
-            'Le budget ou la provenance de la proposition ne correspond pas à la demande.',
+            'Les conditions ou la provenance de la proposition ne correspondent pas à la demande.',
             'invalid_response',
         );
     }
