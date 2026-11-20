@@ -369,6 +369,22 @@ contrat (boîte en pixels entiers, action). Le
 texte de chaque élément reste vide : l'OCR le remplit. L'assemblage avec l'OCR et le
 raccordement à la route `/api/v1/perception/analyze` relèvent du pipeline commun (#14).
 
+## Modèles publiés
+
+Les modèles ne sont pas dans Git (fichiers lourds) : ils sont attachés à la release
+[`modeles-v1`](https://github.com/rayanmzr/SBC-Vision/releases/tag/modeles-v1), sous la licence
+du projet (GNU AGPL v3, comme les poids YOLO d'Ultralytics dont ils dérivent).
+
+| Fichier | Approche | Seuil | SHA-256 |
+| --- | --- | --- | --- |
+| `yolo26s-webui-1280-s0.onnx` | B, web générique | 0,30 | `247ef19d…1f3c4e` |
+| `yolo26s-easysbc-ft-s0.onnx` | B adapté aux cartes et emplacements | 0,61 | `ca7328d3…d25167` |
+| `opencv-gbdt-v1.pkl` | A, baseline | 0,81 | `ffc6d61c…5b2daf` |
+
+Le seuil est celui du meilleur F1 sur la validation, à passer à `to_elements`. La release
+contient aussi `SHA256SUMS` (`sha256sum -c SHA256SUMS`). Le `.pkl` est un pickle scikit-learn :
+ne le charger qu'après avoir vérifié son empreinte.
+
 ## Reproduire
 
 ```bash
