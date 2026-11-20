@@ -35,6 +35,11 @@ texte seul, les images décoratives et les titres ne sont pas boîtés (le texte
 6. **Élément désactivé** (grisé) : boîté quand même, c'est un contrôle ; son état se lit à part.
 7. **Curseur** (choix d'un prix ou d'un volume en glissant) : non boîté, l'ontologie n'a pas de
    classe pour lui.
+8. **Terrain** : chaque poste est un `slot`, vide (« + ») ou occupé ; la carte qui l'occupe n'est
+   pas boîtée à part, on agit sur le poste. Hors du terrain (liste, fiche de joueur, marché), une
+   carte de joueur est une `card`. Un paquet ou une récompense n'est pas une carte de joueur.
+   Un poste verrouillé (cadenas, non utilisé par le défi) n'est pas un `slot` : on ne peut rien y
+   placer.
 
 ## Pré-annotation et vérification
 
