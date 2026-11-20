@@ -303,6 +303,27 @@ optimiste : entraînement et test viennent du même site, aux gabarits répété
 quelques dizaines de pages suffisent à apprendre ces classes, au prix d'un à deux points sur le
 web générique ; elle ne mesure pas la reconnaissance sur la vraie Web App, dont le style diffère.
 
+## Organisation du code et sortie pour l'API
+
+`src/sbc_vision/perception/` :
+
+| Module | Rôle |
+| --- | --- |
+| `ontology.py` | Classes du détecteur (ordre fixe) et action de chaque classe |
+| `boxes.py` | IoU et suppression des non-maxima, communes aux données, aux détecteurs et à la mesure |
+| `detector.py` | Interface commune : une image RGB → `(classe, boîte, score)` |
+| `elements.py` | Détections → `DetectedElement` du contrat, au seuil choisi sur la validation |
+| `datasets/` | WebUI, captures de sites, contrôles, quasi-doublons, corrections, découpages, export YOLO |
+| `baselines/` | Approche A (propositions OpenCV, gradient boosting) et son entraînement |
+| `detectors/` | Approche B à l'inférence : YOLO exporté en ONNX, sur processeur |
+| `evaluation/` | Mesure commune (`evaluate`), métriques COCO, comparaison appariée (`compare`) |
+
+Pour l'API, un détecteur (`YoloOnnxDetector`) rend toutes ses détections ; `to_elements` garde
+celles dont le score atteint le `threshold` du rapport de validation (0,30 pour le YOLO26s web),
+les classe par score et les met au format du contrat (boîte en pixels entiers, action). Le
+texte de chaque élément reste vide : l'OCR le remplit. L'assemblage avec l'OCR et le
+raccordement à la route `/api/v1/perception/analyze` relèvent du pipeline commun (#14).
+
 ## Reproduire
 
 ```bash
