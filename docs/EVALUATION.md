@@ -45,6 +45,8 @@ Chaque entraînement enregistre commit Git, version du manifeste, paramètres, s
 
 Les résultats seront ajoutés après les premières mesures, avec les liens vers les runs correspondants.
 
+Le [diagnostic HTTP du 16 novembre](OCR_API.md#résultats-du-16-novembre-2026) reprend le lecteur de Rayan sur trois images publiques avec régions fournies : 7 champs exacts sur 14 au seuil 0,75 et CER 16,9 %. C'est un lot exploratoire de développement, avec cadrages contrôlés pendant sa préparation ; aucune performance de détection ni généralisation n'en est déduite. Les références et empreintes sont versionnées, les images et rapports restent locaux.
+
 Les explorations pourront être regroupées dans `notebooks/` : corpus et splits, baseline, entraînement, évaluation et cas synthétique du solveur. Les fonctions réutilisables restent dans `src/` ; retirer les sorties privées des notebooks avant commit.
 
 ## Premier cas de solveur fictif

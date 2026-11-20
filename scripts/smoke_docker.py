@@ -12,7 +12,7 @@ import urllib.request
 import uuid
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 
 def docker(*arguments, **kwargs):
@@ -74,6 +74,8 @@ def main():
             "-e",
             "SBC_PERCEPTION_MODE=lab-colors",
             "-e",
+            "SBC_OCR_MODE=tesseract-regions",
+            "-e",
             "SBC_ENGINE_MODE=demo",
             "-e",
             "SBC_ENGINE_DATABASE=/app/data/processed/api_demo/inventory.sqlite3",
@@ -124,6 +126,7 @@ def main():
             status == 200
             and capabilities["solver"]
             and capabilities["perception_mode"] == "lab-colors"
+            and capabilities["ocr_mode"] == "tesseract-regions"
         )
         assert docker("exec", identifier, "id", "-u") == "10001"
         assert "tesseract" in docker("exec", identifier, "tesseract", "--version").lower()
@@ -140,6 +143,47 @@ def main():
         )
         assert status == 200 and perception["elements"][0]["id"] == "lab-select"
         checks.append("PNG vers JSON dans le conteneur")
+        ocr_image = Image.new("RGB", (800, 170), "white")
+        draw, font = ImageDraw.Draw(ocr_image), ImageFont.load_default(size=36)
+        draw.text((30, 20), "ALEX EXEMPLE", fill="black", font=font)
+        draw.text((30, 100), "83", fill="black", font=font)
+        ocr_png = io.BytesIO()
+        ocr_image.save(ocr_png, format="PNG")
+        metadata = {
+            "image": {"width": 800, "height": 170},
+            "specification": {
+                "capture_id": "docker-ocr-smoke",
+                "regions": [
+                    {
+                        "element_id": "card-1",
+                        "field": field,
+                        "bbox": {"x": 10, "y": y, "width": 750, "height": 65},
+                    }
+                    for field, y in [("name", 10), ("rating", 90)]
+                ],
+            },
+        }
+        boundary = "sbc-ocr-smoke-boundary"
+        multipart = (
+            f'--{boundary}\r\nContent-Disposition: form-data; name="metadata"\r\n\r\n'.encode()
+            + json.dumps(metadata).encode()
+            + (
+                f'\r\n--{boundary}\r\nContent-Disposition: form-data; name="image"; '
+                'filename="synthetic.png"\r\nContent-Type: image/png\r\n\r\n'
+            ).encode()
+            + ocr_png.getvalue()
+            + f"\r\n--{boundary}--\r\n".encode()
+        )
+        status, ocr = request(
+            "/api/v1/ocr/analyze",
+            method="POST",
+            body=multipart,
+            media=f"multipart/form-data; boundary={boundary}",
+        )
+        assert status == 200 and ocr["cards"][0]["reading"]["rating"] == 83
+        assert ocr["cards"][0]["reading"]["name"] == "ALEX EXEMPLE"
+        assert ocr["cards"][0]["needs_confirmation"] and not ocr["automatic_detection"]
+        checks.append("OCR de Rayan exécuté par HTTP sur une image fictive")
         status, workspace = request("/api/v1/sbc/workspace")
         assert status == 200 and len(workspace["items"]) == 3
         status, solution = request(
@@ -197,7 +241,7 @@ def main():
         checks.append("protection conservée après réinitialisation conditionnelle et redémarrage")
         log_result = subprocess.run(["docker", "logs", identifier], capture_output=True, text=True)
         logs = log_result.stdout + log_result.stderr
-        assert key not in logs and "docker-smoke" not in logs
+        assert key not in logs and "docker-smoke" not in logs and "docker-ocr-smoke" not in logs
         checks.append("pas de clé ni d’identifiant de capture dans les logs")
         report = {
             "data_kind": "synthetic",

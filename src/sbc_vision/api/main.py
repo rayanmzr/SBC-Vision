@@ -9,12 +9,16 @@ from fastapi.openapi.utils import get_openapi
 
 from sbc_vision import __version__
 from sbc_vision.api.access import AccessMiddleware, load_access_config
+from sbc_vision.api.ocr import get_ocr_reader
+from sbc_vision.api.ocr import router as ocr_router
 from sbc_vision.api.perception import get_perception_pipeline
 from sbc_vision.api.perception import router as perception_router
 from sbc_vision.api.sbc_workspace import SbcConfig, get_sbc_config, sbc_available
 from sbc_vision.api.sbc_workspace import router as sbc_router
+from sbc_vision.contracts.ocr import OcrAnalysisRequest
 from sbc_vision.contracts.perception import PerceptionResponse
 from sbc_vision.perception.lab_colors import LabColorPipeline
+from sbc_vision.perception.ocr_regions import RegionOcrReader, load_ocr_reader
 from sbc_vision.perception.pipeline import PerceptionPipeline
 
 
@@ -25,12 +29,15 @@ async def lifespan(application: FastAPI):
     if mode not in {"disabled", "lab-colors"}:
         raise RuntimeError("SBC_PERCEPTION_MODE doit valoir disabled ou lab-colors.")
     previous = getattr(application.state, "perception_pipeline", None)
+    previous_ocr = getattr(application.state, "ocr_reader", None)
+    application.state.ocr_reader = load_ocr_reader()
     if mode == "lab-colors":
         application.state.perception_pipeline = LabColorPipeline()
     try:
         yield
     finally:
         application.state.access_config = None
+        application.state.ocr_reader = previous_ocr
         if mode == "lab-colors":
             application.state.perception_pipeline = previous
 
@@ -46,6 +53,7 @@ app = FastAPI(
     ),
 )
 app.include_router(perception_router)
+app.include_router(ocr_router)
 app.include_router(sbc_router)
 app.add_middleware(AccessMiddleware)
 
@@ -85,6 +93,7 @@ def health() -> dict[str, str | bool]:
 def capabilities(
     config: Annotated[SbcConfig | None, Depends(get_sbc_config)],
     pipeline: Annotated[PerceptionPipeline | None, Depends(get_perception_pipeline)],
+    reader: Annotated[RegionOcrReader | None, Depends(get_ocr_reader)],
 ) -> dict[str, bool | str]:
     engine = sbc_available(config)
     return {
@@ -97,7 +106,9 @@ def capabilities(
             if pipeline
             else "disabled"
         ),
-        "ocr": False,
+        "ocr": reader is not None,
+        "ocr_mode": "tesseract-regions" if reader else "disabled",
+        "ocr_regions_required": reader is not None,
         "inventory": engine,
         "solver": engine,
         "sbc_workspace": engine,
@@ -109,3 +120,8 @@ def capabilities(
 @app.get("/api/v1/contracts/perception", tags=["contracts"])
 def perception_contract() -> dict:
     return PerceptionResponse.model_json_schema()
+
+
+@app.get("/api/v1/contracts/ocr-request", tags=["contracts"])
+def ocr_request_contract() -> dict:
+    return OcrAnalysisRequest.model_json_schema()

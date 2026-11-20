@@ -526,7 +526,11 @@ def evaluation_demo(folder, *, lang="eng", labels=None):
         "lang": lang,
     }
     expected = {"capture_id": spec.capture_id, "regions": references}
-    for name, data in [("report", report), ("expected", expected)]:
+    for name, data in [
+        ("report", report),
+        ("expected", expected),
+        ("regions", spec.model_dump(mode="json")),
+    ]:
         (folder / f"ocr_demo.{name}.json").write_text(
             json.dumps(data, ensure_ascii=False, indent=2) + "\n"
         )
