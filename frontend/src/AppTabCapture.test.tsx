@@ -4,6 +4,13 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import App from './App';
 import { captureActiveTab, type TabCapture } from './lib/tab-capture';
 import perception from '../../data/fixtures/perception.synthetic.json';
+import workspaceFixture from '../../data/fixtures/workspace-api.synthetic.json';
+import { scanClub } from './lib/club-scan';
+
+vi.mock('./lib/club-scan', async (original) => ({
+    ...(await original<typeof import('./lib/club-scan')>()),
+    scanClub: vi.fn(),
+}));
 
 vi.mock('./lib/tab-capture', async (original) => ({
     ...(await original<typeof import('./lib/tab-capture')>()),
@@ -35,6 +42,7 @@ const captured = (): TabCapture => ({
     },
 });
 beforeEach(() => {
+    vi.mocked(scanClub).mockReset();
     localStorage.clear();
     vi.stubGlobal('chrome', {
         runtime: { id: 'test', getURL: vi.fn(() => 'chrome-extension://test/index.html') },
@@ -80,6 +88,62 @@ async function ready() {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Analyser' }));
 }
+
+it.each([true, false])(
+    'sauvegarde le scan et exige un parcours complet avant confirmation : %s',
+    async (complete) => {
+        vi.mocked(scanClub).mockResolvedValue({ capture_id: 'synthetic-dom', complete, pages: [] });
+        const fetchMock = vi.fn(async (url: string, options?: RequestInit) => {
+            const confirmed = options?.body ? JSON.parse(String(options.body)).confirmed : false;
+            const value = url.endsWith('/health')
+                ? { status: 'ok', version: '0.1.0', model_loaded: true }
+                : url.endsWith('/capabilities')
+                  ? { perception: true, ocr: true }
+                  : url.endsWith('/workspace')
+                    ? { ...workspaceFixture.workspace, mode: 'local' }
+                    : {
+                          source: 'dom',
+                          complete,
+                          pages: 1,
+                          observed: 1,
+                          identified: 1,
+                          pending: 0,
+                          loans: 0,
+                          ocr_readable: 0,
+                          ocr_matched: 0,
+                          inventory_updated: confirmed,
+                          cards: [],
+                      };
+            return new Response(JSON.stringify(value));
+        });
+        vi.stubGlobal('fetch', fetchMock);
+        await ready();
+        fireEvent.click(screen.getByRole('button', { name: 'Réglages' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Vérifier la connexion' }));
+        await screen.findByText('Serveur joignable · v0.1.0');
+        fireEvent.click(screen.getByRole('button', { name: 'Analyser' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Scanner le club depuis la première page' }),
+        );
+        await screen.findByText('Observations enregistrées sur le serveur.');
+        const calls = () => fetchMock.mock.calls.filter(([url]) => url.endsWith('/club-scan'));
+        expect(JSON.parse(String(calls()[0][1]?.body)).confirmed).toBe(false);
+        const confirm = screen.getByRole('button', {
+            name: 'Confirmer les versions identifiées dans le club local',
+        }) as HTMLButtonElement;
+        expect(confirm.disabled).toBe(!complete);
+        if (complete) {
+            fireEvent.click(confirm);
+            await screen.findByText(
+                'Comptage local remplacé ; les cartes importées sont protégées.',
+            );
+            expect(JSON.parse(String(calls()[1][1]?.body))).toMatchObject({
+                confirmed: true,
+                expected_revision: workspaceFixture.workspace.revision,
+            });
+        }
+    },
+);
 
 it('ouvre l’espace de travail et ferme uniquement le popup sur demande', async () => {
     const initialUrl = location.href;

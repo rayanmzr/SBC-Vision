@@ -12,6 +12,141 @@ from sbc_vision.api.main import app
 from sbc_vision.api.sbc_workspace import SbcConfig, SbcWorkspace, get_workspace, solve_slot
 from sbc_vision.sbc_engine.players import open_database, seed_demo, set_protected
 
+
+def dom_scan(service):
+    # Le mode local est testé avec des cartes fictives et un domaine réservé aux exemples.
+    service.config = replace(service.config, mode="local", challenge_path=None)
+    with closing(open_database(service.config.database)) as db:
+        db.execute("DELETE FROM club_items")
+        cards = [json.loads(r[0]) for r in db.execute("SELECT data FROM cards")]
+        for c in cards:
+            c["source_url"] = f"https://example.test/synthetic/{c['id']}"
+            db.execute("UPDATE cards SET data=? WHERE id=?", (json.dumps(c), c["id"]))
+        db.commit()
+    card = next(c for c in cards if c["id"] == 900004)
+
+    def row(element, loan=False):
+        return {
+            "reading": {
+                "capture_id": "synthetic-dom",
+                "element_id": element,
+                "name": card["name"],
+                "rating": card["rating"],
+                "position": card["positions"][0],
+            },
+            "visible": True,
+            "loan": loan,
+        }
+
+    return {
+        "capture_id": "synthetic-dom",
+        "complete": True,
+        "expected_revision": service.snapshot().revision,
+        "pages": [
+            {"cards": [row("p1-r1"), row("p1-r2", True)], "has_previous": False, "has_next": True},
+            {"cards": [row("p2-r1")], "has_previous": True, "has_next": False},
+        ],
+    }
+
+
+def test_dom_scan_saves_observations_then_replaces_only_a_confirmed_local_count(client, service):
+    body = dom_scan(service)
+    response = client.post("/api/v1/sbc/club-scan", json=body)
+    assert response.status_code == 200, response.text
+    assert response.json()["source"] == "dom"
+    assert response.json()["observed"] == 3
+    assert response.json()["identified"] == 2
+    assert response.json()["loans"] == 1
+    assert response.json()["ocr_readable"] == 0
+    assert service.snapshot().items == []
+    saved = client.get("/api/v1/sbc/club-scan")
+    assert saved.status_code == 200
+    assert saved.json()["report"]["observed"] == 3
+    assert (
+        saved.json()["observation"]["pages"][0]["cards"][0]["reading"]["capture_id"]
+        == body["capture_id"]
+    )
+    body["confirmed"] = True
+    assert client.post("/api/v1/sbc/club-scan", json=body).status_code == 200
+    assert len(service.snapshot().items) == 2
+    assert all(c.protected for c in service.snapshot().items)
+    body["expected_revision"] = service.snapshot().revision
+    assert client.post("/api/v1/sbc/club-scan", json=body).status_code == 200
+    assert len(service.snapshot().items) == 2
+
+
+@pytest.mark.parametrize(
+    "fault", ["partial", "repeated", "capture", "stale", "manual", "confidence"]
+)
+def test_invalid_dom_scan_never_modifies_the_inventory(client, service, fault):
+    body = dom_scan(service)
+    body["confirmed"] = True
+    if fault == "partial":
+        body["complete"] = False
+    if fault == "repeated":
+        body["pages"][1]["cards"] = body["pages"][0]["cards"]
+    if fault == "capture":
+        body["pages"][0]["cards"][0]["reading"]["capture_id"] = "other"
+    if fault == "stale":
+        body["expected_revision"] = "0" * 64
+    if fault == "confidence":
+        body["pages"][0]["cards"][0]["reading"]["confidence"] = 1
+    if fault == "manual":
+        from sbc_vision.sbc_engine.models import ClubItem
+        from sbc_vision.sbc_engine.players import save_item
+
+        with closing(open_database(service.config.database)) as db:
+            save_item(
+                db,
+                ClubItem(
+                    instance_id="manual",
+                    card_id=900004,
+                    source_observation="synthetic",
+                    protected=True,
+                ),
+                confirmed=True,
+            )
+        body["expected_revision"] = service.snapshot().revision
+    before = service.snapshot().items
+    response = client.post("/api/v1/sbc/club-scan", json=body)
+    assert response.status_code in {409, 422}, response.text
+    assert service.snapshot().items == before
+
+
+def test_ocr_dom_agreement_counts_visible_rows_once_and_keeps_the_sources_distinct(client, service):
+    body = dom_scan(service)
+    page = body["pages"][0]
+    page["cards"][1]["visible"] = False
+    reading = {**page["cards"][0]["reading"], "capture_id": "synthetic-ocr", "confidence": 0.99}
+    page["ocr"] = {
+        "capture_id": "synthetic-ocr",
+        "image": {"width": 100, "height": 100},
+        "engine_version": "synthetic",
+        "language": "eng",
+        "minimum_confidence": 0.75,
+        "regions": [],
+        "positions": [],
+        "challenge_ready": False,
+        "challenge": None,
+        "challenge_issues": [],
+        "cards": [
+            {
+                "element_id": f"ocr-{i}",
+                "reading": {**reading, "element_id": f"ocr-{i}"},
+                "candidate_ids": [],
+                "issues": [],
+                "needs_confirmation": True,
+            }
+            for i in range(3)
+        ],
+    }
+    response = client.post("/api/v1/sbc/club-scan", json=body)
+    assert response.status_code == 200, response.text
+    assert response.json()["ocr_readable"] == 3
+    assert response.json()["ocr_matched"] == 1
+    assert "confidence" not in response.json()["cards"][0]["reading"]
+
+
 FIXTURES = Path(__file__).resolve().parents[1] / "data/fixtures"
 
 

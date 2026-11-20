@@ -6,6 +6,7 @@ import re
 import sqlite3
 import time
 import unicodedata
+from collections import Counter
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
@@ -13,7 +14,7 @@ from urllib.parse import parse_qs, urlsplit
 import httpx
 from bs4 import BeautifulSoup
 
-from .models import Candidate, CardReading, ClubItem
+from .models import Candidate, CardObservation, CardReading, ClubItem
 
 BASE_URL = "https://www.futbin.com"
 ATTRIBUTION = f"Données de prix : FUTBIN — {BASE_URL}/"
@@ -349,7 +350,7 @@ def normalize_name(name: str) -> str:
     return "".join(c for c in unicodedata.normalize("NFKD", name.casefold()) if c.isalnum())
 
 
-def find_candidates(db: sqlite3.Connection, reading: CardReading) -> list[dict]:
+def find_candidates(db: sqlite3.Connection, reading: CardObservation) -> list[dict]:
     name = normalize_name(reading.name)
     if not name:
         return []
@@ -562,6 +563,107 @@ def sync_scan(db, captures, *, confirmed=False):
         "saved": len(items) if confirmed else 0,
         "pending": pending,
     }
+
+
+def save_dom_scan(db, document, *, confirmed=False):
+    """Conserver les observations HTML et, après confirmation, leur comptage local."""
+    pages = document["pages"]
+    complete = document["complete"]
+    if pages[0]["has_previous"] or (complete and pages[-1]["has_next"]):
+        raise ValueError("Le scan doit partir de la première page et atteindre la dernière.")
+    if any(not p["has_next"] for p in pages[:-1]) or any(not p["has_previous"] for p in pages[1:]):
+        raise ValueError("Pagination incohérente.")
+    cards, signatures, ids, ocr_matched = [], set(), set(), 0
+    for page in pages:
+        signature = json.dumps(
+            [{**c["reading"], "element_id": "", "capture_id": ""} for c in page["cards"]],
+            sort_keys=True,
+        )
+        if signature in signatures:
+            raise ValueError("Page répétée : le scan n'est pas complet.")
+        signatures.add(signature)
+        for card in page["cards"]:
+            reading = CardObservation.model_validate(card["reading"])
+            if reading.capture_id != document["capture_id"] or reading.element_id in ids:
+                raise ValueError("Identifiant d'observation incohérent ou répété.")
+            ids.add(reading.element_id)
+            candidates = find_candidates(db, reading)
+            cards.append({**card, "candidate_ids": [c["id"] for c in candidates]})
+        # Concordance nom/note sur cette page, distincte d'un benchmark OCR indépendant.
+        remaining = [c["reading"] for c in page["cards"] if c["visible"]]
+        for result in (page.get("ocr") or {}).get("cards", []):
+            observed = result["reading"]
+            if observed and not result["issues"]:
+                match = next(
+                    (
+                        c
+                        for c in remaining
+                        if c["rating"] == observed["rating"]
+                        and normalize_name(c["name"]) == normalize_name(observed["name"])
+                    ),
+                    None,
+                )
+                if match is not None:
+                    ocr_matched += 1
+                    remaining.remove(match)
+    usable = [c for c in cards if not c["loan"] and len(c["candidate_ids"]) == 1]
+    if confirmed and (not complete or not usable):
+        raise ValueError("Un scan complet et des versions identifiées sont nécessaires.")
+    if (
+        confirmed
+        and db.execute(
+            "SELECT 1 FROM club_items WHERE instance_id NOT LIKE 'dom:%' LIMIT 1"
+        ).fetchone()
+    ):
+        raise ValueError("L'inventaire contient des copies manuelles : rapprochement nécessaire.")
+    counts, items = Counter(), []
+    for card in usable:
+        version = card["candidate_ids"][0]
+        counts[version] += 1
+        # Ordinal local par version, jamais présenté comme un identifiant d'exemplaire EA.
+        items.append(
+            ClubItem(
+                instance_id=f"dom:{version}:{counts[version]}",
+                card_id=version,
+                protected=True,
+                source_observation=f"dom:{document['capture_id']}:{card['reading']['element_id']}",
+            )
+        )
+    report = {
+        "capture_id": document["capture_id"],
+        "source": "dom",
+        "complete": complete,
+        "pages": len(pages),
+        "observed": len(cards),
+        "identified": len(usable),
+        "loans": sum(c["loan"] for c in cards),
+        "pending": len(cards) - len(usable),
+        "ocr_readable": sum(
+            bool(c["reading"]) and not c["issues"]
+            for p in pages
+            if p.get("ocr")
+            for c in p["ocr"]["cards"]
+        ),
+        "inventory_updated": confirmed,
+        "ocr_matched": ocr_matched,
+        "cards": cards,
+    }
+    with db:
+        db.execute(
+            "CREATE TABLE IF NOT EXISTS club_scans (id TEXT PRIMARY KEY, data TEXT NOT NULL)"
+        )
+        db.execute(
+            "INSERT OR REPLACE INTO club_scans VALUES (?, ?)",
+            (
+                document["capture_id"],
+                json.dumps({"observation": document, "report": report}),
+            ),
+        )
+        if confirmed:
+            # Seul un parcours complet remplace le précédent comptage DOM ; tout redevient protégé.
+            db.execute("DELETE FROM club_items WHERE instance_id LIKE 'dom:%'")
+            save_items(db, items, confirmed=True)
+    return report
 
 
 def set_protected(db: sqlite3.Connection, instance_id: str, protected: bool):

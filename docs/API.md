@@ -92,5 +92,12 @@ Ce lot a servi aux réglages ; ces observations ne mesurent pas la généralisat
 
 L’extension empaquetée a été chargée dans un Chromium isolé : connexion à l’API locale,
 calcul CP-SAT sur données fictives, protection persistante et analyse de la capture EA
-ont été exercés. Cela ne valide ni la capture depuis le bouton de Chrome sur le compte EA,
-ni le scan, ni le placement réel. `controller` et `live_actions_enabled` restent faux.
+ont été exercés. Le scan hybride OCR/HTML est décrit dans [SBC_API.md](SBC_API.md#scan-hybride-du-club-ea).
+Les actions de placement et d'échange ne sont pas raccordées ; `controller` et
+`live_actions_enabled` restent faux côté serveur. Le client du scan n'autorise que Next.
+
+Essai supplémentaire depuis le popup de l'extension chargée dans Chrome : neuf pages,
+163 observations sauvegardées via HTTP ; neuf lectures OCR exploitables dont huit
+concordent avec des lignes entièrement visibles. Ce second passage utilise la capture
+native de l'onglet et ne remplace pas le premier relevé par capture du bureau. Les deux
+comptages OCR restent séparés ; aucun score indépendant de précision n'est annoncé.

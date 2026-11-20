@@ -16,7 +16,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from sbc_vision.contracts.ocr import OcrAnalysisResponse
-from sbc_vision.sbc_engine.models import Candidate, Challenge
+from sbc_vision.sbc_engine.models import Candidate, CardObservation, Challenge
 
 router = APIRouter(prefix="/api/v1/sbc", tags=["sbc"])
 solve_slot = BoundedSemaphore(1)
@@ -67,6 +67,31 @@ class InventoryRequest(BaseModel):
     report: OcrAnalysisResponse
     choices: dict[str, InventoryChoice]
     confirmed: Literal[True]
+
+
+class DomCard(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    reading: CardObservation
+    visible: bool
+    loan: bool
+
+
+class ClubPage(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    cards: list[DomCard] = Field(min_length=1, max_length=100)
+    has_previous: bool
+    has_next: bool
+    ocr: OcrAnalysisResponse | None = None
+    ocr_error: str | None = Field(default=None, max_length=500)
+
+
+class ClubScanRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    capture_id: str = Field(min_length=1, max_length=128)
+    pages: list[ClubPage] = Field(min_length=1, max_length=500)
+    complete: bool
+    confirmed: bool = False
+    expected_revision: str = Field(pattern="^[0-9a-f]{64}$")
 
 
 class SolveResponse(BaseModel):
@@ -297,6 +322,36 @@ class SbcWorkspace:
         finally:
             solve_slot.release()
 
+    def record_scan(self, request: ClubScanRequest) -> dict:
+        if self.config.mode != "local":
+            raise fail(409, "local_inventory_required", "Le scan EA exige une base en mode local.")
+        document, challenge, _ = self.challenge_document()
+        with closing(self.players.open_database(self.config.database)) as db:
+            db.execute("BEGIN IMMEDIATE")
+            revision, _ = self.read_state(db, document, challenge, self.reference_time(document))
+            self.require_revision(revision, request.expected_revision)
+            try:
+                return self.players.save_dom_scan(
+                    db,
+                    request.model_dump(exclude={"expected_revision", "confirmed"}),
+                    confirmed=request.confirmed,
+                )
+            except ValueError as exc:
+                raise fail(422, "invalid_club_scan", str(exc)) from exc
+
+    def latest_scan(self) -> dict:
+        revision = self.snapshot().revision
+        with closing(self.players.open_database(self.config.database)) as db:
+            exists = db.execute("SELECT 1 FROM sqlite_master WHERE name='club_scans'").fetchone()
+            row = (
+                db.execute("SELECT data FROM club_scans ORDER BY rowid DESC LIMIT 1").fetchone()
+                if exists
+                else None
+            )
+        if not row:
+            raise fail(404, "club_scan_missing", "Aucun relevé du club n'est enregistré.")
+        return {**json.loads(row[0]), "expected_revision": revision}
+
 
 def get_workspace(config: Annotated[SbcConfig | None, Depends(get_sbc_config)]) -> SbcWorkspace:
     if config is None:
@@ -347,3 +402,17 @@ def record_readings(
 ):
     """Enregistrer les versions et exemplaires explicitement confirmés ; aucun clic EA."""
     return database_call(service.record, body)
+
+
+@router.post("/club-scan")
+def record_club_scan(
+    body: ClubScanRequest, service: Annotated[SbcWorkspace, Depends(get_workspace)]
+):
+    """Sauver le scan hybride ; la confirmation remplace seulement le comptage local DOM."""
+    return database_call(service.record_scan, body)
+
+
+@router.get("/club-scan")
+def latest_club_scan(service: Annotated[SbcWorkspace, Depends(get_workspace)]):
+    """Rouvrir le dernier relevé privé après fermeture du popup."""
+    return database_call(service.latest_scan)

@@ -57,7 +57,6 @@
     },
     "CardReading": {
       "additionalProperties": false,
-      "description": "Attributs lus sur une carte, à rapprocher des versions du catalogue.",
       "properties": {
         "capture_id": {
           "minLength": 1,
@@ -79,12 +78,6 @@
           "minimum": 1,
           "title": "Rating",
           "type": "integer"
-        },
-        "confidence": {
-          "maximum": 1,
-          "minimum": 0,
-          "title": "Confidence",
-          "type": "number"
         },
         "position": {
           "anyOf": [
@@ -201,6 +194,12 @@
           },
           "title": "Stats",
           "type": "object"
+        },
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
         }
       },
       "required": [

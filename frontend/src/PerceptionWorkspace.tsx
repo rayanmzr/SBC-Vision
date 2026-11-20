@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { StadiumIcon } from './design-a1/StadiumKit';
 import { isExtension } from './lib/platform';
 import { imagePointToViewport, type TabCapture } from './lib/tab-capture';
@@ -7,6 +7,7 @@ import { requestJson } from './lib/api';
 import { loadWorkspace } from './lib/sbc-api';
 import { DEFAULT_API_URL } from './lib/platform';
 import type { SolverReport } from './lib/sbc-report';
+import { scanClub, type ClubScan } from './lib/club-scan';
 
 export type CaptureSelection = {
     file: File;
@@ -29,6 +30,7 @@ type Props = {
     onClear: () => void;
     apiUrl?: string;
     onChallenge?: (challenge: SolverReport['challenge']) => void;
+    onScanRunning?: (running: boolean) => void;
 };
 const kinds: Record<ElementKind, string> = {
     button: 'Bouton',
@@ -55,6 +57,7 @@ export default function PerceptionWorkspace({
     onClear,
     apiUrl = DEFAULT_API_URL,
     onChallenge,
+    onScanRunning,
 }: Props) {
     const fileInput = useRef<HTMLInputElement>(null);
     const [sourcesOpen, setSourcesOpen] = useState(false);
@@ -125,6 +128,15 @@ export default function PerceptionWorkspace({
                         Retirer
                     </button>
                 </div>
+            )}
+            {isExtension() && (
+                <ClubScanPanel
+                    key={apiUrl}
+                    apiUrl={apiUrl}
+                    connected={connected}
+                    disabled={!!busy}
+                    onRunning={onScanRunning}
+                />
             )}
             <div className="analysis-layout">
                 <div
@@ -531,6 +543,217 @@ export default function PerceptionWorkspace({
                     )}
                 </section>
             </div>
+        </section>
+    );
+}
+
+function ClubScanPanel({
+    apiUrl,
+    connected,
+    disabled,
+    onRunning,
+}: {
+    apiUrl: string;
+    connected: boolean;
+    disabled: boolean;
+    onRunning?: (running: boolean) => void;
+}) {
+    type Report = {
+        source: 'dom';
+        complete: boolean;
+        pages: number;
+        observed: number;
+        identified: number;
+        pending: number;
+        loans: number;
+        ocr_readable: number;
+        ocr_matched: number;
+        inventory_updated: boolean;
+        cards: Array<{
+            reading: { name: string; element_id: string };
+            candidate_ids: number[];
+            loan: boolean;
+        }>;
+    };
+    const [scan, setScan] = useState<ClubScan | null>(null);
+    const [report, setReport] = useState<Report | null>(null);
+    const [revision, setRevision] = useState('');
+    const [message, setMessage] = useState('');
+    const [limit, setLimit] = useState(100);
+    const current = useRef<AbortController | null>(null);
+    useEffect(
+        () => () => {
+            current.current?.abort();
+            onRunning?.(false);
+        },
+        [onRunning],
+    );
+    async function run(confirm = false, saveOnly = false) {
+        const controller = new AbortController();
+        current.current = controller;
+        onRunning?.(true);
+        setMessage(confirm ? 'Enregistrement du comptage local…' : 'Préparation du scan…');
+        try {
+            let observation = scan,
+                expected = revision;
+            if (!confirm && !saveOnly) {
+                setReport(null);
+                setScan(null);
+                const workspace = await loadWorkspace(apiUrl, controller.signal);
+                if (workspace.mode !== 'local')
+                    throw new Error(
+                        'Configurer une base locale réelle, hors démo, avant le scan EA.',
+                    );
+                expected = workspace.revision;
+                setRevision(expected);
+                observation = await scanClub(apiUrl, controller.signal, setMessage, limit, setScan);
+                setScan(observation);
+            }
+            const value = (await requestJson(
+                apiUrl,
+                '/api/v1/sbc/club-scan',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ...observation,
+                        expected_revision: expected,
+                        confirmed: confirm,
+                    }),
+                },
+                controller.signal,
+                15000,
+            )) as Report;
+            if (
+                value.source !== 'dom' ||
+                !Number.isSafeInteger(value.observed) ||
+                !Array.isArray(value.cards)
+            )
+                throw new Error('Rapport de scan invalide.');
+            setReport(value);
+            setMessage(
+                confirm
+                    ? 'Comptage local remplacé ; les cartes importées sont protégées.'
+                    : 'Observations enregistrées sur le serveur.',
+            );
+        } catch (error) {
+            setMessage(
+                controller.signal.aborted
+                    ? 'Scan arrêté. Les pages déjà lues peuvent être sauvegardées séparément.'
+                    : error instanceof Error
+                      ? error.message
+                      : 'Scan impossible.',
+            );
+        } finally {
+            current.current = null;
+            onRunning?.(false);
+        }
+    }
+    async function restore() {
+        const controller = new AbortController();
+        current.current = controller;
+        onRunning?.(true);
+        try {
+            const saved = (await requestJson(
+                apiUrl,
+                '/api/v1/sbc/club-scan',
+                {},
+                controller.signal,
+                15000,
+            )) as { observation: ClubScan; report: Report; expected_revision: string };
+            setScan(saved.observation);
+            setReport(saved.report);
+            setRevision(saved.expected_revision);
+            setMessage('Dernier relevé restauré. Rescanner si le contenu du club a changé.');
+        } catch (error) {
+            setMessage(error instanceof Error ? error.message : 'Lecture impossible.');
+        } finally {
+            current.current = null;
+            onRunning?.(false);
+        }
+    }
+    return (
+        <section className="panel" aria-label="Scan hybride du club">
+            <h3>Scanner le club EA</h3>
+            <p>
+                Ouvrir la première page de « Club → Players ». Chaque page est capturée pour l’OCR,
+                puis ses lignes HTML sont lues sans défilement. Seul le bouton « Next » est utilisé.
+            </p>
+            <label>
+                Nombre maximal de pages{' '}
+                <input
+                    type="number"
+                    min="1"
+                    max="500"
+                    value={limit}
+                    disabled={!!current.current}
+                    onChange={(e) => setLimit(Number(e.target.value))}
+                />
+            </label>
+            <button disabled={!connected || disabled || !!current.current} onClick={() => run()}>
+                Scanner le club depuis la première page
+            </button>
+            <button disabled={!connected || disabled || !!current.current} onClick={restore}>
+                Rouvrir le dernier relevé
+            </button>
+            {!!current.current && (
+                <button onClick={() => current.current?.abort()}>Arrêter le scan</button>
+            )}
+            {message && <p role="status">{message}</p>}
+            {scan && !report && !current.current && (
+                <button disabled={disabled} onClick={() => run(false, true)}>
+                    Sauvegarder les pages déjà lues
+                </button>
+            )}
+            {report && (
+                <>
+                    <p>
+                        {report.pages} pages · {report.observed} cartes HTML · {report.ocr_readable}{' '}
+                        lectures OCR exploitables ({report.ocr_matched} noms/notes concordent avec
+                        le HTML visible) · {report.loans} prêts.
+                    </p>
+                    <p>
+                        {report.identified} versions uniques utilisables ; {report.pending}{' '}
+                        observations en attente ou en prêt.{' '}
+                        {report.complete
+                            ? 'Dernière page atteinte.'
+                            : 'Scan partiel : le comptage du club est conservé.'}
+                    </p>
+                    <p>
+                        La confirmation remplace le précédent comptage DOM. Les identifiants sont
+                        locaux ; les copies identiques sont comptées par version. Toutes les cartes
+                        importées sont protégées. Les copies saisies manuellement doivent être
+                        rapprochées séparément.
+                    </p>
+                    <button
+                        disabled={
+                            disabled ||
+                            !!current.current ||
+                            !report.complete ||
+                            !report.identified ||
+                            report.inventory_updated
+                        }
+                        onClick={() => run(true)}
+                    >
+                        Confirmer les versions identifiées dans le club local
+                    </button>
+                    <details>
+                        <summary>Joueurs observés et versions à vérifier</summary>
+                        <ul>
+                            {report.cards.map((c) => (
+                                <li key={c.reading.element_id}>
+                                    {c.reading.name} :{' '}
+                                    {c.loan
+                                        ? 'prêt, exclu des SBC'
+                                        : c.candidate_ids.length
+                                          ? c.candidate_ids.join(', ')
+                                          : 'version absente du catalogue'}
+                                </li>
+                            ))}
+                        </ul>
+                    </details>
+                </>
+            )}
         </section>
     );
 }

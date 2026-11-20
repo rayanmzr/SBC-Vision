@@ -248,3 +248,15 @@ L'essai étendu du 12 novembre contient 362 versions : 62 or, 150 argent et 150 
 3. `ocr.py` lit les pixels et traduit les conditions reconnues.
 4. `solver.py` crée les variables, impose les contraintes, minimise le coût et vérifie le résultat.
 5. `__main__.py` relie les fonctions pour les essais en terminal.
+
+### Inventaire du scan HTML
+
+Le scan de l'extension utilise `CardObservation` sans confiance OCR ; `CardReading`
+ajoute la confiance mesurée pour les lectures Tesseract. Les règles de rapprochement
+sont communes. `players.save_dom_scan` conserve le rapport brut dans SQLite, puis
+remplace le comptage DOM uniquement après confirmation d'un parcours complet. Les
+prêts, ambiguïtés et versions absentes restent hors des cartes utilisables. Chaque
+rescan remet les cartes importées sous protection. Ce comptage par version ne fournit
+pas les identifiants internes d'exemplaires EA et refuse le mélange avec les copies
+créées manuellement. Le [guide API](../../../docs/SBC_API.md#scan-hybride-du-club-ea)
+décrit la navigation, le stockage et les résultats de développement.

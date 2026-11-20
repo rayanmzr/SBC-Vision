@@ -396,11 +396,12 @@ export default function App() {
                         selection={selection}
                         result={result}
                         connected={!!connection}
-                        busy={busy}
+                        busy={busy ?? (controllerRunning ? 'club' : null)}
                         onChoose={chooseFile}
                         onCapture={captureTab}
                         onAnalyze={analyze}
                         apiUrl={apiUrl}
+                        onScanRunning={setControllerRunning}
                         onChallenge={(challenge) => {
                             setOcrChallenge(challenge);
                             navigate('sbc');

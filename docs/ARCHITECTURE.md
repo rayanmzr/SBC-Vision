@@ -2,11 +2,14 @@
 
 ```mermaid
 flowchart LR
+    U[Page du club EA] --> A
+    U --> M[HTML des lignes présentes]
     A[Capture par extension Chrome] --> B[API Python de perception]
     B --> C[Détection puis OCR]
     C --> D[JSON validé]
     D --> E[Contrôleur scripté]
     D --> F[Inventaire et conditions]
+    M --> F
     G[Catalogue et prix FUTBIN] --> H[SQLite et provenance]
     F --> I[Solveur de contraintes]
     H --> I
@@ -54,12 +57,13 @@ Le choix de source relie aussi cette boucle à la route de perception Python via
 Le mode `SBC_PERCEPTION_MODE=detector` relie le modèle aux régions de cartes puis à l'OCR.
 La réponse de perception transporte un rapport OCR typé facultatif, affiché par l'extension.
 L'ajout local d'exemplaires passe par `/api/v1/sbc/inventory`, avec choix explicites et contrôle
-de révision. Le solveur accepte les conditions courantes de la requête. Le scan autonome et les
-actions sur EA ne sont pas validés ; `controller` et `live_actions_enabled` restent faux.
+de révision. Le solveur accepte les conditions courantes de la requête. Le scan hybride ajoute la lecture des lignes HTML et la navigation `Next`,
+avec stockage des observations séparé de leur confirmation. Le placement et les échanges EA
+ne sont pas raccordés ; `controller` et `live_actions_enabled` restent faux.
 
 Les conditions sont transmises dynamiquement par l'OCR au contrat `dynamic-v1`. Le solveur distingue composition et Item Score, traite les contraintes reconnues et vérifie ses résultats séparément. La note d'équipe est limitée à onze emplacements et le collectif à un profil standard sans bonus particuliers. Les autres cas sont rejetés. Le [guide](../src/sbc_vision/sbc_engine/README.md) précise les limites et l'interface entre les membres.
 
-Les contrats `CardReading` et `ClubItem` préparent le raccordement à l'OCR et au contrôleur. Une version candidate reste à confirmer et l'identité des exemplaires entre captures est à gérer côté contrôleur. Les quantités et protections ne sont jamais déduites du seul nom du joueur.
+Les contrats `CardReading` et `ClubItem` préparent le raccordement à l'OCR et au contrôleur. Une version candidate reste à confirmer et l'identité des exemplaires entre captures est à gérer côté contrôleur. Le scan DOM compte les lignes par version confirmée avec des identifiants locaux ; il ne retrouve pas l'identité persistante des exemplaires EA. Les copies identiques ne sont pas confondues avec plusieurs observations OCR d'une même ligne. Toutes les cartes réimportées sont protégées.
 
 ## Contrat de perception v0.1
 

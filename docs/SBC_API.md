@@ -109,3 +109,46 @@ la préparation du partage sont décrites dans le guide de déploiement ; le clo
 La note d'équipe et le collectif conservent
 les limites du profil standard documentées par Rayan ; une proposition n'est pas une
 confirmation par EA. Le détecteur alimente l'OCR ; le scan réel et le contrôleur restent à raccorder.
+
+## Scan hybride du club EA
+
+L'extension ajoute « Scanner le club EA » sur Analyser. Depuis la première page de
+`Club → Players` (interface anglaise), elle capture la zone visible pour l'OCR, lit les
+lignes HTML déjà rendues, puis utilise seulement `Next`. Le parcours est borné entre
+1 et 500 pages (100 par défaut), s'arrête sur page répétée ou changement d'onglet et
+peut être interrompu. Aucune requête vers une API privée EA n'est effectuée.
+
+`POST /api/v1/sbc/club-scan` accepte `capture_id`, `pages`, `complete`, `expected_revision`
+et `confirmed` (faux par défaut). Chaque page contient les cartes DOM, leur visibilité,
+leur état de prêt, les indicateurs de pagination et le rapport OCR éventuel. Les
+observations sont sauvegardées dans `club_scans` en SQLite, même lorsque le catalogue
+ne retrouve pas la version. Les cartes DOM ne reçoivent aucune confiance OCR. `GET /api/v1/sbc/club-scan`
+permet de rouvrir le dernier relevé depuis le popup après sa fermeture.
+
+Après examen, la confirmation d'un scan complet remplace uniquement le précédent
+comptage DOM dans `club_items`. Les versions uniques hors prêt sont importées ; les
+ambiguïtés et absences du catalogue restent en attente. Les identifiants `dom:version:n`
+sont des ordinaux locaux, sans équivalence revendiquée avec les exemplaires EA. Un
+rescan conserve les quantités observées sans les additionner et remet toutes les
+cartes importées sous protection. Les copies manuelles provoquent un refus : leur
+rapprochement avec le comptage DOM doit être explicite. Un scan partiel ne remplace
+pas cet inventaire. Les cartes évoluées absentes du catalogue restent en attente.
+
+Les prêts sont détectés dans le HTML et exclus de l'import utilisable en SBC. Les
+attributs de logos restent confrontés strictement au catalogue : un identifiant
+EA différent ne doit pas être assimilé à un identifiant fournisseur sans table de
+correspondance vérifiée. Les prix absents ou périmés restent inconnus.
+
+Le 20 novembre, un parcours réel en lecture a relevé neuf pages et 163 cartes, dont
+six prêts. Treize lectures OCR exploitables concordent en nom/note avec les lignes
+visibles. Le petit catalogue local ne permettait d'identifier sans ambiguïté qu'une
+version utilisable ; les autres observations restent sauvegardées, sans fausse
+confirmation. Ces chiffres décrivent un essai de développement avec contrôle DOM,
+pas un benchmark OCR indépendant. L'essai public FUTBIN du même jour a répondu 403.
+Les captures, rapports et détails du club restent locaux et ignorés par Git.
+
+Essai supplémentaire depuis le popup de l'extension chargée dans Chrome : neuf pages,
+163 observations sauvegardées via HTTP ; neuf lectures OCR exploitables dont huit
+concordent avec des lignes entièrement visibles. Ce second passage utilise la capture
+native de l'onglet et ne remplace pas le premier relevé par capture du bureau. Les deux
+comptages OCR restent séparés ; aucun score indépendant de précision n'est annoncé.

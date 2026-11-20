@@ -35,14 +35,13 @@ class OcrInput(StrictModel):
         return self
 
 
-class CardReading(StrictModel):
-    """Attributs lus sur une carte, à rapprocher des versions du catalogue."""
+class CardObservation(StrictModel):
+    """Attributs d'une carte, sans attribuer de confiance OCR au HTML."""
 
     capture_id: str = Field(min_length=1)
     element_id: str = Field(min_length=1)
     name: str = Field(min_length=1)
     rating: int = Field(ge=1, le=99)
-    confidence: float = Field(ge=0, le=1)
     position: str | None = Field(default=None, min_length=1)
     club_id: int | None = Field(default=None, gt=0)
     league_id: int | None = Field(default=None, gt=0)
@@ -54,6 +53,10 @@ class CardReading(StrictModel):
         Literal["PAC", "SHO", "PAS", "DRI", "DEF", "PHY", "DIV", "HAN", "KIC", "REF", "SPD", "POS"],
         Annotated[int, Field(ge=0, le=99)],
     ] = Field(default_factory=dict)
+
+
+class CardReading(CardObservation):
+    confidence: float = Field(ge=0, le=1)
 
 
 class ClubItem(StrictModel):

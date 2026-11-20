@@ -6,7 +6,7 @@ Le client prévu est une **extension Chrome avec interface React**, reliée à l
 
 Le modèle transforme une capture en une liste JSON d'éléments et d'actions possibles. Un contrôleur exploite ce résultat pour inventorier le club, préparer une composition et vérifier les écrans. Le solveur cherche à réduire les dépenses et la valeur des cartes sacrifiées, en préservant les cartes protégées.
 
-**Avancement :** l'extension, l'API, le détecteur ONNX, l'OCR, l'inventaire SQLite et le solveur sont raccordés. La cible du parcours est uniquement la vraie Web App EA. Les essais sur les captures EA montrent encore des versions ambiguës et des emplacements manqués : le scan autonome et le remplissage réel ne sont pas validés. Voir le [guide API](docs/API.md).
+**Avancement :** l'extension, l'API, le détecteur ONNX, l'OCR, l'inventaire SQLite et le solveur sont raccordés. La cible du parcours est uniquement la vraie Web App EA. Les essais sur les captures EA montrent encore des versions ambiguës et des emplacements manqués : le scan hybride du club est implémenté ; le remplissage réel reste à raccorder. Voir le [guide API](docs/API.md).
 
 ## Équipe
 
@@ -33,8 +33,8 @@ appelle le véritable solveur. Il présente les cartes retenues, conditions et c
 Les exemples fictifs restent identifiés. Le popup prépare la capture manuelle de l'onglet
 avec son repère de coordonnées ; voir le [guide de capture](docs/TAB_CAPTURE.md).
 Le [laboratoire du contrôleur](docs/LOCAL_CONTROLLER.md) ajoute des clics et leur vérification
-sur une scène fictive locale. Le détecteur est raccordé à l'analyse EA ; le contrôleur
-réel et le suivi des exemplaires entre captures restent à développer.
+sur une scène fictive locale. Le détecteur est raccordé à l'analyse EA. Le scan hybride parcourt les pages du club
+par `Next` et conserve les observations ; le placement réel reste à développer.
 
 ## Démarrage local
 
@@ -62,6 +62,13 @@ make check
 La commande lance le lint, les tests hors ligne et la vérification du schéma JSON.
 
 ## Moteur SBC
+
+Le bouton **Scanner le club depuis la première page** combine OCR des cartes visibles
+et lecture du HTML des autres lignes, puis passe à `Next` sans défiler. Les observations
+sont sauvegardées côté serveur. La confirmation d'un parcours complet importe uniquement
+les versions identifiées, hors prêts, avec protection activée ; les autres restent en
+attente. Voir les limites du comptage local et les essais dans [le guide API SBC](docs/SBC_API.md#scan-hybride-du-club-ea).
+
 
 ### Lecture d'une capture EA dans l'extension
 
