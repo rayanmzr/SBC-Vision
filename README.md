@@ -129,4 +129,4 @@ L'importeur FUTBIN découvre les identifiants, récupère les cartes par lots et
 
 Le développement commence sur nos machines. Le cloud et le budget de calcul seront choisis en équipe.
 
-La licence de notre code reste à choisir en équipe. Les bibliothèques, modèles et données conservent leurs propres licences ; aucun droit de redistribution général des contenus EA ou FUTBIN n'est supposé.
+Le projet est publié sous licence GNU AGPL v3 ([LICENSE](LICENSE)), choisie en équipe : les détecteurs dérivent des poids YOLO d'Ultralytics, eux-mêmes sous AGPL-3.0. Les bibliothèques et données tierces conservent leurs propres licences ; aucun droit de redistribution général des contenus EA ou FUTBIN n'est supposé.

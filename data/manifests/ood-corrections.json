@@ -1,0 +1,1049 @@
+{
+ "airbnb-00": {
+  "remove": [
+   24,
+   25,
+   26,
+   29,
+   30,
+   31,
+   32,
+   35,
+   36,
+   37,
+   38
+  ],
+  "note": "liens couverts par le bandeau de cookies"
+ },
+ "airbnb-01": {
+  "remove": [
+   3
+  ],
+  "note": "bouton Rechercher couvert par le calendrier ouvert"
+ },
+ "airbnb-02": {
+  "note": "vérifiée, rien à corriger"
+ },
+ "airbnb-03": {
+  "remove": [
+   3
+  ],
+  "note": "bouton Rechercher couvert par le calendrier ouvert"
+ },
+ "airbnb-04": {
+  "remove": [
+   0
+  ],
+  "add": [
+   {
+    "kind": "link",
+    "near": [
+     120,
+     28,
+     152,
+     48
+    ]
+   }
+  ],
+  "note": "lien d'accueil : seul le logo est visible, pas toute la barre"
+ },
+ "airbnb-05": {
+  "remove": [
+   3
+  ],
+  "note": "bouton Rechercher couvert par le calendrier ouvert"
+ },
+ "airbnb-06": {
+  "remove": [
+   3
+  ],
+  "note": "bouton Rechercher couvert par le calendrier ouvert"
+ },
+ "airbnb-07": {
+  "remove": [
+   3
+  ],
+  "note": "bouton Rechercher couvert par le calendrier ouvert"
+ },
+ "airbnb-08": {
+  "remove": [
+   3
+  ],
+  "note": "bouton Rechercher couvert par le calendrier ouvert"
+ },
+ "airbnb-09": {
+  "remove": [
+   3
+  ],
+  "note": "bouton Rechercher couvert par le calendrier ouvert"
+ },
+ "grafana-play-00": {
+  "note": "vérifiée, rien à corriger"
+ },
+ "grafana-play-01": {
+  "relabel": {
+   "2": "button"
+  },
+  "note": "œil « afficher le mot de passe » : un bouton, pas une case"
+ },
+ "grafana-play-02": {
+  "note": "vérifiée, rien à corriger"
+ },
+ "grafana-play-03": {
+  "note": "vérifiée, rien à corriger"
+ },
+ "grafana-play-04": {
+  "note": "vérifiée, rien à corriger"
+ },
+ "grafana-play-05": {
+  "remove": [
+   1
+  ],
+  "add": [
+   {
+    "kind": "menu",
+    "near": [
+     357,
+     391,
+     537,
+     419
+    ]
+   },
+   {
+    "kind": "menu",
+    "near": [
+     545,
+     391,
+     725,
+     419
+    ]
+   },
+   {
+    "kind": "checkbox",
+    "near": [
+     733,
+     398,
+     747,
+     412
+    ]
+   },
+   {
+    "kind": "checkbox",
+    "near": [
+     850,
+     398,
+     864,
+     412
+    ]
+   },
+   {
+    "kind": "checkbox",
+    "near": [
+     927,
+     398,
+     941,
+     412
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     358,
+     428,
+     392,
+     454
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     393,
+     428,
+     425,
+     454
+    ]
+   },
+   {
+    "kind": "menu",
+    "near": [
+     443,
+     428,
+     667,
+     454
+    ]
+   }
+  ],
+  "note": "filtres, cases, vue et tri non déclarés ; champ du tri remplacé par le menu entier"
+ },
+ "grafana-play-06": {
+  "note": "vérifiée, rien à corriger"
+ },
+ "grafana-play-07": {
+  "remove": [
+   8
+  ],
+  "relabel": {
+   "0": "menu",
+   "33": "menu"
+  },
+  "add": [
+   {
+    "kind": "menu",
+    "near": [
+     643,
+     155,
+     1885,
+     181
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     1548,
+     358,
+     1596,
+     378
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     1598,
+     358,
+     1640,
+     378
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     1642,
+     358,
+     1694,
+     378
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     1696,
+     358,
+     1791,
+     378
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     1793,
+     358,
+     1885,
+     378
+    ]
+   }
+  ],
+  "note": "sélecteurs de source, de type de requête et de période : des menus ; types de graphique non déclarés"
+ },
+ "grafana-play-08": {
+  "note": "vérifiée, rien à corriger"
+ },
+ "grafana-play-09": {
+  "relabel": {
+   "22": "menu",
+   "23": "menu"
+  },
+  "note": "sélecteurs « Auto ▾ » qui montrent une valeur : des menus"
+ },
+ "ldlc-00": {
+  "add": [
+   {
+    "kind": "button",
+    "near": [
+     0,
+     81,
+     201,
+     120
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     759,
+     81,
+     903,
+     120
+    ]
+   }
+  ],
+  "note": "« Tous nos produits ▾ » et « Promos ▾ » non déclarés"
+ },
+ "ldlc-01": {
+  "add": [
+   {
+    "kind": "button",
+    "near": [
+     0,
+     81,
+     201,
+     120
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     803,
+     81,
+     958,
+     120
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     40,
+     585,
+     72,
+     617
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     1294,
+     585,
+     1326,
+     617
+    ]
+   }
+  ],
+  "note": "menus de navigation et flèches du carrousel non déclarés"
+ },
+ "ldlc-02": {
+  "add": [
+   {
+    "kind": "button",
+    "near": [
+     18,
+     81,
+     219,
+     120
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     895,
+     81,
+     1065,
+     120
+    ]
+   }
+  ],
+  "note": "menus de navigation non déclarés"
+ },
+ "ldlc-03": {
+  "add": [
+   {
+    "kind": "button",
+    "near": [
+     210,
+     81,
+     411,
+     120
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     1083,
+     81,
+     1256,
+     120
+    ]
+   }
+  ],
+  "note": "menus de navigation non déclarés"
+ },
+ "ldlc-04": {
+  "remove": [
+   8
+  ],
+  "add": [
+   {
+    "kind": "button",
+    "near": [
+     0,
+     81,
+     201,
+     120
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     760,
+     81,
+     903,
+     120
+    ]
+   },
+   {
+    "kind": "link",
+    "near": [
+     970,
+     459,
+     1065,
+     560
+    ]
+   }
+  ],
+  "note": "menus non déclarés ; lien du badge boîté sur l'image et non sur la ligne de texte vide"
+ },
+ "ldlc-05": {
+  "add": [
+   {
+    "kind": "button",
+    "near": [
+     0,
+     81,
+     201,
+     120
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     803,
+     81,
+     958,
+     120
+    ]
+   }
+  ],
+  "note": "menus de navigation non déclarés"
+ },
+ "ldlc-06": {
+  "add": [
+   {
+    "kind": "button",
+    "near": [
+     18,
+     81,
+     219,
+     120
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     895,
+     81,
+     1065,
+     120
+    ]
+   }
+  ],
+  "note": "menus de navigation non déclarés"
+ },
+ "ldlc-07": {
+  "remove": [
+   30,
+   31,
+   32,
+   33,
+   34,
+   35,
+   36,
+   37,
+   45
+  ],
+  "add": [
+   {
+    "kind": "button",
+    "near": [
+     210,
+     81,
+     411,
+     120
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     1083,
+     81,
+     1256,
+     120
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     1522,
+     133,
+     1710,
+     160
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     232,
+     386,
+     272,
+     426
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     1648,
+     386,
+     1688,
+     426
+    ]
+   },
+   {
+    "kind": "menu",
+    "near": [
+     1490,
+     560,
+     1680,
+     598
+    ]
+   },
+   {
+    "kind": "menu",
+    "near": [
+     232,
+     711,
+     534,
+     751
+    ]
+   },
+   {
+    "kind": "menu",
+    "near": [
+     232,
+     857,
+     534,
+     897
+    ]
+   },
+   {
+    "kind": "menu",
+    "near": [
+     232,
+     931,
+     534,
+     971
+    ]
+   },
+   {
+    "kind": "menu",
+    "near": [
+     232,
+     1005,
+     534,
+     1045
+    ]
+   },
+   {
+    "kind": "checkbox",
+    "near": [
+     590,
+     757,
+     609,
+     773
+    ]
+   },
+   {
+    "kind": "checkbox",
+    "near": [
+     590,
+     917,
+     609,
+     933
+    ]
+   }
+  ],
+  "note": "liens d'une liste repliée et produits hors champ du carrousel retirés ; menus, flèches, tri, filtres et cases de comparaison non déclarés"
+ },
+ "ldlc-08": {
+  "add": [
+   {
+    "kind": "button",
+    "near": [
+     0,
+     81,
+     201,
+     120
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     695,
+     81,
+     900,
+     120
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     20,
+     563,
+     267,
+     603
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     267,
+     563,
+     515,
+     603
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     515,
+     563,
+     763,
+     603
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     763,
+     563,
+     1011,
+     603
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     1011,
+     563,
+     1260,
+     603
+    ]
+   }
+  ],
+  "note": "menus de navigation et onglets du carrousel non déclarés"
+ },
+ "ldlc-09": {
+  "add": [
+   {
+    "kind": "button",
+    "near": [
+     0,
+     81,
+     201,
+     120
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     803,
+     81,
+     958,
+     120
+    ]
+   }
+  ],
+  "note": "menus de navigation non déclarés"
+ },
+ "nature-et-decouvertes-00": {
+  "remove": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12
+  ],
+  "add": [
+   {
+    "kind": "button",
+    "near": [
+     824,
+     214,
+     920,
+     232
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     436,
+     455,
+     640,
+     495
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     650,
+     455,
+     854,
+     495
+    ]
+   }
+  ],
+  "note": "fenêtre de cookies modale : la page assombrie derrière n'est pas cliquable ; boutons de la fenêtre mal déclarés par le site (role=listitem)"
+ },
+ "nature-et-decouvertes-01": {
+  "add": [
+   {
+    "kind": "button",
+    "near": [
+     20,
+     611,
+     52,
+     648
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     1314,
+     611,
+     1346,
+     648
+    ]
+   }
+  ],
+  "note": "flèches du carrousel non déclarées (la gauche, grisée, reste un contrôle)"
+ },
+ "nature-et-decouvertes-02": {
+  "relabel": {
+   "21": "menu",
+   "22": "menu",
+   "23": "menu",
+   "24": "menu",
+   "25": "menu",
+   "26": "menu"
+  },
+  "add": [
+   {
+    "kind": "button",
+    "near": [
+     388,
+     798,
+     405,
+     818
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     725,
+     798,
+     742,
+     818
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     1045,
+     798,
+     1062,
+     818
+    ]
+   },
+   {
+    "kind": "button",
+    "near": [
+     1382,
+     798,
+     1399,
+     818
+    ]
+   },
+   {
+    "kind": "link",
+    "near": [
+     1312,
+     127,
+     1485,
+     147
+    ]
+   }
+  ],
+  "note": "tri et filtres : des menus ; cœurs « favori » et lien du magasin non déclarés"
+ },
+ "nature-et-decouvertes-03": {
+  "add": [
+   {
+    "kind": "link",
+    "near": [
+     1709,
+     128,
+     1884,
+     148
+    ]
+   }
+  ],
+  "note": "lien « Choisir mon magasin préféré » non déclaré"
+ },
+ "nature-et-decouvertes-04": {
+  "note": "vérifiée, rien à corriger (« Mentions légales » est du texte, pas un lien)"
+ },
+ "nature-et-decouvertes-05": {
+  "add": [
+   {
+    "kind": "link",
+    "near": [
+     1142,
+     128,
+     1315,
+     146
+    ]
+   }
+  ],
+  "note": "lien « Choisir mon magasin préféré » non déclaré"
+ },
+ "nature-et-decouvertes-06": {
+  "add": [
+   {
+    "kind": "link",
+    "near": [
+     1312,
+     127,
+     1485,
+     147
+    ]
+   }
+  ],
+  "note": "lien « Choisir mon magasin préféré » non déclaré"
+ },
+ "nature-et-decouvertes-07": {
+  "add": [
+   {
+    "kind": "link",
+    "near": [
+     1696,
+     127,
+     1869,
+     147
+    ]
+   }
+  ],
+  "note": "lien « Choisir mon magasin préféré » non déclaré"
+ },
+ "nature-et-decouvertes-08": {
+  "relabel": {
+   "22": "menu",
+   "23": "menu",
+   "24": "menu",
+   "25": "menu",
+   "26": "menu",
+   "27": "menu"
+  },
+  "add": [
+   {
+    "kind": "link",
+    "near": [
+     1056,
+     127,
+     1229,
+     146
+    ]
+   }
+  ],
+  "note": "tri et filtres : des menus ; lien du magasin non déclaré"
+ },
+ "service-public-00": {
+  "remove": [
+   8
+  ],
+  "add": [
+   {
+    "kind": "link",
+    "near": [
+     148,
+     39,
+     408,
+     91
+    ]
+   }
+  ],
+  "note": "lien du logo boîté sur le logo visible et non sur la ligne du slogan"
+ },
+ "service-public-01": {
+  "remove": [
+   10
+  ],
+  "relabel": {
+   "1": "menu"
+  },
+  "add": [
+   {
+    "kind": "link",
+    "near": [
+     191,
+     39,
+     451,
+     91
+    ]
+   }
+  ],
+  "note": "logo boîté sur le logo visible ; choix de la langue : un menu"
+ },
+ "service-public-03": {
+  "remove": [
+   17
+  ],
+  "relabel": {
+   "1": "menu"
+  },
+  "add": [
+   {
+    "kind": "link",
+    "near": [
+     467,
+     39,
+     727,
+     91
+    ]
+   }
+  ],
+  "note": "logo boîté sur le logo visible ; choix de la langue : un menu"
+ },
+ "service-public-04": {
+  "remove": [
+   11
+  ],
+  "relabel": {
+   "1": "menu"
+  },
+  "add": [
+   {
+    "kind": "link",
+    "near": [
+     148,
+     39,
+     408,
+     91
+    ]
+   }
+  ],
+  "note": "logo boîté sur le logo visible ; choix de la langue : un menu"
+ },
+ "service-public-05": {
+  "remove": [
+   14
+  ],
+  "relabel": {
+   "1": "menu"
+  },
+  "add": [
+   {
+    "kind": "link",
+    "near": [
+     191,
+     39,
+     451,
+     91
+    ]
+   }
+  ],
+  "note": "logo boîté sur le logo visible ; choix de la langue : un menu"
+ },
+ "service-public-06": {
+  "remove": [
+   10
+  ],
+  "relabel": {
+   "1": "menu"
+  },
+  "add": [
+   {
+    "kind": "link",
+    "near": [
+     276,
+     39,
+     536,
+     91
+    ]
+   }
+  ],
+  "note": "logo boîté sur le logo visible ; choix de la langue : un menu"
+ },
+ "service-public-07": {
+  "remove": [
+   16
+  ],
+  "relabel": {
+   "1": "menu"
+  },
+  "add": [
+   {
+    "kind": "link",
+    "near": [
+     467,
+     39,
+     727,
+     91
+    ]
+   }
+  ],
+  "note": "logo boîté sur le logo visible ; choix de la langue : un menu"
+ },
+ "service-public-08": {
+  "remove": [
+   10
+  ],
+  "relabel": {
+   "1": "menu"
+  },
+  "add": [
+   {
+    "kind": "link",
+    "near": [
+     148,
+     39,
+     408,
+     91
+    ]
+   }
+  ],
+  "note": "logo boîté sur le logo visible ; choix de la langue : un menu"
+ },
+ "service-public-09": {
+  "remove": [
+   10
+  ],
+  "relabel": {
+   "1": "menu"
+  },
+  "add": [
+   {
+    "kind": "link",
+    "near": [
+     191,
+     39,
+     451,
+     91
+    ]
+   }
+  ],
+  "note": "logo boîté sur le logo visible ; choix de la langue : un menu"
+ }
+}
