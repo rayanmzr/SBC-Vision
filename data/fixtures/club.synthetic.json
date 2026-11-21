@@ -1,0 +1,130 @@
+{
+  "description": "Petit club entièrement fictif. Les confirmations des exemplaires sont simulées pour la démo.",
+  "catalogue": [
+    {
+      "id": 900001, "base_id": 900001, "name": "Alex Exemple", "rating": 83,
+      "position": "CM", "positions": ["CM", "CAM"],
+      "club_id": 9001, "league_id": 9002, "nation_id": 9003,
+      "rare_type": 0, "is_rare": false, "card_level": "GOLD",
+      "prices": {"ps": 700, "pc": 800},
+      "source_url": "urn:sbc-vision:synthetic:900001", "observed_at": "2026-10-30T12:00:00+00:00"
+    },
+    {
+      "id": 900002, "base_id": 900001, "name": "Alex Exemple", "rating": 83,
+      "position": "CM", "positions": ["CM", "CAM"],
+      "club_id": 9001, "league_id": 9002, "nation_id": 9003,
+      "rare_type": 1, "is_rare": true, "card_level": "GOLD",
+      "prices": {"ps": 1300, "pc": null},
+      "source_url": "urn:sbc-vision:synthetic:900002", "observed_at": "2026-10-30T12:00:00+00:00"
+    },
+    {
+      "id": 900003, "base_id": 900003, "name": "Mina Test", "rating": 84,
+      "position": "ST", "positions": ["ST", "LW"],
+      "club_id": 9005, "league_id": 9002, "nation_id": 9003,
+      "rare_type": 1, "is_rare": true, "card_level": "GOLD",
+      "prices": {"ps": 2500, "pc": 2700},
+      "source_url": "urn:sbc-vision:synthetic:900003", "observed_at": "2026-10-30T12:00:00+00:00"
+    }
+  ],
+  "items": [
+    {"instance_id": "demo-001", "card_id": 900001, "protected": true, "tradeable": false, "source_observation": "demo:club:1"},
+    {"instance_id": "demo-002", "card_id": 900001, "protected": false, "tradeable": false, "source_observation": "demo:club:2"},
+    {"instance_id": "demo-003", "card_id": 900003, "protected": false, "tradeable": null, "source_observation": "demo:club:3"}
+  ],
+  "readings": [
+    {"capture_id": "demo-screen", "element_id": "card-1", "name": "Alex Exemple", "rating": 83, "confidence": 0.98, "position": "CM"},
+    {"capture_id": "demo-screen", "element_id": "card-2", "name": "Alex Exemple", "rating": 83, "confidence": 0.98, "position": "CM", "is_rare": false}
+  ],
+  "scan": [
+    {
+      "report": {
+        "capture_id": "demo-page-1",
+        "cards": [
+          {
+            "element_id": "card-0",
+            "issues": [],
+            "reading": {
+              "capture_id": "demo-page-1",
+              "element_id": "card-0",
+              "name": "Alex Exemple",
+              "rating": 83,
+              "position": "CM",
+              "confidence": 1.0
+            }
+          },
+          {
+            "element_id": "card-1",
+            "issues": [],
+            "reading": {
+              "capture_id": "demo-page-1",
+              "element_id": "card-1",
+              "name": "Alex Exemple",
+              "rating": 83,
+              "position": "CM",
+              "confidence": 1.0
+            }
+          }
+        ]
+      },
+      "choices": {
+        "card-0": {
+          "instance_id": "demo-001",
+          "card_id": 900001,
+          "protected": true,
+          "tradeable": false
+        },
+        "card-1": {
+          "instance_id": "demo-002",
+          "card_id": 900001,
+          "protected": false,
+          "tradeable": false
+        }
+      }
+    },
+    {
+      "report": {
+        "capture_id": "demo-page-2",
+        "cards": [
+          {
+            "element_id": "card-1",
+            "issues": [],
+            "reading": {
+              "capture_id": "demo-page-2",
+              "element_id": "card-1",
+              "name": "Alex Exemple",
+              "rating": 83,
+              "position": "CM",
+              "confidence": 1.0
+            }
+          },
+          {
+            "element_id": "card-2",
+            "issues": [],
+            "reading": {
+              "capture_id": "demo-page-2",
+              "element_id": "card-2",
+              "name": "Mina Test",
+              "rating": 84,
+              "position": "ST",
+              "confidence": 1.0
+            }
+          }
+        ]
+      },
+      "choices": {
+        "card-1": {
+          "instance_id": "demo-002",
+          "card_id": 900001,
+          "protected": false,
+          "tradeable": false
+        },
+        "card-2": {
+          "instance_id": "demo-003",
+          "card_id": 900003,
+          "protected": false,
+          "tradeable": null
+        }
+      }
+    }
+  ]
+}

@@ -27,3 +27,11 @@ def test_cut_cards_and_other_elements_are_refused():
         card_regions(element("card", 144, 120))  # coupée par le bord de l'écran
     with pytest.raises(ValueError):
         card_regions(element("slot", 144, 200))
+
+
+def test_ea_club_list_places_name_and_stats_beside_the_miniature():
+    regions = {r["field"]: r["bbox"] for r in card_regions(element("card", 156, 234), "club-list")}
+    assert regions["name"].x > 256 and regions["stats"].x > 256
+    assert regions["rating"].x < 256
+    with pytest.raises(ValueError):
+        card_regions(element("card", 144, 200), "guess")

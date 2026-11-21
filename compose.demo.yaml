@@ -1,0 +1,24 @@
+# Démo explicitement fictive, base distincte dans le volume du projet Compose.
+services:
+  api:
+    environment:
+      SBC_PERCEPTION_MODE: lab-colors
+      SBC_ENGINE_MODE: demo
+      SBC_ENGINE_DATABASE: /app/data/processed/api_demo/inventory.sqlite3
+      SBC_ENGINE_CHALLENGE: /app/data/processed/api_demo/challenge.json
+    depends_on:
+      demo-init:
+        condition: service_completed_successfully
+
+  demo-init:
+    image: sbc-vision:local
+    build: .
+    command: [python, scripts/prepare_api_demo.py, --if-missing]
+    volumes:
+      - service-data:/app/data/processed
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: "no"

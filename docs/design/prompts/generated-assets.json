@@ -1,0 +1,22 @@
+{
+  "mode": "built-in image_gen",
+  "usage": "Assets de matières communs à la piste A ; assemblage final A1 — Stade selon la préférence utilisateur.",
+  "reference": "../references/piste-a-board.png",
+  "assets": [
+    {
+      "name": "charcoal-surface",
+      "transparent": false,
+      "prompt": "Use case: ui-mockup. Asset type: a standalone opaque UI BACKGROUND TEXTURE for SBC Vision, derived from the charcoal popup surfaces in A3 — ÉLITE, the RIGHTMOST design in the reference. The reference is style guidance only. Generate ONLY the reusable material surface, not a mockup or asset board. Square full-bleed flat front-facing texture, fully filling the entire image edge to edge with very dark charcoal black (#101512 to #202820), extremely restrained diagonal graphite-pencil and charcoal hatching at a 35 degree angle, fine paper tooth, a hint of deep forest green in the shadows. Match the hand-rendered sports design while making the grain subtle enough for white text to remain highly legible over it. Even illumination across all edges; nearly seamless repeatable material, no central spotlight. No white margin, no frame, no border, no vignette, no panels, no pitch, no cards, no logo, no numbers, no letters or text, no green stripes, no objects. This is a production background material for the dark extension shell, not a photograph of paper or a desktop."
+    },
+    {
+      "name": "pitch-grass",
+      "transparent": false,
+      "prompt": "Use case: ui-mockup. Asset type: a standalone opaque DARK GREEN GRASS MATERIAL for the football pitch of SBC Vision. Reference style: the restrained dark green pitch in A3 — ÉLITE, the RIGHTMOST design, with the subtly hand-drawn colored-pencil finish of the reference. Generate ONLY an uninterrupted rectangular grass surface, full bleed, flat orthographic overhead view, portrait aspect ratio about 4:5, without the actual pitch boundary or any painted markings; those will be drawn separately at runtime. Rich deep forest green (#12391c, #1b4b20), fine matte colored-pencil grain and delicate short grass, extremely subtle alternating vertical mowing bands. Calm, dark and consistent in brightness so small gold cards and thin ivory lines stand out. No white frame, no black margin, no trapezoid, no perspective, no stadium, no football markings, no center circle, no lines, no players, no shadows of players, no cards, no emblems, no letters, no numerals, no text, no watermarks, no lighting beams. A usable full-bleed texture, not a scene or screenshot."
+    },
+    {
+      "name": "card-gold",
+      "transparent": true,
+      "prompt": "Use case: ui-mockup. Asset type: ONE reusable blank GOLD FOOTBALL PLAYER CARD FRONT for SBC Vision, isolated on a genuinely TRANSPARENT background. Reference style: the small matte-gold shield-shaped cards in A3 — ÉLITE, the RIGHTMOST design in the reference. Generate just the standalone blank card, nothing from the surrounding UI. Upright vertical card, aspect ratio approximately 0.76 width to height, centered and occupying 94 percent of the image height. A distinctive original geometric shield: almost flat gently raised top center, clipped rounded shoulders, straight long sides, lower sides taper to a centered shallow pointed bottom. Precisely straight-on flat UI illustration with no perspective. Warm pale gold and ochre colored-pencil material, delicate matte paper tooth, restrained facets and a fine darker gold edge with a subtle inner highlight. Match the sketch's premium sports card feel without glossy reflections, glitter, glow or 3D bevels. Large calm blank areas across the entire face for runtime text and portrait overlays. No portrait, no silhouette, no player, no logo, no EA or FUT crest, no ratings, no numbers, no letters or text, no watermark, no stats, no decorative icons, no shadow outside the silhouette. The entire exterior must be fully transparent, no opaque white rectangle or checkerboard."
+    }
+  ]
+}

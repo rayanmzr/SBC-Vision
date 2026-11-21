@@ -1,0 +1,2 @@
+# Conserver le texte original des licences des polices tierces, espaces compris.
+frontend/src/design-a1/assets/fonts/OFL*.txt -whitespace

@@ -53,3 +53,36 @@ def test_invalid_confidence_is_rejected(payload):
     payload["elements"][0]["confidence"] = 1.2
     with pytest.raises(ValidationError):
         PerceptionResponse.model_validate(payload)
+
+
+@pytest.mark.parametrize("fault", ["capture", "image", "card"])
+def test_nested_ocr_cannot_describe_another_capture_or_an_undetected_card(payload, fault):
+    payload["ocr"] = {
+        "capture_id": payload["capture_id"],
+        "image": dict(payload["image"]),
+        "engine_version": "synthetic",
+        "language": "eng",
+        "minimum_confidence": 0.75,
+        "regions": [],
+        "cards": [],
+        "positions": [],
+        "challenge_ready": False,
+        "challenge": None,
+        "challenge_issues": [],
+    }
+    if fault == "capture":
+        payload["ocr"]["capture_id"] = "another-capture"
+    elif fault == "image":
+        payload["ocr"]["image"]["width"] += 1
+    else:
+        payload["ocr"]["cards"] = [
+            {
+                "element_id": "absent",
+                "reading": None,
+                "candidate_ids": [],
+                "issues": [],
+                "needs_confirmation": True,
+            }
+        ]
+    with pytest.raises(ValidationError):
+        PerceptionResponse.model_validate(payload)

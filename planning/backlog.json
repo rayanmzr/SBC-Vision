@@ -16,7 +16,7 @@
     {
       "id": "SBV-002", "title": "Faire valider le cadrage par le superviseur", "owner": "Rayan Mazri", "milestone": "cadrage", "priority": "P0", "area": "documentation", "depends_on": ["SBV-001"],
       "goal": "Confirmer le cas d'usage Web App, le test hors domaine et le secours local.",
-      "acceptance": ["Note d'une page transmise par le groupe.", "Retour du superviseur conservé sans données personnelles inutiles.", "Règles du premier SBC et solution de repli confirmées ou corrigées."]
+      "acceptance": ["Note d'une page transmise par le groupe.", "Retour du superviseur conservé sans données personnelles inutiles.", "Format extension et périmètre du démonstrateur de secours confirmés."]
     },
     {
       "id": "SBV-003", "title": "Collecter les captures réelles et le corpus web", "owner": "Saber Kasri", "milestone": "pitch", "priority": "P0", "area": "data", "depends_on": ["SBV-002"],
@@ -64,8 +64,8 @@
       "acceptance": ["Schéma distinguant joueur, version et exemplaire.", "Quantités et cartes protégées persistées.", "Correspondances ambiguës non validées automatiquement.", "Tests de versions proches et de doublons."]
     },
     {
-      "id": "SBV-012", "title": "Formaliser les règles du premier SBC EA FC 27", "owner": "Rayan Mazri", "milestone": "pitch", "priority": "P0", "area": "solver", "depends_on": ["SBV-002"],
-      "goal": "Définir un périmètre vérifiable avant d'écrire l'optimisation.",
+      "id": "SBV-012", "title": "Formaliser les règles dynamiques des SBC EA FC 27", "owner": "Rayan Mazri", "milestone": "pitch", "priority": "P0", "area": "solver", "depends_on": ["SBV-002"],
+      "goal": "Décrire les conditions lues dynamiquement et les profils de règles pris en charge.",
       "acceptance": ["Format du défi, postes et restrictions pris en charge listés.", "Calcul de note et de collectif vérifié sur des exemples.", "Défis ou règles non pris en charge rejetés explicitement.", "Petit club synthétique et solutions vérifiées à la main."]
     },
     {
@@ -79,14 +79,14 @@
       "acceptance": ["Route d'analyse d'image documentée dans OpenAPI.", "Validation des types, dimensions, taille et délais.", "Erreurs distinctes des résultats de détection.", "Client et tests d'intégration avec une image de test partageable."]
     },
     {
-      "id": "SBV-015", "title": "Créer l'application React et le parcours de préparation", "owner": "Samy Allali", "milestone": "baseline", "priority": "P1", "area": "frontend", "depends_on": ["SBV-001"],
-      "goal": "Afficher les données et les décisions du système dans une interface simple.",
-      "acceptance": ["Configuration de l'URL d'API sans modèle embarqué.", "Affichage inventaire, protections, conditions, achats et coût.", "États chargement, erreur, lecture incertaine et aucune solution.", "Fixtures clairement indiquées durant le développement."]
+      "id": "SBV-015", "title": "Créer l'extension Chrome et son interface React", "owner": "Samy Allali", "milestone": "baseline", "priority": "P1", "area": "frontend", "depends_on": ["SBV-001"],
+      "goal": "Afficher les décisions dans une extension Chrome reliée à l’API Python.",
+      "acceptance": ["Manifest V3 et permissions documentés ; URL d’API configurable, sans modèle embarqué.", "Affichage inventaire, protections, conditions, achats et coût.", "États chargement, erreur, lecture incertaine et aucune solution.", "Fixtures clairement indiquées durant le développement."]
     },
     {
       "id": "SBV-016", "title": "Implémenter la capture et le contrôleur scripté", "owner": "Samy Allali", "milestone": "baseline", "priority": "P1", "area": "controller", "depends_on": ["SBV-014"],
       "goal": "Observer, choisir une action à partir du JSON, puis vérifier l'écran suivant.",
-      "acceptance": ["Modes observation et simulation disponibles.", "Coordonnées validées et budget d'étapes borné.", "Nouvelle capture et vérification après action.", "Interruption utilisateur et arrêt sur divergence.", "Aucune soumission de cartes sans récapitulatif et confirmation explicite."]
+      "acceptance": ["Prototype de capture et clic sur une page locale ; permissions et coordonnées vérifiées.", "Modes observation et simulation disponibles.", "Coordonnées validées et budget d'étapes borné.", "Nouvelle capture et vérification après action.", "Interruption utilisateur et arrêt sur divergence.", "Aucune soumission de cartes sans récapitulatif et confirmation explicite."]
     },
     {
       "id": "SBV-017", "title": "Préparer le démonstrateur local de secours", "owner": "Samy Allali", "milestone": "baseline", "priority": "P2", "area": "controller", "depends_on": ["SBV-002", "SBV-015"],

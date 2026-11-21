@@ -1,0 +1,39 @@
+{
+  "name": "sbc-vision-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=24.15 <25"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "preview": "vite preview --host 127.0.0.1",
+    "schema": "node scripts/generate-contract.mjs",
+    "format": "prettier --write src scripts *.json *.ts *.html *.md public/*.json",
+    "format:check": "prettier --check src scripts *.json *.ts *.html *.md public/*.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "pnpm schema && pnpm typecheck && vite build",
+    "check": "node scripts/generate-contract.mjs --check && pnpm format:check && pnpm typecheck && pnpm test && vite build"
+  },
+  "dependencies": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@testing-library/react": "16.3.3",
+    "@types/chrome": "0.3.7",
+    "@types/node": "^24.0.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "ajv": "8.20.0",
+    "jsdom": "31.0.0",
+    "prettier": "3.10.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.8",
+    "vitest": "5.1.0"
+  }
+}

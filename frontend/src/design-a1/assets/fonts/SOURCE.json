@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/google/fonts",
+  "commit": "60824dce48f7dd28fe7d65559f2da1f6e04e585b",
+  "directory": "ofl/barlowcondensed",
+  "files": ["BarlowCondensed-SemiBold.ttf", "OFL.txt"],
+  "display_font": {
+    "file": "Barlow-ExtraBoldItalic.ttf",
+    "directory": "ofl/barlow",
+    "commit": "60824dce48f7dd28fe7d65559f2da1f6e04e585b",
+    "license": "OFL-Barlow.txt"
+  }
+}

@@ -5,6 +5,10 @@ from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from .geometry import BoundingBox as BoundingBox
+from .geometry import ImageSize as ImageSize
+from .ocr import OcrAnalysisResponse
+
 
 class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -28,20 +32,6 @@ class ActionKind(StrEnum):
     SCROLL = "scroll"
 
 
-class ImageSize(StrictModel):
-    width: int = Field(gt=0, strict=True)
-    height: int = Field(gt=0, strict=True)
-
-
-class BoundingBox(StrictModel):
-    """Boîte dans la capture : x, y en haut à gauche ; largeur/hauteur en pixels."""
-
-    x: int = Field(ge=0, strict=True)
-    y: int = Field(ge=0, strict=True)
-    width: int = Field(gt=0, strict=True)
-    height: int = Field(gt=0, strict=True)
-
-
 class DetectedElement(StrictModel):
     id: str = Field(min_length=1)
     kind: ElementKind
@@ -63,6 +53,7 @@ class PerceptionResponse(StrictModel):
     image: ImageSize
     model_name: str = Field(min_length=1)
     elements: list[DetectedElement]
+    ocr: OcrAnalysisResponse | None = None
 
     @model_validator(mode="after")
     def elements_fit_capture(self) -> Self:
@@ -74,4 +65,10 @@ class PerceptionResponse(StrictModel):
             box = element.bbox
             if box.x + box.width > self.image.width or box.y + box.height > self.image.height:
                 raise ValueError(f"bounding box outside capture: {element.id}")
+        if self.ocr is not None:
+            if self.ocr.capture_id != self.capture_id or self.ocr.image != self.image:
+                raise ValueError("OCR et détection doivent décrire la même capture.")
+            card_ids = {e.id for e in self.elements if e.kind == ElementKind.CARD}
+            if any(c.element_id not in card_ids for c in self.ocr.cards):
+                raise ValueError("Une lecture OCR doit correspondre à une carte détectée.")
         return self

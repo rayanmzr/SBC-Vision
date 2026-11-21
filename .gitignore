@@ -10,6 +10,7 @@ htmlcov/
 .DS_Store
 .env
 .env.*
+.secrets/
 !.env.example
 data/raw/*
 !data/raw/.gitkeep

@@ -1,0 +1,197 @@
+{
+  "data_kind": "sanitized_public_recording",
+  "recorded_at": "2026-11-13T09:57:23.562525+00:00",
+  "sources": [
+    "https://www.futbin.com/27/players?search=David%20Raya",
+    "https://www.futbin.com/siteapi/27/get-squad?playerCardIds=214&playerCardIds=22763"
+  ],
+  "description": "Extraits de réponses publiques enregistrées, réduits aux champs consommés. Noms, identifiants, notes, prix et statistiques remplacés par des valeurs fictives ; structure, types et cas de prix nul conservés. Aucun compte EA, cookie ou image.",
+  "attribution": "Données de prix : FUTBIN — https://www.futbin.com/",
+  "index_html": "<table class=\"players-table\"><tbody><tr class=\"player-row\"><td><a class=\"player-row-playercard\" href=\"/27/player/900001/exemple\">80</a></td></tr><tr class=\"player-row\"><td><a class=\"player-row-playercard\" href=\"/27/player/900002/exemple\">81</a></td></tr></tbody></table>",
+  "cards_response": {
+    "squadPlayerData": {
+      "900001": {
+        "id": {
+          "type": "futbin.frontenddata.types.SquadPlayerId.PlayerCardId",
+          "playerCardId": {
+            "value": 900001
+          }
+        },
+        "baseId": {
+          "value": 900001
+        },
+        "playerName": "Exemple",
+        "playerRating": 80,
+        "position": {
+          "value": "GK"
+        },
+        "possiblePositions": [
+          {
+            "position": {
+              "value": "GK"
+            },
+            "roles": {
+              "GK": "PlusPlus"
+            }
+          }
+        ],
+        "clubId": {
+          "value": 9001
+        },
+        "leagueId": {
+          "value": 9002
+        },
+        "nationId": {
+          "value": 9003
+        },
+        "rareType": 0,
+        "isRare": true,
+        "cardLevel": "GOLD",
+        "untradeable": false,
+        "playerStats": {
+          "BaseDiving": 60,
+          "BaseHandling": 60,
+          "BaseKicking": 60,
+          "BaseReflexes": 60,
+          "SubAcceleration": 60,
+          "SubSprintSpeed": 60,
+          "BaseSpeed": 60,
+          "BasePositioning": 60
+        },
+        "playerLocation": {
+          "type": "futbin.frontenddata.Location.LocationDontUseThisDirectly",
+          "url": "/27/player/900001/exemple"
+        },
+        "statsCard": {
+          "title": "Gardien Exemple",
+          "cardname": "Exemple",
+          "nationImage": {
+            "fixed": {
+              "name": "Pays fictif"
+            }
+          },
+          "leagueImage": {
+            "image": {
+              "fixed": {
+                "name": "Ligue fictive"
+              }
+            }
+          },
+          "clubImage": {
+            "image": {
+              "fixed": {
+                "name": "Club fictif"
+              }
+            }
+          }
+        },
+        "price": {
+          "ps": {
+            "price": 800,
+            "priceBox": {
+              "itemScore": null
+            }
+          },
+          "pc": {
+            "price": 1000,
+            "priceBox": {
+              "itemScore": null
+            }
+          }
+        }
+      },
+      "900002": {
+        "id": {
+          "type": "futbin.frontenddata.types.SquadPlayerId.PlayerCardId",
+          "playerCardId": {
+            "value": 900002
+          }
+        },
+        "baseId": {
+          "value": 900001
+        },
+        "playerName": "Exemple",
+        "playerRating": 81,
+        "position": {
+          "value": "GK"
+        },
+        "possiblePositions": [
+          {
+            "position": {
+              "value": "GK"
+            },
+            "roles": {
+              "GK": "PlusPlus",
+              "SK": "PlusPlus",
+              "BPK": "PlusPlus"
+            }
+          }
+        ],
+        "clubId": {
+          "value": 9001
+        },
+        "leagueId": {
+          "value": 9002
+        },
+        "nationId": {
+          "value": 9003
+        },
+        "rareType": 3,
+        "isRare": false,
+        "cardLevel": "GOLD",
+        "untradeable": false,
+        "playerStats": {
+          "BaseDiving": 61,
+          "BaseHandling": 61,
+          "BaseKicking": 61,
+          "BaseReflexes": 61,
+          "SubAcceleration": 61,
+          "SubSprintSpeed": 61,
+          "BaseSpeed": 61,
+          "BasePositioning": 61
+        },
+        "playerLocation": {
+          "type": "futbin.frontenddata.Location.LocationDontUseThisDirectly",
+          "url": "/27/player/900002/exemple"
+        },
+        "statsCard": {
+          "title": "Gardien Exemple",
+          "cardname": "Exemple",
+          "nationImage": {
+            "fixed": {
+              "name": "Pays fictif"
+            }
+          },
+          "leagueImage": {
+            "image": {
+              "fixed": {
+                "name": "Ligue fictive"
+              }
+            }
+          },
+          "clubImage": {
+            "image": {
+              "fixed": {
+                "name": "Club fictif"
+              }
+            }
+          }
+        },
+        "price": {
+          "ps": {
+            "price": 900,
+            "priceBox": {
+              "itemScore": null
+            }
+          },
+          "pc": {
+            "price": 0,
+            "priceBox": {
+              "itemScore": null
+            }
+          }
+        }
+      }
+    }
+  }
+}

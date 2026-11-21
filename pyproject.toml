@@ -17,6 +17,8 @@ dependencies = [
   "fastapi>=0.115,<1",
   "pydantic>=2.9,<3",
   "uvicorn>=0.30,<1",
+  "pillow>=10.4,<13",
+  "python-multipart>=0.0.33,<1",
 ]
 
 [project.optional-dependencies]
@@ -35,6 +37,7 @@ capture = ["playwright>=1.48,<2"]
 explain = ["shap>=0.51,<1"]
 solver = ["ortools>=9.10,<10"]
 data = ["beautifulsoup4>=4.12,<5", "httpx>=0.27,<1"]
+ocr = ["pytesseract>=0.3.13,<1", "pillow>=10.4,<13"]
 tracking = ["mlflow>=2.17,<4"]
 
 [tool.setuptools.packages.find]

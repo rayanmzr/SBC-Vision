@@ -1,7 +1,7 @@
-.PHONY: install check lint format test schema serve
+.PHONY: install check lint format test schema serve extension-check extension-build
 
 install:
-	python -m pip install -c requirements.lock -e '.[dev,vision,explain]'
+	python -m pip install -c requirements.lock -e '.[dev,data,solver,ocr,vision,explain]'
 
 check: lint test
 	python scripts/export_contracts.py --check
@@ -22,3 +22,9 @@ schema:
 
 serve:
 	uvicorn sbc_vision.api.main:app --reload
+
+extension-check:
+	cd frontend && pnpm run check
+
+extension-build:
+	cd frontend && pnpm run build
