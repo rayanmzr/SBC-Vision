@@ -5,9 +5,14 @@ import App from './App';
 import fixture from '../../data/fixtures/workspace-api.synthetic.json';
 import { scanClub, prepareSbc } from './lib/club-scan';
 import { fillSbc, type PreparedSbc } from './lib/sbc-fill';
+import { updateProtection } from './lib/sbc-api';
 
 vi.mock('./lib/club-scan', () => ({ scanClub: vi.fn(), prepareSbc: vi.fn() }));
 vi.mock('./lib/sbc-fill', () => ({ fillSbc: vi.fn() }));
+vi.mock('./lib/sbc-api', async (original) => ({
+    ...(await original<typeof import('./lib/sbc-api')>()),
+    updateProtection: vi.fn(),
+}));
 vi.mock('./lib/platform', async (original) => ({
     ...(await original<typeof import('./lib/platform')>()),
     loadApiUrl: vi.fn(async () => 'http://127.0.0.1:8000'),
@@ -26,6 +31,11 @@ beforeEach(() => {
             board: {},
         } as unknown as PreparedSbc);
     vi.mocked(fillSbc).mockReset().mockResolvedValue(3);
+    vi.mocked(updateProtection)
+        .mockReset()
+        .mockResolvedValue({ ...fixture.workspace, mode: 'local' } as Awaited<
+            ReturnType<typeof updateProtection>
+        >);
     vi.stubGlobal(
         'fetch',
         vi.fn(
@@ -109,8 +119,83 @@ it('ne présente jamais un calcul impossible comme une proposition prête', asyn
     await vi.waitFor(() => expect((button as HTMLButtonElement).disabled).toBe(false));
     fireEvent.click(button);
     await screen.findByText('Aucune composition disponible');
-    expect(screen.getByText(/Aucune composition ne respecte ces conditions/)).toBeTruthy();
+    expect(screen.getByText(/Aucune équipe trouvée dans le catalogue actuel/)).toBeTruthy();
+    expect(screen.queryByText(/Prix inconnu/)).toBeNull();
     expect(screen.queryByText(/Proposition prête/)).toBeNull();
+    expect(fillSbc).not.toHaveBeenCalled();
+});
+
+it('explique que toutes les cartes protégées sont exclues du calcul', async () => {
+    vi.mocked(prepareSbc).mockResolvedValue({
+        ...fixture.proposal,
+        report: { ...fixture.proposal.report, solution: { status: 'infeasible', assignments: [] } },
+    } as unknown as PreparedSbc);
+    vi.mocked(fetch).mockImplementation(
+        async (url) =>
+            new Response(
+                JSON.stringify(
+                    String(url).endsWith('/health')
+                        ? { status: 'ok', version: '0.1.0', model_loaded: true }
+                        : String(url).endsWith('/capabilities')
+                          ? { perception: true, ocr: true }
+                          : {
+                                ...fixture.workspace,
+                                mode: 'local',
+                                items: fixture.workspace.items.map((c) => ({
+                                    ...c,
+                                    protected: true,
+                                })),
+                            },
+                ),
+            ),
+    );
+    render(<App />);
+    const button = await screen.findByRole('button', { name: 'Compléter ce SBC' });
+    await vi.waitFor(() => expect((button as HTMLButtonElement).disabled).toBe(false));
+    fireEvent.click(button);
+    await screen.findByText(/Tes 3 cartes sont protégées/);
+    expect(fillSbc).not.toHaveBeenCalled();
+    expect(screen.queryByText(/Prix inconnu/)).toBeNull();
+});
+
+it('autorise explicitement les cartes de base protégées sous le plafond sur une action explicite', async () => {
+    const items = fixture.workspace.items.map((c) => ({ ...c, chemistry_kind: 'standard' }));
+    items[2].value = 500;
+    items[2].protected = true;
+    items.push({ ...items[0], key: 'club:unsupported', chemistry_kind: 'unsupported' });
+    items.push({ ...items[0], key: 'club:expensive', value: 1001 });
+    vi.mocked(fetch).mockImplementation(
+        async (url) =>
+            new Response(
+                JSON.stringify(
+                    String(url).endsWith('/health')
+                        ? { status: 'ok', version: '0.1.0', model_loaded: true }
+                        : String(url).endsWith('/capabilities')
+                          ? { perception: true, ocr: true }
+                          : { ...fixture.workspace, mode: 'local', items },
+                ),
+            ),
+    );
+    render(<App />);
+    expect(updateProtection).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByText('Options', { exact: true }));
+    const button = screen.getByRole('button', {
+        name: 'Autoriser les cartes de base sous ce plafond',
+    });
+    await vi.waitFor(() => expect((button as HTMLButtonElement).disabled).toBe(false));
+    fireEvent.click(button);
+    await screen.findByText(/cartes de base sous .* autorisées/);
+    const eligible = items.filter(
+        (c) => c.protected && c.chemistry_kind === 'standard' && c.value != null && c.value <= 1000,
+    );
+    expect(eligible.length).toBeGreaterThan(0);
+    expect(eligible.some((c) => c.is_rare)).toBe(true);
+    expect(vi.mocked(updateProtection).mock.calls.map((c) => c[2])).toEqual(
+        eligible.map((c) => c.key),
+    );
+    expect(vi.mocked(updateProtection).mock.calls.every((c) => c[3] === false)).toBe(true);
+    expect(scanClub).not.toHaveBeenCalled();
+    expect(prepareSbc).not.toHaveBeenCalled();
     expect(fillSbc).not.toHaveBeenCalled();
 });
 

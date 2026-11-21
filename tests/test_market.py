@@ -334,6 +334,27 @@ def test_quality_filters_have_separate_page_caches(db, raw_card):
     source.cards.assert_not_called()
 
 
+def test_affordable_pages_do_not_reuse_the_default_catalogue_index(db, raw_card):
+    source = Mock()
+    source.page.return_value = ([900001], 1)
+    source.cards.return_value = [card(raw_card)]
+    import_catalog(db, source, pages=1)
+    import_catalog(db, source, pages=1, max_price=1000)
+    source.page.assert_called_with(1, quality="all", max_price=1000)
+    assert {r[0] for r in db.execute("SELECT quality FROM pages")} == {"all", "all:pc:1000"}
+    source.reset_mock()
+    assert import_catalog(db, source, pages=1, max_price=1000) == 0
+    source.page.assert_not_called()
+
+
+@pytest.mark.parametrize("price", [0, -1, True, 1.5, 1_000_000_001])
+def test_bad_price_filter_is_rejected_before_network_access(db, price):
+    source = Mock()
+    with pytest.raises(ValueError):
+        import_catalog(db, source, max_price=price)
+    source.page.assert_not_called()
+
+
 def test_old_page_index_is_migrated_without_losing_cards_or_prices(tmp_path, raw_card):
     path = tmp_path / "old.sqlite3"
     db = open_database(path)
@@ -402,6 +423,40 @@ def test_quality_filter_is_sent_in_the_public_list_request(monkeypatch):
 
     with httpx.Client(base_url=BASE_URL, transport=httpx.MockTransport(handler)) as http:
         assert Futbin(http).page(2, quality="bronze")[0] == [900001]
+
+
+def test_affordable_filter_orders_known_public_prices(monkeypatch):
+    monkeypatch.setattr("sbc_vision.sbc_engine.players.time.sleep", lambda _: None)
+
+    def handler(request):
+        assert dict(request.url.params) == {
+            "page": "1",
+            "version": "silver",
+            "pc_price": "1-1000",
+            "sort": "pc_price",
+            "order": "asc",
+        }
+        return httpx.Response(
+            200,
+            text='<tr class="player-row"><td><a class="player-row-playercard" '
+            'href="/27/player/900001/test">Carte fictive</a></td></tr>',
+        )
+
+    with httpx.Client(base_url=BASE_URL, transport=httpx.MockTransport(handler)) as http:
+        assert Futbin(http).page(1, quality="silver", max_price=1000)[0] == [900001]
+
+
+def test_a_price_filter_without_results_is_not_a_format_error(monkeypatch):
+    monkeypatch.setattr("sbc_vision.sbc_engine.players.time.sleep", lambda _: None)
+    with httpx.Client(
+        base_url=BASE_URL,
+        transport=httpx.MockTransport(
+            lambda _: httpx.Response(
+                200, text='<table class="players-table"><tbody></tbody></table>'
+            )
+        ),
+    ) as http:
+        assert Futbin(http).page(1, max_price=1) == ([], 1)
 
 
 @pytest.mark.parametrize("empty", [False, True])

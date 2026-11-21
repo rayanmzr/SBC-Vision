@@ -127,6 +127,7 @@ describe('proposition du véritable solveur', () => {
         expect(JSON.parse(String(options.body))).toEqual({
             expected_revision: fixture.workspace.revision,
             budget: 2000,
+            seconds: 20,
             challenge: fixture.workspace.challenge,
         });
     });

@@ -1,5 +1,5 @@
 import { analyzeImage, type Perception } from './api';
-import { activeContext, captureActiveTab } from './tab-capture';
+import { activeContext, captureActiveTab, type TabCapture } from './tab-capture';
 import { requestJson } from './api';
 import { solveWorkspace, type Workspace } from './sbc-api';
 import type { SolverReport } from './sbc-report';
@@ -32,6 +32,73 @@ export type ClubScan = {
         ocr_error: string | null;
     }>;
 };
+
+// Rejoindre le club depuis n'importe quel écran EA, sans toucher à la composition.
+export function clubNavigationInTab(expected?: string) {
+    if (
+        !['ea.com', 'www.ea.com'].includes(location.hostname) ||
+        !location.pathname.includes('/ultimate-team/web-app/')
+    )
+        return { ready: false, signature: '', error: 'Ouvrir la Web App EA en anglais.' };
+    const title = document.querySelector('h1.title')?.textContent?.trim();
+    const visible = (e: Element | null) =>
+        !!e &&
+        !e.hasAttribute('disabled') &&
+        e.getAttribute('aria-disabled') !== 'true' &&
+        !e.classList.contains('disabled') &&
+        getComputedStyle(e).display !== 'none' &&
+        e.getBoundingClientRect().width > 0;
+    const players = Array.from(document.querySelectorAll('h1.tileHeader')).find(
+        (e) => e.textContent?.trim() === 'Players',
+    );
+    const previous = document.querySelector('button.pagination.prev');
+    const inClub = title === 'My Club Players';
+    const rows = Array.from(document.querySelectorAll('ul.paginated > li.listFUTItem'));
+    const ready =
+        inClub &&
+        rows.length > 0 &&
+        !visible(previous) &&
+        rows.every(
+            (row) =>
+                !!row.querySelector('.entityContainer > .name')?.textContent?.trim() &&
+                /^[1-9]\d?$/.test(row.querySelector('.rating')?.textContent?.trim() ?? '') &&
+                row.querySelectorAll('.player-stats-data-component .value').length === 6 &&
+                Array.from(row.querySelectorAll('.player-stats-data-component .value')).every((v) =>
+                    /^\d{1,2}$/.test(v.textContent?.trim() ?? ''),
+                ),
+        );
+    const button = inClub
+        ? visible(previous)
+            ? previous
+            : null
+        : players
+          ? (players.parentElement?.parentElement ?? null)
+          : title === 'Club'
+            ? null
+            : document.querySelector('button.ut-tab-bar-item.icon-club');
+    const signature = JSON.stringify([
+        title,
+        !!players,
+        ready,
+        document.querySelector('ul.paginated')?.textContent ?? '',
+    ]);
+    if (expected !== undefined) {
+        if (expected !== signature || !visible(button))
+            return { ready: false, signature, error: 'Le club a changé ; relancer le scan.' };
+        const box = button!.getBoundingClientRect();
+        for (const type of ['mousedown', 'mouseup', 'click'])
+            button!.dispatchEvent(
+                new MouseEvent(type, {
+                    bubbles: true,
+                    button: 0,
+                    buttons: type === 'mousedown' ? 1 : 0,
+                    clientX: box.x + box.width / 2,
+                    clientY: box.y + box.height / 2,
+                }),
+            );
+    }
+    return { ready, signature, canAdvance: visible(button), error: '' };
+}
 
 // Cette fonction est injectée seule dans la page : uniquement DOM, aucun état interne EA.
 export function clubPageInTab(advanceFrom?: string): Page {
@@ -143,7 +210,7 @@ export async function scanClub(
     if (!Number.isInteger(maxPages) || maxPages < 1 || maxPages > 500)
         throw new Error('Limiter le parcours entre 1 et 500 pages.');
     const initial = await activeContext(signal);
-    async function read(advanceFrom?: string) {
+    async function execute<T>(func: (...args: string[]) => T, args: string[] = []) {
         const context = await activeContext(signal);
         if (
             context.tabId !== initial.tabId ||
@@ -153,19 +220,39 @@ export async function scanClub(
             throw new Error('L’onglet EA a changé ; arrêt du parcours.');
         const results = await chrome.scripting.executeScript({
             target: { tabId: initial.tabId, documentIds: [initial.documentId] },
-            func: clubPageInTab,
-            args: advanceFrom === undefined ? [] : [advanceFrom],
+            func,
+            args,
         });
         signal.throwIfAborted();
         const result = results.find((r) => r.frameId === 0);
         if (!result?.result || result.documentId !== initial.documentId)
-            throw new Error('Lecture du club impossible.');
+            throw new Error(
+                'Lecture du club impossible. Ouvrir « Club → Players » et attendre le chargement.',
+            );
         return result.result;
     }
+    const deadline = Date.now() + 60000;
+    let navigation = await execute(clubNavigationInTab);
+    while (!navigation.ready) {
+        if (navigation.error) throw new Error(navigation.error);
+        if (Date.now() >= deadline) throw new Error('Le club ne se charge pas ; relancer le scan.');
+        progress('Ouverture du club et retour à la première page…');
+        const signature = navigation.signature;
+        if (navigation.canAdvance) await execute(clubNavigationInTab, [signature]);
+        do {
+            await new Promise((resolve) => setTimeout(resolve, 300));
+            signal.throwIfAborted();
+            navigation = await execute(clubNavigationInTab);
+            if (navigation.error) throw new Error(navigation.error);
+        } while (navigation.signature === signature && Date.now() < deadline);
+    }
+    const read = (advanceFrom?: string) =>
+        execute(clubPageInTab, advanceFrom === undefined ? [] : [advanceFrom]);
     let page = await read();
     if (page.has_previous) throw new Error('Revenir à la première page du club avant le scan.');
     const scan: ClubScan = { capture_id: crypto.randomUUID(), complete: false, pages: [] };
     const seen = new Set<string>();
+    let captureFailure: string | null = null;
     for (let n = 1; n <= maxPages; n++) {
         signal.throwIfAborted();
         if (seen.has(page.signature)) throw new Error('Page répétée ; arrêt du parcours.');
@@ -173,8 +260,15 @@ export async function scanClub(
         progress(`Page ${n} : ${page.cards.length} cartes HTML, lecture des cartes visibles…`);
         let ocr: Perception['ocr'] = null,
             ocrError: string | null = null;
-        const capture = await captureActiveTab(signal);
+        let capture: TabCapture | undefined;
         try {
+            if (captureFailure) throw new Error(captureFailure);
+            try {
+                capture = await captureActiveTab(signal);
+            } catch (error) {
+                captureFailure = error instanceof Error ? error.message : 'Capture indisponible.';
+                throw error;
+            }
             const response = await analyzeImage(base, capture.file, capture, signal);
             ocr = response.ocr ?? null;
             if (!ocr) ocrError = 'Aucune région de carte lue par l’OCR.';
@@ -182,7 +276,7 @@ export async function scanClub(
             signal.throwIfAborted();
             ocrError = error instanceof Error ? error.message : 'OCR indisponible.';
         } finally {
-            URL.revokeObjectURL(capture.url);
+            if (capture) URL.revokeObjectURL(capture.url);
         }
         if ((await read()).signature !== page.signature)
             throw new Error('Le club a changé pendant la capture.');
@@ -231,7 +325,7 @@ export function sbcInTab() {
         !['ea.com', 'www.ea.com'].includes(location.hostname) ||
         !location.pathname.includes('/ultimate-team/web-app/')
     )
-        throw new Error('Ouvrir un SBC dans la Web App EA.');
+        return { error: 'Ouvrir un SBC dans la Web App EA.' };
     const checklist = Array.from(document.querySelectorAll('.sbc-requirements-checklist')).find(
         (e) => e.children.length > 0,
     );
@@ -244,7 +338,7 @@ export function sbcInTab() {
               .join('\n')
         : '';
     if (!requirements || !positions.length || positions.length > 11)
-        throw new Error('Ouvrir l’écran de composition et afficher les conditions du SBC.');
+        return { error: 'Ouvrir l’écran de composition et afficher les conditions du SBC.' };
     return {
         source: 'dom',
         requirements,
@@ -269,6 +363,7 @@ export async function prepareSbc(
     });
     const observed = results.find((r) => r.frameId === 0)?.result;
     if (!observed) throw new Error('Aucune condition lisible sur cet écran.');
+    if ('error' in observed) throw new Error(observed.error);
     const reading = (await requestJson(
         base,
         '/api/v1/sbc/read',

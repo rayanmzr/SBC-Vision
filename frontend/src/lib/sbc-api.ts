@@ -132,11 +132,12 @@ export async function solveWorkspace(
             body: JSON.stringify({
                 expected_revision: workspace.revision,
                 budget,
+                seconds: 20,
                 challenge: workspace.challenge,
             }),
         },
         signal,
-        30_000,
+        45_000,
     );
     if (!validateSolveResponse(value))
         throw new ApiError(

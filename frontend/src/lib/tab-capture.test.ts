@@ -141,12 +141,20 @@ it('ignore la fin d’une capture native après annulation et interdit les captu
     const controller = new AbortController();
     const pending = captureActiveTab(controller.signal);
     const cancelled = expect(pending).rejects.toThrow('annulée');
-    await vi.runAllTimersAsync();
+    await vi.advanceTimersByTimeAsync(0);
+    if (!complete) await vi.advanceTimersToNextTimerAsync();
     await expect(captureActiveTab(new AbortController().signal)).rejects.toThrow('déjà en cours');
     controller.abort();
-    complete('data:image/png;base64,cGl4ZWxz');
     await cancelled;
+    complete('data:image/png;base64,cGl4ZWxz');
     expect(readImage).not.toHaveBeenCalled();
+});
+
+it('arrête une capture native qui ne répond jamais au lieu de bloquer le scan', async () => {
+    capture.mockImplementationOnce(() => new Promise<string>(() => {}));
+    await expect(take()).rejects.toThrow('Capture bloquée par Chrome');
+    expect(readImage).not.toHaveBeenCalled();
+    await expect(take()).resolves.toMatchObject({ width: 2000 });
 });
 
 it('espace les captures pour rester sous la limite de deux appels par seconde', async () => {

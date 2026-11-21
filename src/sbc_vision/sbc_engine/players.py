@@ -198,10 +198,17 @@ class Futbin:
         response.raise_for_status()  # Un refus HTTP arrête l'import, sans contournement.
         return response
 
-    def page(self, number: int, *, quality="all", search=None) -> tuple[list[int], int]:
+    def page(
+        self, number: int, *, quality="all", search=None, max_price=None
+    ) -> tuple[list[int], int]:
         if quality not in {"all", "gold", "silver", "bronze"}:
             raise ValueError("Qualité de catalogue inconnue.")
         params = {"page": number}
+        if max_price is not None:
+            if type(max_price) is not int or not 1 <= max_price <= 1_000_000_000:
+                raise ValueError("Plafond de prix entier et positif.")
+            # Prioriser les achats abordables plutôt que les premières cartes classées par note.
+            params.update(pc_price=f"1-{max_price}", sort="pc_price", order="asc")
         if quality != "all":
             params["version"] = quality
         if search is not None:
@@ -219,7 +226,9 @@ class Futbin:
         ids = list(dict.fromkeys(ids))
         if not ids:
             # Une table vide est un résultat absent ; une page non reconnue reste une erreur.
-            if search and soup.select_one("table.players-table tbody:empty"):
+            if (search or max_price is not None) and soup.select_one(
+                "table.players-table tbody:empty"
+            ):
                 return [], number
             raise ValueError(f"Page {number} sans cartes : le format FUTBIN a peut-être changé.")
         pages = [number]
@@ -349,11 +358,18 @@ def normalize(raw: dict, observed_at: str) -> dict:
     }
 
 
-def import_catalog(db, source, pages=2, ids=None, refresh=False, max_age=24, *, quality="all"):
+def import_catalog(
+    db, source, pages=2, ids=None, refresh=False, max_age=24, *, quality="all", max_price=None
+):
     if pages < 1 or not math.isfinite(max_age) or max_age < 0:
         raise ValueError("Pages positives et durée de cache finie, positive ou nulle.")
     if quality not in {"all", "gold", "silver", "bronze"} or (ids and quality != "all"):
         raise ValueError("Choisir une qualité valide ; les identifiants ciblés utilisent all.")
+    if max_price is not None and (
+        type(max_price) is not int or not 1 <= max_price <= 1_000_000_000 or ids
+    ):
+        raise ValueError("Le plafond de prix positif s'applique uniquement aux pages du catalogue.")
+    cache_key = quality if max_price is None else f"{quality}:pc:{max_price}"
     now = datetime.now(UTC)
     cutoff = (now - timedelta(hours=max_age)).isoformat()
     # Les cartes encore fraîches sont réutilisées plutôt que téléchargées à nouveau.
@@ -378,15 +394,16 @@ def import_catalog(db, source, pages=2, ids=None, refresh=False, max_age=24, *, 
             cached = db.execute(
                 "SELECT * FROM pages WHERE quality = ? AND number = ? "
                 "AND julianday(observed_at) BETWEEN julianday(?) AND julianday(?)",
-                (quality, number, cutoff, now.isoformat()),
+                (cache_key, number, cutoff, now.isoformat()),
             ).fetchone()
             if cached and not refresh and max_age > 0:
                 page_ids, last_page = json.loads(cached["ids"]), cached["last_page"]
             else:
-                page_ids, last_page = source.page(number, quality=quality)
+                filters = {} if max_price is None else {"max_price": max_price}
+                page_ids, last_page = source.page(number, quality=quality, **filters)
                 if page_ids == previous_ids:
                     raise ValueError("FUTBIN répète la même page : import arrêté.")
-                save_page(db, number, page_ids, last_page, quality)
+                save_page(db, number, page_ids, last_page, cache_key)
             previous_ids = page_ids
         pending = [card_id for card_id in page_ids if card_id not in fresh]
         for start in range(0, len(pending), 60):

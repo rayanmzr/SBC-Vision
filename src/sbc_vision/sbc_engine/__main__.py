@@ -32,6 +32,8 @@ from .solver import alternatives, greedy, recheck, shopping_list, solve, verific
 
 
 def run_import(args):
+    if args.max_price is not None and (args.ids or args.file or args.reading or args.scan):
+        raise ValueError("Le plafond de prix s'applique aux pages, pas aux lectures ou fichiers.")
     if (args.ids or args.file or args.reading or args.scan) and args.quality != "all":
         raise ValueError("Le filtre de qualité s'applique à l'index, pas aux IDs ou aux fichiers.")
     if args.pages < 1 or args.max_age < 0 or (args.ids and min(args.ids) < 1):
@@ -92,6 +94,7 @@ def run_import(args):
                     args.refresh,
                     args.max_age,
                     quality=args.quality,
+                    max_price=args.max_price,
                 )
         print(f"{db.execute('SELECT COUNT(*) FROM cards').fetchone()[0]} versions en base.")
         print(ATTRIBUTION)
@@ -388,6 +391,11 @@ def main(argv=None):
         "--browser", action="store_true", help="Lire l'onglet public FUTBIN dans Chrome sur macOS."
     )
     market.add_argument("--quality", choices=["all", "gold", "silver", "bronze"], default="all")
+    market.add_argument(
+        "--max-price",
+        type=int,
+        help="Importer d'abord les cartes avec un prix connu sous ce plafond.",
+    )
     imports = market.add_mutually_exclusive_group()
     imports.add_argument("--ids", type=int, nargs="+")
     imports.add_argument("--file", type=Path, help="Export JSON normalisé, sans accès réseau.")

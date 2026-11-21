@@ -55,7 +55,7 @@ Toutes les routes sont visibles dans `/docs` et `/openapi.json`.
 | `POST /api/v1/sbc/solve` | `expected_revision`, préférences facultatives | Mode, révision et rapport du véritable moteur |
 
 Les préférences facultatives sont `budget`, `max_card_value` et `seconds` (3 secondes
-par défaut, 5 maximum). Le budget concerne les achats, pas la somme économique totale.
+par défaut, 30 maximum). Le budget concerne les achats, pas la somme économique totale.
 Le plafond par carte s'applique aussi à la valeur sacrifiée, selon le moteur de Rayan.
 La requête accepte aussi `challenge` au contrat dynamique du moteur ; il remplace les
 conditions configurées pour ce calcul uniquement. Sans lui, le fichier du serveur est utilisé.
@@ -94,12 +94,13 @@ Le conteneur contient les options `data,solver,ocr,vision` ; la base et les poid
 
 - `404` : exemplaire absent de l'inventaire.
 - `409` : données modifiées, prix périmés ou conditions encore incertaines ; recharger.
-- `422` : requête invalide, budget négatif, type incorrect ou délai supérieur à 5 secondes.
+- `422` : requête invalide, budget négatif, type incorrect ou délai supérieur à 30 secondes.
 - `429` : un calcul est déjà en cours dans ce processus ; attendre sa fin.
 - `503` : configuration, dépendances ou données locales indisponibles.
 
 Une seule résolution CP-SAT est autorisée à la fois par processus. La limite de calcul
-est transmise au moteur. L'annulation HTTP côté navigateur ne garantit pas d'arrêter
+est transmise au moteur ; l'accueil demande 20 secondes au maximum pour les compositions
+complexes, avec un délai HTTP de 45 secondes. L'annulation HTTP côté navigateur ne garantit pas d'arrêter
 instantanément ce calcul ; une réponse tardive ne doit pas être affichée par le client.
 Les routes synchrones utilisent les workers de FastAPI ; elles ne bloquent pas la boucle
 asynchrone qui reçoit les autres requêtes.
@@ -113,11 +114,14 @@ est testé sur des scènes fictives. Sa validation réelle reste ouverte.
 
 ## Scan hybride du club EA
 
-L'extension ajoute « Scanner le club EA » sur Analyser. Depuis la première page de
-`Club → Players` (interface anglaise), elle capture la zone visible pour l'OCR, lit les
+L'accueil rejoint automatiquement `Club → Players` (interface anglaise), puis revient
+à la première page. Le diagnostic conserve aussi son bouton de scan. L'extension capture la zone visible pour l'OCR, lit les
 lignes HTML déjà rendues, puis utilise seulement `Next`. Le parcours est borné entre
 1 et 500 pages (100 par défaut), s'arrête sur page répétée ou changement d'onglet et
 peut être interrompu. Aucune requête vers une API privée EA n'est effectuée.
+Une capture native expire après huit secondes et l'annulation n'attend pas son retour.
+Si elle échoue, les pages suivantes restent lisibles en HTML ; `ocr_error` conserve
+l'échec et aucun résultat OCR n'est inventé.
 
 `POST /api/v1/sbc/club-scan` accepte `capture_id`, `pages`, `complete`, `expected_revision`
 et `confirmed` (faux par défaut). Chaque page contient les cartes DOM, leur visibilité,

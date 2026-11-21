@@ -467,7 +467,7 @@ def test_solver_capacity_is_bounded(client):
 
 
 @pytest.mark.parametrize(
-    "change", [{"seconds": 10}, {"budget": -1}, {"budget": True}, {"extra": "field"}]
+    "change", [{"seconds": 31}, {"budget": -1}, {"budget": True}, {"extra": "field"}]
 )
 def test_solver_inputs_are_bounded(client, change):
     response = client.post(

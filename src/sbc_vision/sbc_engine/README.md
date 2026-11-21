@@ -273,3 +273,16 @@ arrête l'import. Le format, la base et le cache restent ceux de l'import HTTP.
 HTML sauvegardé. Les prêts sont ignorés et la provenance reste `dom`, sans confiance
 OCR inventée. Rejouer le scan après enrichissement recalcule les candidats et permet
 d'importer les nouvelles correspondances uniques ; cela ne déprotège aucune carte.
+
+Pour élargir le pool abordable, `--max-price` filtre la liste publique sur les prix
+connus de la série `pc` et les trie par prix croissant. Son index est mis en cache
+séparément des pages classées par défaut ; les prix inconnus restent exclus.
+
+```bash
+python -m sbc_vision.sbc_engine import --browser --quality gold --max-price 1000 --pages 12
+python -m sbc_vision.sbc_engine import --browser --quality silver --max-price 1000 --pages 12
+```
+
+Ces pages constituent un sous-ensemble du catalogue. Un résultat impossible décrit
+ce pool, ses protections et le budget demandé ; il ne prouve pas que le SBC est
+impossible sur l'ensemble du marché.

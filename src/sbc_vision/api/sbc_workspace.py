@@ -50,7 +50,7 @@ class SolveRequest(BaseModel):
     expected_revision: str = Field(pattern="^[0-9a-f]{64}$")
     budget: int | None = Field(default=None, ge=0, le=1_000_000_000)
     max_card_value: int | None = Field(default=None, gt=0, le=1_000_000_000)
-    seconds: float = Field(default=3.0, gt=0, le=5)
+    seconds: float = Field(default=3.0, gt=0, le=30)
     challenge: Challenge | None = None
 
 

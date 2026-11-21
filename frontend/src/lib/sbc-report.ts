@@ -19,6 +19,7 @@ export type Candidate = {
     value?: number | null;
     max_quantity?: number;
     is_rare: boolean;
+    chemistry_kind?: 'standard' | 'unsupported';
     observed_at: string;
     source_url: string;
 };

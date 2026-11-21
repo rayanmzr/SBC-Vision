@@ -150,6 +150,33 @@ export function validateCaptureSize(image: { width: number; height: number }, vi
         );
 }
 
+async function captureWithDeadline(windowId: number, signal: AbortSignal): Promise<string> {
+    let stop = () => {},
+        timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+        const cancelled = new Promise<never>((_, reject) => {
+            stop = () => reject(new Error('La capture a été annulée.'));
+            signal.addEventListener('abort', stop, { once: true });
+            timer = setTimeout(
+                () =>
+                    reject(
+                        new Error(
+                            'Capture bloquée par Chrome. Rouvrir le popup SBC Vision depuis son icône dans l’onglet EA.',
+                        ),
+                    ),
+                8000,
+            );
+        });
+        return await Promise.race([
+            chrome.tabs.captureVisibleTab(windowId, { format: 'png' }),
+            cancelled,
+        ]);
+    } finally {
+        clearTimeout(timer);
+        signal.removeEventListener('abort', stop);
+    }
+}
+
 export async function captureActiveTab(signal: AbortSignal): Promise<TabCapture> {
     if (!isExtension())
         throw new Error('La capture d’onglet nécessite l’extension Chrome installée.');
@@ -161,7 +188,7 @@ export async function captureActiveTab(signal: AbortSignal): Promise<TabCapture>
         const before = await activeContext(signal);
         signal.throwIfAborted();
         lastAttempt = performance.now();
-        const dataUrl = await chrome.tabs.captureVisibleTab(before.windowId, { format: 'png' });
+        const dataUrl = await captureWithDeadline(before.windowId, signal);
         signal.throwIfAborted();
         const after = await activeContext(signal);
         if (!sameContext(before, after))

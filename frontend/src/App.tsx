@@ -10,7 +10,7 @@ import {
 } from './lib/platform';
 import { setSessionApiKey, clearSessionApiKey } from './lib/api-key';
 import { scanClub, prepareSbc, type ClubScan } from './lib/club-scan';
-import { loadWorkspace } from './lib/sbc-api';
+import { loadWorkspace, updateProtection } from './lib/sbc-api';
 import { credits, type SolverReport } from './lib/sbc-report';
 import { fillSbc } from './lib/sbc-fill';
 
@@ -23,6 +23,7 @@ type ScanReport = {
     complete: boolean;
     inventory_updated: boolean;
     expected_revision: string;
+    ocr_readable?: number;
 };
 
 export default function App() {
@@ -48,7 +49,7 @@ export default function App() {
         };
     }, []);
 
-    async function run(action: 'scan' | 'sbc') {
+    async function run(action: 'scan' | 'sbc' | 'basics') {
         if (current.current) return;
         const controller = new AbortController();
         current.current = controller;
@@ -64,6 +65,33 @@ export default function App() {
             const workspace = await loadWorkspace(base, controller.signal);
             if (workspace.mode !== 'local')
                 throw new Error('Les actions EA nécessitent un inventaire local réel.');
+            if (action === 'basics') {
+                if (!Number.isSafeInteger(cap) || cap < 1)
+                    throw new Error('Choisir un plafond entier positif.');
+                const cards = workspace.items.filter(
+                    (c) =>
+                        c.protected &&
+                        c.chemistry_kind === 'standard' &&
+                        c.value != null &&
+                        c.value <= cap,
+                );
+                let updated = workspace;
+                // Ce choix explicite modifie seulement les protections locales ; aucun clic EA.
+                for (const [i, card] of cards.entries()) {
+                    setMessage(`Autorisation des cartes de base : ${i + 1}/${cards.length}…`);
+                    updated = await updateProtection(
+                        base,
+                        updated,
+                        card.key,
+                        false,
+                        controller.signal,
+                    );
+                }
+                setMessage(
+                    `${cards.length} cartes de base sous ${credits(cap)} autorisées pour les prochains calculs.`,
+                );
+                return;
+            }
             if (action === 'scan') {
                 const observation: ClubScan = await scanClub(
                     base,
@@ -108,7 +136,7 @@ export default function App() {
                 setScan(report);
                 setMessage(
                     report.inventory_updated
-                        ? `${report.observed} cartes enregistrées ; ${report.identified} identifiées et protégées. ${report.pending} restent à vérifier.`
+                        ? `${report.observed} cartes enregistrées ; ${report.identified} identifiées et protégées. ${report.pending} restent à vérifier.${report.ocr_readable === 0 ? ' Aucune carte lue par OCR sur ce passage ; seules les données HTML ont été enregistrées.' : ''}`
                         : `${report.observed} observations sauvegardées ; le club confirmé est conservé.`,
                 );
             } else {
@@ -130,7 +158,9 @@ export default function App() {
                 }
                 setMessage(
                     result.report.solution.status === 'infeasible'
-                        ? 'Aucune composition ne respecte ces conditions avec les cartes et prix disponibles. Aucun joueur n’a été déplacé.'
+                        ? workspace.items.length && workspace.items.every((c) => c.protected)
+                            ? `Tes ${workspace.items.length} cartes sont protégées : le calcul utilise seulement des achats. Aucune équipe trouvée dans le catalogue actuel avec ${credits(budget)} de budget et ${credits(cap)} par carte. Autorise des cartes dans Options → Diagnostic et protections, ou ajuste les limites.`
+                            : `Aucune équipe trouvée dans le catalogue actuel avec ${credits(budget)} de budget et ${credits(cap)} par carte. Vérifie les protections et les prix disponibles.`
                         : 'Le calcul n’a pas trouvé de composition dans le temps imparti. Aucun joueur n’a été déplacé.',
                 );
             }
@@ -200,10 +230,12 @@ export default function App() {
                                 ? 'Composition proposée'
                                 : 'Aucune composition disponible'}
                         </h3>
-                        <p>
-                            Achats : {credits(proposal.solution.purchase_cost)} · Valeur des cartes
-                            utilisées : {credits(proposal.solution.sacrifice_value)}
-                        </p>
+                        {['optimal', 'feasible'].includes(proposal.solution.status) && (
+                            <p>
+                                Achats : {credits(proposal.solution.purchase_cost)} · Valeur des
+                                cartes utilisées : {credits(proposal.solution.sacrifice_value)}
+                            </p>
+                        )}
                         <ul>
                             {(proposal.solution.assignments ?? []).map((a) => {
                                 const c = proposal.selected_candidates.find(
@@ -241,6 +273,17 @@ export default function App() {
                             onChange={(e) => setCap(Number(e.target.value))}
                         />
                     </label>
+                    <button
+                        className="text-button"
+                        disabled={busy || !ready}
+                        onClick={() => run('basics')}
+                    >
+                        Autoriser les cartes de base sous ce plafond
+                    </button>
+                    <p className="field-hint">
+                        Cartes de base, rares comprises, avec un prix récent inférieur ou égal au
+                        plafond.
+                    </p>
                     <label>
                         Serveur{' '}
                         <input

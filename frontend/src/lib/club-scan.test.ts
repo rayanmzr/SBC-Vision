@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { clubPageInTab, scanClub, sbcInTab } from './club-scan';
+import { clubPageInTab, clubNavigationInTab, scanClub, sbcInTab } from './club-scan';
 import { activeContext, captureActiveTab } from './tab-capture';
 import { analyzeImage } from './api';
 
@@ -83,7 +83,7 @@ it('lit toutes les conditions du SBC courant une seule fois et sans cliquer sur 
     });
     expect(click).not.toHaveBeenCalled();
     document.querySelectorAll('.sbc-requirements-checklist').forEach((e) => e.remove());
-    expect(() => sbcInTab()).toThrow('conditions');
+    expect(sbcInTab().error).toContain('conditions');
 });
 
 function controller() {
@@ -109,7 +109,15 @@ function controller() {
         ReturnType<typeof analyzeImage>
     >);
     URL.revokeObjectURL = vi.fn();
-    const execute = vi.fn(async (options: { args: string[] }) => {
+    const execute = vi.fn(async (options: { args: string[]; func: unknown }) => {
+        if (options.func === clubNavigationInTab)
+            return [
+                {
+                    frameId: 0,
+                    documentId: 'document-ea',
+                    result: { ready: true, signature: 'club', error: '' },
+                },
+            ];
         const result = current;
         if (options.args.length) current = last;
         return [{ frameId: 0, documentId: 'document-ea', result }];
@@ -128,10 +136,52 @@ it('parcourt deux pages, conserve les lignes DOM sans les compter comme OCR et s
     expect(execute.mock.calls.filter(([o]) => o.args.length)).toHaveLength(1);
 });
 
+it('rejoint le club depuis un SBC puis revient à sa première page sans sélectionner de carte', () => {
+    const clubHtml = document.body.innerHTML;
+    document.body.innerHTML =
+        '<h1 class="title">SBC fictif</h1><button class="ut-tab-bar-item icon-club">Club</button><button id="exchange">Exchange</button>';
+    const exchange = vi.fn();
+    document.querySelector('#exchange')!.addEventListener('mouseup', exchange);
+    document.querySelector('.icon-club')!.addEventListener('mouseup', () => {
+        document.body.innerHTML =
+            '<h1 class="title">Club</h1><div id="players"><div><h1 class="tileHeader">Players</h1></div></div>';
+        document.querySelector('#players')!.addEventListener('mouseup', () => {
+            document.body.innerHTML = clubHtml;
+            document.querySelector<HTMLElement>('.prev')!.style.display = '';
+        });
+    });
+    clubNavigationInTab(clubNavigationInTab().signature);
+    expect(document.querySelector('h1.title')!.textContent).toBe('Club');
+    clubNavigationInTab(clubNavigationInTab().signature);
+    expect(document.querySelector('h1.title')!.textContent).toBe('My Club Players');
+    expect(clubNavigationInTab().ready).toBe(false);
+    document.querySelector('.prev')!.addEventListener('mouseup', () => {
+        document.querySelector<HTMLElement>('.prev')!.style.display = 'none';
+    });
+    clubNavigationInTab(clubNavigationInTab().signature);
+    expect(clubNavigationInTab().ready).toBe(true);
+    expect(exchange).not.toHaveBeenCalled();
+    expect(() => clubNavigationInTab('ancienne-scène')).not.toThrow();
+    expect(clubNavigationInTab('ancienne-scène').error).toContain('changé');
+});
+
 it('une limite de pages renvoie un scan partiel et ne clique pas Suivant', async () => {
     const execute = controller();
     const result = await scanClub('http://localhost', new AbortController().signal, vi.fn(), 1);
     expect(result.complete).toBe(false);
     expect(result.pages).toHaveLength(1);
     expect(execute.mock.calls.every(([o]) => o.args.length === 0)).toBe(true);
+});
+
+it('poursuit le relevé HTML si Chrome refuse la capture, sans inventer de résultat OCR', async () => {
+    controller();
+    vi.mocked(captureActiveTab).mockRejectedValueOnce(new Error('Capture bloquée par Chrome.'));
+    const result = await scanClub('http://localhost', new AbortController().signal, vi.fn(), 10);
+    expect(result.complete).toBe(true);
+    expect(result.pages).toHaveLength(2);
+    expect(
+        result.pages.every((p) => p.ocr === null && p.ocr_error === 'Capture bloquée par Chrome.'),
+    ).toBe(true);
+    expect(captureActiveTab).toHaveBeenCalledTimes(1);
+    expect(analyzeImage).not.toHaveBeenCalled();
 });

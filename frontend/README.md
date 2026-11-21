@@ -11,6 +11,16 @@ si elles sont déprotégées et identifiées sans ambiguïté. Les achats resten
 Le placement est testé sur des scènes fictives ; les essais EA restent en lecture.
 Aucun échange ni confirmation finale n'est exécuté par le contrôleur.
 
+Scanner mon club rejoint automatiquement Club → Players depuis l'écran EA courant et
+revient à la première page. Utiliser le vrai popup depuis l'icône de l'extension pour la
+capture visuelle. Une capture native bloquée est annulable et expire après huit secondes ;
+le relevé HTML peut continuer, avec l'absence d'OCR indiquée explicitement.
+
+Chaque scan protège les cartes. Options permet d'autoriser explicitement les cartes
+de base, rares comprises, avec un prix récent sous le plafond ; cette action modifie seulement
+les protections locales. Le calcul rappelle les protections et les limites si aucune
+équipe n'est trouvée. Aucun coût « Prix inconnu » n'est affiché pour une équipe inexistante.
+
 Responsable : Samy Allali. Cette version permet de capturer l'onglet actif depuis le popup,
 de joindre l'API, d'envoyer manuellement une image et d'examiner son JSON.
 L'espace **Équipe** charge l'inventaire de

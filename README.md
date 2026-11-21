@@ -27,7 +27,8 @@ notamment le parcours de démonstration avec cartes fictives et véritable calcu
 ## Extension Chrome
 
 L'accueil contient deux actions : **Scanner mon club** et **Compléter ce SBC**.
-Le scan combine l'OCR visible et les lignes HTML, puis enregistre les cartes identifiées
+Le scan ouvre automatiquement Club → Players, revient à la première page, combine
+l'OCR visible et les lignes HTML, puis enregistre les cartes identifiées
 sous protection. L'action SBC lit les conditions courantes et lance le calcul. Si toutes
 les cartes sont disponibles et déprotégées, le contrôleur recherche leurs versions et
 les place dans une composition vide. Un achat nécessaire, un doublon ou une lecture
@@ -37,7 +38,10 @@ testé sur des scènes fictives ; les essais sur le compte EA restent en lecture
 Le budget, le plafond par carte, l'adresse et la clé du serveur sont dans **Options**.
 Le lien « Diagnostic et protections des cartes » ouvre les anciennes vues Analyser,
 Équipe et Réglages, utiles pour les lectures incertaines et les tests de l'équipe.
-Les cartes sont protégées par défaut ; leur protection se règle explicitement dans ce diagnostic.
+Les cartes sont protégées après chaque scan. Dans Options, **Autoriser les cartes de base
+sous ce plafond** déprotège explicitement les cartes de base, rares comprises, avec un prix
+récent inférieur ou égal au plafond affiché. Les choix individuels restent dans le diagnostic.
+Un budget trop bas peut empêcher toute équipe si le club est entièrement protégé.
 
 ## Démarrage local
 
