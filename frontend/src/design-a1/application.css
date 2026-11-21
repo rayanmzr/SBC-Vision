@@ -1473,7 +1473,8 @@ body:has(.stadium-app) {
     display: grid;
     gap: 14px;
 }
-.quick-actions .primary-button {
+.quick-actions .primary-button,
+.quick-app .authorize-button {
     width: 100%;
     min-height: 64px;
     justify-content: center;
@@ -1482,6 +1483,9 @@ body:has(.stadium-app) {
 .quick-status {
     margin: 24px 0;
     line-height: 1.6;
+}
+.quick-app .authorize-button {
+    margin-bottom: 16px;
 }
 .quick-options {
     margin-top: 30px;

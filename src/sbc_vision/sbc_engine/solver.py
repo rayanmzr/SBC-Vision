@@ -346,7 +346,9 @@ def expression(rule, cards, used, model, challenge, ratings):
     return sum(flags)
 
 
-def solve(challenge: Challenge, pool: list[Candidate], *, seconds=5.0) -> SolverResult:
+def solve(
+    challenge: Challenge, pool: list[Candidate], *, seconds=5.0, prefer_low_rating=False
+) -> SolverResult:
     if not 0 < seconds <= 60:
         raise ValueError("Le délai doit être compris entre 0 et 60 secondes, zéro exclu.")
     start, cards, model = time.monotonic(), eligible(challenge, pool), cp_model.CpModel()
@@ -401,12 +403,14 @@ def solve(challenge: Challenge, pool: list[Candidate], *, seconds=5.0) -> Solver
             }[rule.op]
         )
     scale = (len(challenge.positions) if challenge.mode == "squad" else challenge.max_items) + 1
-    model.minimize(
-        sum(
-            ((c.value * scale + int(c.is_rare)) * scale + int(not c.owned)) * n
-            for c, n in zip(cards, used, strict=True)
-        )
+    cost = sum(
+        ((c.value * scale + int(c.is_rare)) * scale + int(not c.owned)) * n
+        for c, n in zip(cards, used, strict=True)
     )
+    low_rating = (
+        prefer_low_rating and challenge.mode == "squad" and challenge.position_mode == "any"
+    )
+    model.minimize(sum(ratings) if low_rating else cost)
     solver = cp_model.CpSolver()
     solver.parameters.max_time_in_seconds, solver.parameters.num_search_workers = seconds, 1
     status = solver.solve(model)
@@ -418,6 +422,21 @@ def solve(challenge: Challenge, pool: list[Candidate], *, seconds=5.0) -> Solver
             elapsed_seconds=time.monotonic() - start,
             excluded_keys=excluded,
         )
+    if low_rating and status == cp_model.OPTIMAL:
+        # Conserver la note totale minimale, puis départager par la valeur sacrifiée.
+        model.add(sum(ratings) == solver.value(sum(ratings)))
+        model.minimize(cost)
+        remaining = seconds - (time.monotonic() - start)
+        status = cp_model.FEASIBLE  # Le coût reste à optimiser dans le temps restant.
+        if remaining > 0:
+            cheaper = cp_model.CpSolver()
+            cheaper.parameters.max_time_in_seconds = remaining
+            cheaper.parameters.num_search_workers = 1
+            refined = cheaper.solve(model)
+            if refined == cp_model.MODEL_INVALID:
+                raise ValueError(cheaper.solution_info())
+            if refined in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+                solver, status = cheaper, refined
     if challenge.mode == "score":
         keys = [c.key for c, n in zip(cards, used, strict=True) for _ in range(solver.value(n))]
         team = [Assignment(slot=i, candidate_key=k) for i, k in enumerate(keys)]

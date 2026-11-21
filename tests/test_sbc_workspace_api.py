@@ -237,6 +237,38 @@ def test_club_preference_uses_owned_cards_then_market_if_they_are_protected(
     assert report["verification"]["valid"]
 
 
+def test_quick_club_search_prefers_a_lower_gold_rating_over_a_cheaper_owned_card(client, service):
+    with closing(open_database(service.config.database)) as db:
+        card = json.loads(db.execute("SELECT data FROM cards WHERE id=900003").fetchone()[0])
+        card.update(rating=75, positions=["CB"], prices={"pc": 900, "ps": 900})
+        db.execute("UPDATE cards SET data=?,rating=? WHERE id=900003", (json.dumps(card), 75))
+        db.commit()
+    response = client.post(
+        "/api/v1/sbc/solve",
+        json={
+            "expected_revision": service.snapshot().revision,
+            "prefer_club": True,
+            "challenge": {
+                "positions": ["GK"],
+                "position_mode": "any",
+                "budget": 5000,
+                "market": "pc",
+                "card_level": "GOLD",
+                "card_level_op": "min",
+                "max_card_value": 1000,
+            },
+        },
+    )
+    assert response.status_code == 200, response.text
+    report = response.json()["report"]
+    assert (
+        report["selection_scope"] == "club" and report["selection_priority"] == "rating_then_value"
+    )
+    assert report["selected_candidates"][0]["rating"] == 75
+    assert report["solution"]["total_cost"] == 900
+    assert report["verification"]["valid"]
+
+
 @pytest.mark.parametrize("fault", [None, "stats", "duplicate", "unconfirmed", "catalogue"])
 def test_placement_uses_only_a_unique_confirmed_club_fingerprint(
     client, service, monkeypatch, fault

@@ -179,6 +179,13 @@ Le champ `report.selection_scope` indique `club` ou `club_and_market` : le statu
 porte sur le pool retenu, pas sur une comparaison globale entre ces deux stratégies.
 Les appels sans cette préférence conservent l'optimisation économique du pool complet.
 
+Dans cette recherche limitée au club, les défis sans collectif privilégient la somme
+des notes la plus basse parmi les cartes admissibles, puis le coût économique à note
+totale égale. Le plafond par carte et toutes les conditions restent appliqués. Les deux
+étapes partagent le délai de recherche ; si la seconde expire, une solution conservée
+reste `feasible`. `selection_priority: "rating_then_value"` indique cette préférence.
+Avec collectif ou dans le pool incluant les achats, la priorité reste le coût.
+
 Le scan conserve la protection d'une version présente en un exemplaire unique avant et
 après le relevé. Les nouvelles versions et les doublons redeviennent protégés, puisque
 le DOM ne fournit pas ici leur identité EA persistante. Le bilan `protected` compte les

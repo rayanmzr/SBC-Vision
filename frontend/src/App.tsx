@@ -227,7 +227,7 @@ export default function App() {
                 </p>
                 {authorization && !busy && (
                     <button
-                        className="text-button"
+                        className="primary-button authorize-button"
                         onClick={() => run(proposal ? 'authorize-sbc' : 'basics')}
                     >
                         Autoriser mes cartes de base sous {credits(cap)}
@@ -255,6 +255,9 @@ export default function App() {
                         {['optimal', 'feasible'].includes(proposal.solution.status) && (
                             <p>
                                 {proposal.selection_scope === 'club' ? 'Club uniquement · ' : ''}
+                                {proposal.selection_priority === 'rating_then_value'
+                                    ? 'Notes les plus basses · '
+                                    : ''}
                                 Achats : {credits(proposal.solution.purchase_cost)} · Valeur des
                                 cartes utilisées : {credits(proposal.solution.sacrifice_value)}
                             </p>

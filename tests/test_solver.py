@@ -101,6 +101,70 @@ def test_challenges_without_chemistry_accept_owned_cards_out_of_position(setup, 
     assert solve(strict, cards).status == "infeasible"
 
 
+@pytest.mark.parametrize("size", [1, 5])
+@pytest.mark.parametrize("needs_high_rating", [False, True])
+def test_low_gold_ratings_come_before_value_without_positions(setup, size, needs_high_rating):
+    _, pool, _, _ = setup
+    template = next(c for c in pool if c.owned)
+    profiles = [(75, 700 + 20 * i, "GOLD", False) for i in range(size + 1)]
+    profiles += [
+        (80, 100, "GOLD", False),
+        (74, 50, "SILVER", False),
+        (75, 50, "GOLD", True),
+        (75, 2000, "GOLD", False),
+    ]
+    cards = [
+        template.model_copy(
+            update={
+                "key": f"club:gold-{i}",
+                "card_id": 930000 + i,
+                "base_id": 930000 + i,
+                "positions": ["CB"],
+                "rating": rating,
+                "value": value,
+                "card_level": quality,
+                "protected": protected,
+            }
+        )
+        for i, (rating, value, quality, protected) in enumerate(profiles)
+    ]
+    challenge = Challenge(
+        positions=["GK"] * size,
+        position_mode="any",
+        budget=0,
+        market="pc",
+        card_level="GOLD",
+        card_level_op="min",
+        max_card_value=1000,
+        conditions=[Condition(metric="rated", value=1, target=80)] if needs_high_rating else [],
+    )
+    outcome = solve(challenge, cards, prefer_low_rating=True)
+    selected = {a.candidate_key for a in outcome.assignments}
+    assert outcome.status == "optimal"
+    assert sorted(c.rating for c in cards if c.key in selected) == [75] * (
+        size - int(needs_high_rating)
+    ) + [80] * int(needs_high_rating)
+    expected = sum(700 + 20 * i for i in range(size - int(needs_high_rating))) + 100 * int(
+        needs_high_rating
+    )
+    assert outcome.total_cost == expected
+    assert verification(challenge, cards, outcome)["valid"]
+
+
+def test_rating_preference_keeps_a_valid_team_if_cost_refinement_times_out(setup, monkeypatch):
+    _, pool, _, _ = setup
+    challenge = Challenge(positions=["GK"], position_mode="any", budget=5000, market="pc")
+    first = cp_model.CpSolver()
+    timeout = Mock()
+    timeout.solve.return_value = cp_model.UNKNOWN
+    monkeypatch.setattr(
+        "sbc_vision.sbc_engine.solver.cp_model.CpSolver", Mock(side_effect=[first, timeout])
+    )
+    outcome = solve(challenge, pool, prefer_low_rating=True)
+    assert outcome.status == "feasible"
+    assert verification(challenge, pool, outcome)["valid"]
+
+
 def test_free_positions_cannot_silently_bypass_a_chemistry_requirement():
     with pytest.raises(ValidationError, match="collectif hors poste"):
         Challenge(

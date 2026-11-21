@@ -136,6 +136,12 @@ le parseur utilise `position_mode: "any"` pour accepter les cartes hors poste ; 
 collectif, il conserve `preferred`. Les JSON sans ce champ restent en mode `preferred`.
 Le solveur et son vérificateur indépendant appliquent le même choix.
 
+L'accueil cherche d'abord dans le club autorisé. Sans collectif, il minimise la somme
+des notes, puis la valeur des cartes parmi les équipes de même note totale. Le plafond
+de valeur et les exigences de qualité, note ou rareté continuent de s'appliquer. Les
+cartes non identifiées, protégées ou sans prix récent restent exclues. L'optimisation
+du pool complet avec achats conserve la priorité économique.
+
 ```bash
 python -m sbc_vision.sbc_engine ocr capture.png regions.json --market pc --budget 2000
 python -m sbc_vision.sbc_engine solve --reading data/processed/ocr.json

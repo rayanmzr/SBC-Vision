@@ -387,7 +387,9 @@ class SbcWorkspace:
             # Chercher d'abord un remplissage sans achat, sous les mêmes limites de valeur.
             club = [c for c in pool if c.owned and not c.protected]
             outcome = (
-                self.solver.solve(challenge, club, seconds=request.seconds / 2)
+                self.solver.solve(
+                    challenge, club, seconds=request.seconds / 2, prefer_low_rating=True
+                )
                 if request.prefer_club and club
                 else None
             )
@@ -410,6 +412,9 @@ class SbcWorkspace:
                 "shopping_list": self.solver.shopping_list(challenge, pool, outcome),
                 "data_kind": "synthetic" if self.config.mode == "demo" else "local",
                 "selection_scope": "club" if club_only else "club_and_market",
+                "selection_priority": "rating_then_value"
+                if club_only and challenge.position_mode == "any"
+                else "value",
             }
             latest_document, latest_challenge, _ = self.challenge_document()
             latest_reference = self.reference_time(latest_document)
