@@ -1,0 +1,204 @@
+{
+  "external_requests": [],
+  "failures": [],
+  "screens": [
+    {
+      "id": "club-filtres",
+      "title": "Club Search",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      },
+      "canvas": 0,
+      "cards": 0,
+      "open_slots": 0
+    },
+    {
+      "id": "club-joueurs-page-2",
+      "title": "My Club Players",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      },
+      "canvas": 56,
+      "cards": 20,
+      "open_slots": 0
+    },
+    {
+      "id": "club-joueurs",
+      "title": "My Club Players",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      },
+      "canvas": 64,
+      "cards": 20,
+      "open_slots": 0
+    },
+    {
+      "id": "club",
+      "title": "Club",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      },
+      "canvas": 0,
+      "cards": 0,
+      "open_slots": 0
+    },
+    {
+      "id": "home",
+      "title": "Home",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      },
+      "canvas": 0,
+      "cards": 0,
+      "open_slots": 0
+    },
+    {
+      "id": "joueur-fiche",
+      "title": "My Club Players",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      },
+      "canvas": 34,
+      "cards": 20,
+      "open_slots": 0
+    },
+    {
+      "id": "sbc-case-vide",
+      "title": "Daily Login Upgrade",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      },
+      "canvas": 37,
+      "cards": 0,
+      "open_slots": 1
+    },
+    {
+      "id": "sbc-cinq-joueurs",
+      "title": "2x 80+ Upgrade",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      },
+      "canvas": 24,
+      "cards": 0,
+      "open_slots": 5
+    },
+    {
+      "id": "sbc-groupe",
+      "title": "LALIGA & Liga F",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      },
+      "canvas": 0,
+      "cards": 0,
+      "open_slots": 0
+    },
+    {
+      "id": "sbc-liste",
+      "title": "SBC",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      },
+      "canvas": 21,
+      "cards": 0,
+      "open_slots": 0
+    },
+    {
+      "id": "sbc-onze-joueurs",
+      "title": "10x 82+ Upgrade",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      },
+      "canvas": 24,
+      "cards": 0,
+      "open_slots": 11
+    },
+    {
+      "id": "sbc-quotidien",
+      "title": "Daily Login Upgrade",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      },
+      "canvas": 24,
+      "cards": 0,
+      "open_slots": 1
+    },
+    {
+      "id": "sbc-recherche",
+      "title": "Daily Login Upgrade",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      },
+      "canvas": 25,
+      "cards": 0,
+      "open_slots": 1
+    },
+    {
+      "id": "sbc-resultats",
+      "title": "Daily Login Upgrade",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      },
+      "canvas": 43,
+      "cards": 0,
+      "open_slots": 1
+    },
+    {
+      "id": "sbc-score",
+      "title": "LALIGA & Liga F",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      },
+      "canvas": 30,
+      "cards": 0,
+      "open_slots": 0
+    },
+    {
+      "id": "sbc-zone-travail",
+      "title": "Daily Login Upgrade",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      },
+      "canvas": 43,
+      "cards": 0,
+      "open_slots": 1
+    }
+  ],
+  "navigation": [
+    "club → Players → Next → Previous",
+    "SBC → Daily Login → case → Add Player → Search → résultats",
+    "bouton + sans écriture ni appel externe"
+  ],
+  "reference_device_scale_factor": 1
+}

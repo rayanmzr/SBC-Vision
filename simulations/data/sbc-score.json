@@ -1,0 +1,112 @@
+{
+  "title": "LALIGA & Liga F",
+  "viewport": {
+    "width": 1512,
+    "height": 861,
+    "pixelRatio": 2
+  },
+  "bodyClass": "with-fifa-header futweb landscape",
+  "requirements": "OVR Min: 45",
+  "buttons": [
+    {
+      "text": "",
+      "class": "ut-navigation-button-control",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-iteminfochange-button-control btn-navigation-secondary",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control filter-btn ut-one-click-sbc-work-area-view--filter-btn",
+      "disabled": false
+    },
+    {
+      "text": "Remove All",
+      "class": "ut-image-button-control ut-one-click-sbc-work-area-view--deselect-btn disabled",
+      "disabled": true
+    },
+    {
+      "text": "Auto-Select",
+      "class": "btn-standard ut-one-click-sbc-work-area-view--auto-select-btn",
+      "disabled": false
+    },
+    {
+      "text": "Previous",
+      "class": "flat pagination prev",
+      "disabled": false
+    },
+    {
+      "text": "Next",
+      "class": "flat pagination next",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control ut-floating-image-button ut-one-click-sbc-work-area-view--review-btn",
+      "disabled": false
+    },
+    {
+      "text": "Club",
+      "class": "ea-filter-bar-item-view selected",
+      "disabled": false
+    },
+    {
+      "text": "SBC Storage",
+      "class": "ea-filter-bar-item-view",
+      "disabled": false
+    },
+    {
+      "text": "Review Selection",
+      "class": "btn-standard primary disabled",
+      "disabled": true
+    },
+    {
+      "text": "Home",
+      "class": "ut-tab-bar-item icon-home",
+      "disabled": false
+    },
+    {
+      "text": "Squads",
+      "class": "ut-tab-bar-item icon-squad",
+      "disabled": false
+    },
+    {
+      "text": "Transfers",
+      "class": "ut-tab-bar-item icon-transfer",
+      "disabled": false
+    },
+    {
+      "text": "Store",
+      "class": "ut-tab-bar-item icon-store",
+      "disabled": false
+    },
+    {
+      "text": "Club",
+      "class": "ut-tab-bar-item icon-club",
+      "disabled": false
+    },
+    {
+      "text": "SBC",
+      "class": "ut-tab-bar-item icon-sbc selected ut-tab-bar-item--default-to-root",
+      "disabled": false
+    },
+    {
+      "text": "Evolutions",
+      "class": "ut-tab-bar-item icon-evolution",
+      "disabled": false
+    },
+    {
+      "text": "Settings",
+      "class": "ut-tab-bar-item icon-settings",
+      "disabled": false
+    }
+  ],
+  "cards": [],
+  "slots": [],
+  "source": "DOM rendu nettoyé ; ressources graphiques de référence",
+  "account_data": "remplacées ; aucun état actif/instance/session conservé",
+  "screen": "sbc-score"
+}

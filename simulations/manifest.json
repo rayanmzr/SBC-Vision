@@ -1,0 +1,1960 @@
+{
+  "captured_on": "2026-11-21",
+  "application": "EA FC 27 Web App, anglais, ordinateur",
+  "kind": "Références visuelles hors ligne, pas une copie du moteur EA",
+  "pages": [
+    {
+      "id": "club-filtres",
+      "title": "Club Search",
+      "html": "pages/club-filtres.html",
+      "metadata": "data/club-filtres.json",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      }
+    },
+    {
+      "id": "club-joueurs-page-2",
+      "title": "My Club Players",
+      "html": "pages/club-joueurs-page-2.html",
+      "metadata": "data/club-joueurs-page-2.json",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      }
+    },
+    {
+      "id": "club-joueurs",
+      "title": "My Club Players",
+      "html": "pages/club-joueurs.html",
+      "metadata": "data/club-joueurs.json",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      }
+    },
+    {
+      "id": "club",
+      "title": "Club",
+      "html": "pages/club.html",
+      "metadata": "data/club.json",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      }
+    },
+    {
+      "id": "home",
+      "title": "Home",
+      "html": "pages/home.html",
+      "metadata": "data/home.json",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      }
+    },
+    {
+      "id": "joueur-fiche",
+      "title": "My Club Players",
+      "html": "pages/joueur-fiche.html",
+      "metadata": "data/joueur-fiche.json",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      }
+    },
+    {
+      "id": "sbc-case-vide",
+      "title": "Daily Login Upgrade",
+      "html": "pages/sbc-case-vide.html",
+      "metadata": "data/sbc-case-vide.json",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      }
+    },
+    {
+      "id": "sbc-cinq-joueurs",
+      "title": "2x 80+ Upgrade",
+      "html": "pages/sbc-cinq-joueurs.html",
+      "metadata": "data/sbc-cinq-joueurs.json",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      }
+    },
+    {
+      "id": "sbc-groupe",
+      "title": "LALIGA & Liga F",
+      "html": "pages/sbc-groupe.html",
+      "metadata": "data/sbc-groupe.json",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      }
+    },
+    {
+      "id": "sbc-liste",
+      "title": "SBC",
+      "html": "pages/sbc-liste.html",
+      "metadata": "data/sbc-liste.json",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      }
+    },
+    {
+      "id": "sbc-onze-joueurs",
+      "title": "10x 82+ Upgrade",
+      "html": "pages/sbc-onze-joueurs.html",
+      "metadata": "data/sbc-onze-joueurs.json",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      }
+    },
+    {
+      "id": "sbc-quotidien",
+      "title": "Daily Login Upgrade",
+      "html": "pages/sbc-quotidien.html",
+      "metadata": "data/sbc-quotidien.json",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      }
+    },
+    {
+      "id": "sbc-recherche",
+      "title": "Daily Login Upgrade",
+      "html": "pages/sbc-recherche.html",
+      "metadata": "data/sbc-recherche.json",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      }
+    },
+    {
+      "id": "sbc-resultats",
+      "title": "Daily Login Upgrade",
+      "html": "pages/sbc-resultats.html",
+      "metadata": "data/sbc-resultats.json",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      }
+    },
+    {
+      "id": "sbc-score",
+      "title": "LALIGA & Liga F",
+      "html": "pages/sbc-score.html",
+      "metadata": "data/sbc-score.json",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      }
+    },
+    {
+      "id": "sbc-zone-travail",
+      "title": "Daily Login Upgrade",
+      "html": "pages/sbc-zone-travail.html",
+      "metadata": "data/sbc-zone-travail.json",
+      "viewport": {
+        "width": 1512,
+        "height": 861,
+        "pixelRatio": 2
+      }
+    }
+  ],
+  "asset_count": 353,
+  "missing_assets": [],
+  "sanitization": [
+    "aucun JS EA",
+    "aucun cookie, token, localStorage ou appel API",
+    "compte et soldes fictifs",
+    "historique joueur remis à zéro",
+    "appartenance équipe retirée",
+    "échantillons publics de joueurs, pas inventaire complet"
+  ],
+  "assets": {
+    "https://eaassets-a.akamaihd.net/prm/em/um/fc27/171fa2979191c4b7/1795195766702b13d4e64-0826-47d0-a010-2bbc4351389a.png": {
+      "file": "assets/b41ea0b9572921-1795195766702b13d4e64-0826-47d0-a010-2bbc4351389a.png",
+      "bytes": 302596,
+      "status": 200
+    },
+    "https://eaassets-a.akamaihd.net/prm/em/um/fc27/4cfb66355572f7da/179516974769578db1bc5-4441-4775-8b89-303909fbe6e8.png": {
+      "file": "assets/67ddc8707cba3b-179516974769578db1bc5-4441-4775-8b89-303909fbe6e8.png",
+      "bytes": 630822,
+      "status": 200
+    },
+    "https://eaassets-a.akamaihd.net/prm/em/um/fc27/d2aa1be885a038ed/178977034142123e0cffa-4205-40b6-8a6b-adbd826c233c.png": {
+      "file": "assets/7e71983ec4d6a6-178977034142123e0cffa-4205-40b6-8a6b-adbd826c233c.png",
+      "bytes": 320732,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/eventtokens/0f4fd29c-a11c-4aef-a581-3960231c75f9_s.png": {
+      "file": "assets/ecc18819cfbfcc-0f4fd29c-a11c-4aef-a581-3960231c75f9_s.png",
+      "bytes": 1218,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/chemistrystyles/list/default.png": {
+      "file": "assets/83536901ccfb40-default.png",
+      "bytes": 803,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/111657.png": {
+      "file": "assets/f710e0d03d4b8f-111657.png",
+      "bytes": 6798,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/111928.png": {
+      "file": "assets/89f5b4db562b95-111928.png",
+      "bytes": 7527,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/112658.png": {
+      "file": "assets/e74ab7afd279be-112658.png",
+      "bytes": 9908,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/114162.png": {
+      "file": "assets/c6e44beeac5034-114162.png",
+      "bytes": 4602,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/114605.png": {
+      "file": "assets/bd9fc624a84a5f-114605.png",
+      "bytes": 6601,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/116304.png": {
+      "file": "assets/f305b44f7492b5-116304.png",
+      "bytes": 10662,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/116309.png": {
+      "file": "assets/8b33439cfc30bf-116309.png",
+      "bytes": 5698,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/116334.png": {
+      "file": "assets/455ed9b5adc34a-116334.png",
+      "bytes": 3896,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/116336.png": {
+      "file": "assets/1872d817c8593f-116336.png",
+      "bytes": 9134,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/132794.png": {
+      "file": "assets/4d2ea0cf00725d-132794.png",
+      "bytes": 4516,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/169.png": {
+      "file": "assets/d71e19f7a65855-169.png",
+      "bytes": 7578,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/18.png": {
+      "file": "assets/1371d2d9e4c99a-18.png",
+      "bytes": 3455,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/2.png": {
+      "file": "assets/01188aa3566695-2.png",
+      "bytes": 6806,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/241.png": {
+      "file": "assets/756299fcedd73a-241.png",
+      "bytes": 6466,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/243.png": {
+      "file": "assets/6cfed779cba4e2-243.png",
+      "bytes": 7876,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/32.png": {
+      "file": "assets/8cf94c97852864-32.png",
+      "bytes": 9532,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/38.png": {
+      "file": "assets/036da985b98665-38.png",
+      "bytes": 4884,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/448.png": {
+      "file": "assets/d34af08594a8cd-448.png",
+      "bytes": 6693,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/461.png": {
+      "file": "assets/1215b86f5a7db6-461.png",
+      "bytes": 5352,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/5.png": {
+      "file": "assets/4bac2b6bd2b4d7-5.png",
+      "bytes": 9117,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/52.png": {
+      "file": "assets/a4c6b34b86304f-52.png",
+      "bytes": 6909,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/689.png": {
+      "file": "assets/5444f8b147186d-689.png",
+      "bytes": 7148,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/9.png": {
+      "file": "assets/072688cbe22391-9.png",
+      "bytes": 5582,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/dark/default.png": {
+      "file": "assets/21efecf034bae2-default.png",
+      "bytes": 779,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/1.png": {
+      "file": "assets/545e431b905f07-1.png",
+      "bytes": 7724,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/10.png": {
+      "file": "assets/1466f72f9626b1-10.png",
+      "bytes": 10046,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/100852.png": {
+      "file": "assets/c7058fe8e9d996-100852.png",
+      "bytes": 5560,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/101059.png": {
+      "file": "assets/8d4551bb2c5867-101059.png",
+      "bytes": 8013,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/101097.png": {
+      "file": "assets/1d753d9219a93e-101097.png",
+      "bytes": 7805,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/101114.png": {
+      "file": "assets/9e6afaa0602049-101114.png",
+      "bytes": 4399,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/10846.png": {
+      "file": "assets/8918590550afe7-10846.png",
+      "bytes": 8233,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/110062.png": {
+      "file": "assets/a722c537e94061-110062.png",
+      "bytes": 9059,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/110374.png": {
+      "file": "assets/e0f8f6adcbdbd8-110374.png",
+      "bytes": 4105,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/110396.png": {
+      "file": "assets/037183a67f82bd-110396.png",
+      "bytes": 5078,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/111701.png": {
+      "file": "assets/ad2418f92f6c2b-111701.png",
+      "bytes": 7038,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/112139.png": {
+      "file": "assets/73c526ded35f97-112139.png",
+      "bytes": 9514,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/112393.png": {
+      "file": "assets/d66f58c9d62085-112393.png",
+      "bytes": 7611,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/112689.png": {
+      "file": "assets/b733e6c7c9218d-112689.png",
+      "bytes": 4983,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/112705.png": {
+      "file": "assets/92179c23c03168-112705.png",
+      "bytes": 4071,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/112908.png": {
+      "file": "assets/e47f647ffb65ca-112908.png",
+      "bytes": 7355,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/113458.png": {
+      "file": "assets/515b5e018969d3-113458.png",
+      "bytes": 5109,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/115841.png": {
+      "file": "assets/77838f43fe8fae-115841.png",
+      "bytes": 4221,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/115995.png": {
+      "file": "assets/40de062989a23a-115995.png",
+      "bytes": 10873,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/116009.png": {
+      "file": "assets/1aaf36819b0bf9-116009.png",
+      "bytes": 7724,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/116010.png": {
+      "file": "assets/3e275c029fac5b-116010.png",
+      "bytes": 9117,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/116033.png": {
+      "file": "assets/cb0adcd992b032-116033.png",
+      "bytes": 5446,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/116034.png": {
+      "file": "assets/74b5659134cf18-116034.png",
+      "bytes": 9380,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/116036.png": {
+      "file": "assets/94d4d1dff7648b-116036.png",
+      "bytes": 9261,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/116303.png": {
+      "file": "assets/0da559be070a20-116303.png",
+      "bytes": 6103,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/116325.png": {
+      "file": "assets/0c0878ce37fc8a-116325.png",
+      "bytes": 6544,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/116328.png": {
+      "file": "assets/e0f261d3d1fc62-116328.png",
+      "bytes": 6693,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/131125.png": {
+      "file": "assets/6a561568033817-131125.png",
+      "bytes": 5372,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/131174.png": {
+      "file": "assets/0ad0a008549212-131174.png",
+      "bytes": 6223,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/131682.png": {
+      "file": "assets/228699f1538382-131682.png",
+      "bytes": 9606,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/132176.png": {
+      "file": "assets/b4afc15edd0d86-132176.png",
+      "bytes": 5318,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/132861.png": {
+      "file": "assets/5407cf7e2a07d9-132861.png",
+      "bytes": 6055,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/135.png": {
+      "file": "assets/eaa6592ea27743-135.png",
+      "bytes": 8146,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/1738.png": {
+      "file": "assets/4f52064fcbd102-1738.png",
+      "bytes": 6707,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/1750.png": {
+      "file": "assets/679e9a14e66bf0-1750.png",
+      "bytes": 4969,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/1799.png": {
+      "file": "assets/ed9eeebc2e7208-1799.png",
+      "bytes": 8527,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/18.png": {
+      "file": "assets/f67ef5c87e987a-18.png",
+      "bytes": 3516,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/1826.png": {
+      "file": "assets/ad95e8b93bbb43-1826.png",
+      "bytes": 6251,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/1867.png": {
+      "file": "assets/0023de1c094cf4-1867.png",
+      "bytes": 5383,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/1906.png": {
+      "file": "assets/7b08db4b5d4b2c-1906.png",
+      "bytes": 3720,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/1951.png": {
+      "file": "assets/bd39f1722384c1-1951.png",
+      "bytes": 6719,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/2041.png": {
+      "file": "assets/822c09bd61ce08-2041.png",
+      "bytes": 4122,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/205.png": {
+      "file": "assets/3896570548a11b-205.png",
+      "bytes": 3833,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/240.png": {
+      "file": "assets/d3adcdd2ca4ced-240.png",
+      "bytes": 3875,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/241.png": {
+      "file": "assets/598a56abd1e1c6-241.png",
+      "bytes": 6466,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/243.png": {
+      "file": "assets/69fc012e04e43c-243.png",
+      "bytes": 7876,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/245.png": {
+      "file": "assets/620b6b599c996a-245.png",
+      "bytes": 9369,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/252.png": {
+      "file": "assets/d392c765daf293-252.png",
+      "bytes": 3382,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/267.png": {
+      "file": "assets/b973a5cfcf2ce8-267.png",
+      "bytes": 5472,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/325.png": {
+      "file": "assets/d00de92d7c6200-325.png",
+      "bytes": 5291,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/45.png": {
+      "file": "assets/1a93ca7c4dfa99-45.png",
+      "bytes": 2121,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/452.png": {
+      "file": "assets/345f60ccfb50ba-452.png",
+      "bytes": 6588,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/456.png": {
+      "file": "assets/13107565e2e8bb-456.png",
+      "bytes": 7138,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/52.png": {
+      "file": "assets/3c63c48e389694-52.png",
+      "bytes": 6909,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/573.png": {
+      "file": "assets/b0bcebd5cb43b3-573.png",
+      "bytes": 6821,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/576.png": {
+      "file": "assets/ca51fa6a6c6ebd-576.png",
+      "bytes": 12386,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/693.png": {
+      "file": "assets/b48c8f630254ee-693.png",
+      "bytes": 6288,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/clubs/light/9.png": {
+      "file": "assets/88b54b67b33b57-9.png",
+      "bytes": 5839,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/110.png": {
+      "file": "assets/17687259ab9c41-110.png",
+      "bytes": 4692,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/13.png": {
+      "file": "assets/cf4e1ef34720d9-13.png",
+      "bytes": 481,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/136.png": {
+      "file": "assets/b9695f012269b0-136.png",
+      "bytes": 1021,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/14.png": {
+      "file": "assets/caeeb76a513591-14.png",
+      "bytes": 555,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/163.png": {
+      "file": "assets/731207b222cc48-163.png",
+      "bytes": 1629,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/17.png": {
+      "file": "assets/f54e01af8539ce-17.png",
+      "bytes": 511,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/18.png": {
+      "file": "assets/7bedb2e34df13b-18.png",
+      "bytes": 304,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/21.png": {
+      "file": "assets/b8d58632e08a2c-21.png",
+      "bytes": 309,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/219.png": {
+      "file": "assets/5eee0a9a8d5715-219.png",
+      "bytes": 3442,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/23.png": {
+      "file": "assets/57927c6cf524a5-23.png",
+      "bytes": 344,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/27.png": {
+      "file": "assets/02b1d31b4c7af4-27.png",
+      "bytes": 305,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/34.png": {
+      "file": "assets/b343f2aa067c6f-34.png",
+      "bytes": 348,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/36.png": {
+      "file": "assets/1ca88b52bfdb4e-36.png",
+      "bytes": 745,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/37.png": {
+      "file": "assets/284e737cf5c9f9-37.png",
+      "bytes": 309,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/38.png": {
+      "file": "assets/04f7aed5fe55d3-38.png",
+      "bytes": 3164,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/45.png": {
+      "file": "assets/73d467f0ce1edf-45.png",
+      "bytes": 2500,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/48.png": {
+      "file": "assets/0541e3faae1887-48.png",
+      "bytes": 2218,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/50.png": {
+      "file": "assets/8a95ad0feefe09-50.png",
+      "bytes": 10333,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/51.png": {
+      "file": "assets/bc1e4f51dcfdf6-51.png",
+      "bytes": 4073,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/52.png": {
+      "file": "assets/fd3ddf3fdae066-52.png",
+      "bytes": 1520,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/54.png": {
+      "file": "assets/03979526afa780-54.png",
+      "bytes": 4755,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/55.png": {
+      "file": "assets/7e8ef4314d0f1e-55.png",
+      "bytes": 1018,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/57.png": {
+      "file": "assets/871ec0352bad65-57.png",
+      "bytes": 3219,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/7.png": {
+      "file": "assets/7ff8e7c1688cb5-7.png",
+      "bytes": 286,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/70.png": {
+      "file": "assets/1efa2dd33d24e1-70.png",
+      "bytes": 1488,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/83.png": {
+      "file": "assets/529c614936b021-83.png",
+      "bytes": 2615,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/9.png": {
+      "file": "assets/ffa1a6a08cbdf4-9.png",
+      "bytes": 339,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/95.png": {
+      "file": "assets/751e2bc67c6a2b-95.png",
+      "bytes": 4814,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/flags/dark/default.png": {
+      "file": "assets/64ae96426fc279-default.png",
+      "bytes": 623,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/dark/13.png": {
+      "file": "assets/f94668101b000a-13.png",
+      "bytes": 6468,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/dark/19.png": {
+      "file": "assets/0c382b9c9d56f2-19.png",
+      "bytes": 4841,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/dark/2216.png": {
+      "file": "assets/21558b5d7388ef-2216.png",
+      "bytes": 5743,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/dark/2221.png": {
+      "file": "assets/1c439b4d9ed0a3-2221.png",
+      "bytes": 6633,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/dark/2222.png": {
+      "file": "assets/25cfc0fff23278-2222.png",
+      "bytes": 7513,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/dark/31.png": {
+      "file": "assets/e09f9a591463ab-31.png",
+      "bytes": 5183,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/dark/39.png": {
+      "file": "assets/d9b65c82ea74cd-39.png",
+      "bytes": 6325,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/dark/53.png": {
+      "file": "assets/7027ebd653bf06-53.png",
+      "bytes": 4719,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/dark/default.png": {
+      "file": "assets/e916dcd40ba442-default.png",
+      "bytes": 1556,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/10.png": {
+      "file": "assets/34ff7ca5562d2e-10.png",
+      "bytes": 5550,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/1003.png": {
+      "file": "assets/a6dbd9526814c2-1003.png",
+      "bytes": 6465,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/1014.png": {
+      "file": "assets/1d89e89daacea2-1014.png",
+      "bytes": 6326,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/13.png": {
+      "file": "assets/8c323e78eb6112-13.png",
+      "bytes": 5496,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/16.png": {
+      "file": "assets/ee83fe70382abe-16.png",
+      "bytes": 4290,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/20.png": {
+      "file": "assets/05cb99f5f8739c-20.png",
+      "bytes": 5356,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/2076.png": {
+      "file": "assets/c87dfb589b6abd-2076.png",
+      "bytes": 6866,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/2172.png": {
+      "file": "assets/160704a99462ad-2172.png",
+      "bytes": 3760,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/2215.png": {
+      "file": "assets/7626acfc9e056a-2215.png",
+      "bytes": 7681,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/2216.png": {
+      "file": "assets/4129e7a2c14b8f-2216.png",
+      "bytes": 5894,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/2218.png": {
+      "file": "assets/df6f437b73ebe5-2218.png",
+      "bytes": 5793,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/2221.png": {
+      "file": "assets/352ebfac20f07a-2221.png",
+      "bytes": 6633,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/2222.png": {
+      "file": "assets/e72f1de5d9c0c9-2222.png",
+      "bytes": 7355,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/31.png": {
+      "file": "assets/ce7d31cf03c74b-31.png",
+      "bytes": 5183,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/319.png": {
+      "file": "assets/ec9fa3ca106307-319.png",
+      "bytes": 10817,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/332.png": {
+      "file": "assets/dffb5c879ade9c-332.png",
+      "bytes": 5986,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/341.png": {
+      "file": "assets/a455e249c14f72-341.png",
+      "bytes": 3665,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/350.png": {
+      "file": "assets/d8b55394ca0f1b-350.png",
+      "bytes": 8518,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/353.png": {
+      "file": "assets/920d0cf0d970ac-353.png",
+      "bytes": 5388,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/39.png": {
+      "file": "assets/da1b2bc467b83b-39.png",
+      "bytes": 6325,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/4.png": {
+      "file": "assets/1f91112c5514a0-4.png",
+      "bytes": 5651,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/41.png": {
+      "file": "assets/8c3adc26e85793-41.png",
+      "bytes": 4023,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/53.png": {
+      "file": "assets/a47f132d8985e5-53.png",
+      "bytes": 4894,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/54.png": {
+      "file": "assets/d9b55e46448e8b-54.png",
+      "bytes": 6416,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/56.png": {
+      "file": "assets/2d39eaba0353a1-56.png",
+      "bytes": 8397,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/60.png": {
+      "file": "assets/0a8de9819f65ac-60.png",
+      "bytes": 6342,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/61.png": {
+      "file": "assets/29a716aea8d8ea-61.png",
+      "bytes": 6644,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/68.png": {
+      "file": "assets/8ec7fa8a9190ae-68.png",
+      "bytes": 4688,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/leagues/light/80.png": {
+      "file": "assets/443b3ceea71f06-80.png",
+      "bytes": 8590,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/positions/0.png": {
+      "file": "assets/2d33046fabcac4-0.png",
+      "bytes": 1297,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/items/images/mobile/positions/default.png": {
+      "file": "assets/1e3873afe52e9a-default.png",
+      "bytes": 1327,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/packs/images/web/packs_backgrounds_2.png": {
+      "file": "assets/99bc5df4626b1a-packs_backgrounds_2.png",
+      "bytes": 134984,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/packs/images/web/packs_backgrounds_3.png": {
+      "file": "assets/4c38beea1f3f59-packs_backgrounds_3.png",
+      "bytes": 136319,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/packs/images/web/packs_backgrounds_4.png": {
+      "file": "assets/9669a28aaa45b5-packs_backgrounds_4.png",
+      "bytes": 148518,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/challenges/images/sbc_challenge_image_330118-b53a657b-e7af.png": {
+      "file": "assets/9da2f5e48e9d9e-sbc_challenge_image_330118-b53a657b-e7af.png",
+      "bytes": 100644,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/challenges/images/sbc_challenge_image_330119-c7e33da5-3713.png": {
+      "file": "assets/cb4bec5018fde4-sbc_challenge_image_330119-c7e33da5-3713.png",
+      "bytes": 105275,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000002-076c17f6-1ddc.png": {
+      "file": "assets/4920536a4de044-sbc_set_image_1000002-076c17f6-1ddc.png",
+      "bytes": 60565,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000003-434aedb9-85ee.png": {
+      "file": "assets/76b881cb831fa2-sbc_set_image_1000003-434aedb9-85ee.png",
+      "bytes": 57906,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000005-4c415b79-8f77.png": {
+      "file": "assets/d8662ebc7af2f2-sbc_set_image_1000005-4c415b79-8f77.png",
+      "bytes": 68646,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000006-952125f1-c8b2.png": {
+      "file": "assets/ee0c263100404d-sbc_set_image_1000006-952125f1-c8b2.png",
+      "bytes": 100071,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000007-b4d7f224-255a.png": {
+      "file": "assets/7af632064acc2d-sbc_set_image_1000007-b4d7f224-255a.png",
+      "bytes": 103294,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000008-14539219-1839.png": {
+      "file": "assets/5dd063f6554c79-sbc_set_image_1000008-14539219-1839.png",
+      "bytes": 111356,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000012-0b023d87-e938.png": {
+      "file": "assets/a3d5dec61f2d0e-sbc_set_image_1000012-0b023d87-e938.png",
+      "bytes": 92799,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000021-cd13db71-9eec.png": {
+      "file": "assets/98e9fb576b7a0a-sbc_set_image_1000021-cd13db71-9eec.png",
+      "bytes": 52901,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000026-c129602c-59a3.png": {
+      "file": "assets/cc247cbfc3ce21-sbc_set_image_1000026-c129602c-59a3.png",
+      "bytes": 86535,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000032-4dd884e6-678c.png": {
+      "file": "assets/2b83c6a23f84e7-sbc_set_image_1000032-4dd884e6-678c.png",
+      "bytes": 114644,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000033-61fa805e-9691.png": {
+      "file": "assets/86a15060f59c73-sbc_set_image_1000033-61fa805e-9691.png",
+      "bytes": 86423,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000034-ac7b95e2-3ef8.png": {
+      "file": "assets/c45ba9ee8b6540-sbc_set_image_1000034-ac7b95e2-3ef8.png",
+      "bytes": 79503,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000035-6137e068-49f5.png": {
+      "file": "assets/9f0703ed86e483-sbc_set_image_1000035-6137e068-49f5.png",
+      "bytes": 66428,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000037-2a9edb67-d02c.png": {
+      "file": "assets/d702637b05bd7e-sbc_set_image_1000037-2a9edb67-d02c.png",
+      "bytes": 85588,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000042-3326d01a-70e4.png": {
+      "file": "assets/f87798f7538ae4-sbc_set_image_1000042-3326d01a-70e4.png",
+      "bytes": 188618,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000066-6e33a0aa-17c9.png": {
+      "file": "assets/fc454592f6726a-sbc_set_image_1000066-6e33a0aa-17c9.png",
+      "bytes": 174390,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000067-afb5d7e6-d74f.png": {
+      "file": "assets/1f3cc0c164a623-sbc_set_image_1000067-afb5d7e6-d74f.png",
+      "bytes": 175400,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000074-d4f71aea-31b4.png": {
+      "file": "assets/1356196bec640d-sbc_set_image_1000074-d4f71aea-31b4.png",
+      "bytes": 172257,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000075-ab45047a-3e8d.png": {
+      "file": "assets/8e59a381bb80cb-sbc_set_image_1000075-ab45047a-3e8d.png",
+      "bytes": 173067,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000077-be3759a9-fbc3.png": {
+      "file": "assets/7b6a4cb21ef45b-sbc_set_image_1000077-be3759a9-fbc3.png",
+      "bytes": 174515,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000078-527a0a16-d2ad.png": {
+      "file": "assets/ccb616a5b93cd7-sbc_set_image_1000078-527a0a16-d2ad.png",
+      "bytes": 173948,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000082-3328d55d-881e.png": {
+      "file": "assets/0cb9e28cae8438-sbc_set_image_1000082-3328d55d-881e.png",
+      "bytes": 82460,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000090-cc78a583-55a5.png": {
+      "file": "assets/125edab2c0954d-sbc_set_image_1000090-cc78a583-55a5.png",
+      "bytes": 164378,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000096-5e18c3ce-a347.png": {
+      "file": "assets/f8766d20fb1bc3-sbc_set_image_1000096-5e18c3ce-a347.png",
+      "bytes": 171158,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000100-6f687453-c8d9.png": {
+      "file": "assets/c6bef1588a0cc3-sbc_set_image_1000100-6f687453-c8d9.png",
+      "bytes": 174039,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000103-4b11a923-3454.png": {
+      "file": "assets/6670239c170c4c-sbc_set_image_1000103-4b11a923-3454.png",
+      "bytes": 114528,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000104-892e9fea-ed81.png": {
+      "file": "assets/05363bd17bd524-sbc_set_image_1000104-892e9fea-ed81.png",
+      "bytes": 170505,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000105-fb409fb8-a544.png": {
+      "file": "assets/6552ef6953a510-sbc_set_image_1000105-fb409fb8-a544.png",
+      "bytes": 175307,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000106-a71c177a-cf48.png": {
+      "file": "assets/5e53afb787ef23-sbc_set_image_1000106-a71c177a-cf48.png",
+      "bytes": 157161,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000107-5e971d6f-7288.png": {
+      "file": "assets/57a2d2d271afa0-sbc_set_image_1000107-5e971d6f-7288.png",
+      "bytes": 158617,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000108-029e98ec-dac2.png": {
+      "file": "assets/610dd104df32ff-sbc_set_image_1000108-029e98ec-dac2.png",
+      "bytes": 174077,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000109-5a02db69-ba0a.png": {
+      "file": "assets/0bee90534c018a-sbc_set_image_1000109-5a02db69-ba0a.png",
+      "bytes": 180573,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000112-75c3dcee-f794.png": {
+      "file": "assets/c6bd7662779d08-sbc_set_image_1000112-75c3dcee-f794.png",
+      "bytes": 159517,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000113-af99cb8b-f6d1.png": {
+      "file": "assets/a5aca8ede9a5fb-sbc_set_image_1000113-af99cb8b-f6d1.png",
+      "bytes": 99136,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000114-1d33762b-5ae9.png": {
+      "file": "assets/f3c91e2359def5-sbc_set_image_1000114-1d33762b-5ae9.png",
+      "bytes": 100009,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000117-a847231c-73d5.png": {
+      "file": "assets/7d8112ff309c2f-sbc_set_image_1000117-a847231c-73d5.png",
+      "bytes": 174146,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000119-a1bb94d2-2974.png": {
+      "file": "assets/2448db02d578ac-sbc_set_image_1000119-a1bb94d2-2974.png",
+      "bytes": 177983,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000121-35a980c0-82b2.png": {
+      "file": "assets/3e213eeba95ce9-sbc_set_image_1000121-35a980c0-82b2.png",
+      "bytes": 163046,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000122-354c394e-1833.png": {
+      "file": "assets/576c1f0cace989-sbc_set_image_1000122-354c394e-1833.png",
+      "bytes": 176493,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000123-81b18324-88a8.png": {
+      "file": "assets/9864ad7dce0f9e-sbc_set_image_1000123-81b18324-88a8.png",
+      "bytes": 178002,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000124-8d03d649-2a9a.png": {
+      "file": "assets/9b97bc621d83b1-sbc_set_image_1000124-8d03d649-2a9a.png",
+      "bytes": 176655,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/content/27A3C9F1-6B2E-4D7A-8C1F-2E9B5A4D6C7E/2027/fut/sbc/companion/sets/images/sbc_set_image_1000130-ce64f2bd-0b04.png": {
+      "file": "assets/ceedcd951cabbf-sbc_set_image_1000130-ce64f2bd-0b04.png",
+      "bytes": 159295,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/fonts/CruyffSans-Medium.otf": {
+      "file": "assets/6c6d97ab30136a-CruyffSans-Medium.otf",
+      "bytes": 122824,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/fonts/CruyffSans-Medium.woff": {
+      "file": "assets/3e57a8d5d5a3fd-CruyffSans-Medium.woff",
+      "bytes": 68400,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/fonts/CruyffSans-Regular.otf": {
+      "file": "assets/b701f0266255d3-CruyffSans-Regular.otf",
+      "bytes": 121172,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/fonts/CruyffSans-Regular.woff": {
+      "file": "assets/e884ed2b5d557f-CruyffSans-Regular.woff",
+      "bytes": 69000,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/fonts/CruyffSansCondensed-Medium.otf": {
+      "file": "assets/22c1bb73ea2e60-CruyffSansCondensed-Medium.otf",
+      "bytes": 124520,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/fonts/CruyffSansCondensed-Medium.woff": {
+      "file": "assets/b0ff7fbc0700e1-CruyffSansCondensed-Medium.woff",
+      "bytes": 68252,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/fonts/CruyffSansCondensed-Regular.otf": {
+      "file": "assets/cb9ca3fde15cd9-CruyffSansCondensed-Regular.otf",
+      "bytes": 122668,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/fonts/CruyffSansCondensed-Regular.woff": {
+      "file": "assets/178982582ddbd0-CruyffSansCondensed-Regular.woff",
+      "bytes": 68632,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/fonts/JalliyaSeven.otf": {
+      "file": "assets/6ef4308fe877aa-JalliyaSeven.otf",
+      "bytes": 152372,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/fonts/UltimateTeam-Icons.woff?11502": {
+      "file": "assets/7d5635413e930b-UltimateTeam-Icons.woff",
+      "bytes": 38132,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/IconCoins.png": {
+      "file": "assets/e02c7454f29a3a-IconCoins.png",
+      "bytes": 45450,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/cards_bg_e_0_0_0.png": {
+      "file": "assets/7b5d82a8c6b682-cards_bg_e_0_0_0.png",
+      "bytes": 4969,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/cards_bg_e_0_24_0.png": {
+      "file": "assets/da5bb6de2c504c-cards_bg_e_0_24_0.png",
+      "bytes": 11535,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/cards_bg_e_0_2_0-001.png": {
+      "file": "assets/f73dc9e55ae817-cards_bg_e_0_2_0-001.png",
+      "bytes": 4616,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/cards_bg_e_0_2_0.png": {
+      "file": "assets/e888b91b42cd34-cards_bg_e_0_2_0.png",
+      "bytes": 2511,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/cards_bg_e_6_20_1_0.png": {
+      "file": "assets/b811dc74bdd649-cards_bg_e_6_20_1_0.png",
+      "bytes": 171624,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/cards_bg_e_6_23_0.png": {
+      "file": "assets/122e9ce8d69ecd-cards_bg_e_6_23_0.png",
+      "bytes": 31669,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/cards_bg_premium_pass.png": {
+      "file": "assets/1275001216e71f-cards_bg_premium_pass.png",
+      "bytes": 91307,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/cards_glow_green.png": {
+      "file": "assets/721c4326b21104-cards_glow_green.png",
+      "bytes": 2579,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/cards_glow_green_won.png": {
+      "file": "assets/dd58ad7f603b1c-cards_glow_green_won.png",
+      "bytes": 2604,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/cards_glow_orange.png": {
+      "file": "assets/96450c38d6ec49-cards_glow_orange.png",
+      "bytes": 2706,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/cards_glow_red.png": {
+      "file": "assets/727231bb1df54e-cards_glow_red.png",
+      "bytes": 2749,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/clockhand-11.png": {
+      "file": "assets/b1b7705d8e3c0f-clockhand-11.png",
+      "bytes": 465,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/clockhand-12.png": {
+      "file": "assets/a5f0686e99caeb-clockhand-12.png",
+      "bytes": 159,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/clockhand-3.png": {
+      "file": "assets/edfca8aaf6f61d-clockhand-3.png",
+      "bytes": 287,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/clockhand-6.png": {
+      "file": "assets/3e5de85839c494-clockhand-6.png",
+      "bytes": 195,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/clockhand-9.png": {
+      "file": "assets/fd082525244b57-clockhand-9.png",
+      "bytes": 255,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/item-selected.png": {
+      "file": "assets/e4c58e08d12c40-item-selected.png",
+      "bytes": 6607,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/item-selection.png": {
+      "file": "assets/c3079c5b3ad510-item-selection.png",
+      "bytes": 712,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/pack-tradable.png": {
+      "file": "assets/682efb47365eb8-pack-tradable.png",
+      "bytes": 8412,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/small_item_bronze.png": {
+      "file": "assets/0092c3911a808a-small_item_bronze.png",
+      "bytes": 3028,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/small_item_gold.png": {
+      "file": "assets/d0d5e5a98d4782-small_item_gold.png",
+      "bytes": 1852,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/small_item_silver.png": {
+      "file": "assets/f3e09839291a9c-small_item_silver.png",
+      "bytes": 1646,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/small_item_totw_gold.png": {
+      "file": "assets/ab0e06ad3e7159-small_item_totw_gold.png",
+      "bytes": 12195,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/small_locked_custom_icon_bg.png": {
+      "file": "assets/18fa660194639f-small_locked_custom_icon_bg.png",
+      "bytes": 278,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/small_pack_bronze.png": {
+      "file": "assets/f66ab035d9b4b4-small_pack_bronze.png",
+      "bytes": 2292,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/small_pack_encore.png": {
+      "file": "assets/6372f08f4d6606-small_pack_encore.png",
+      "bytes": 11521,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/small_pack_generic.png": {
+      "file": "assets/6387db8bb1146e-small_pack_generic.png",
+      "bytes": 1823,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/small_pack_gold.png": {
+      "file": "assets/14c19c3e8b62d8-small_pack_gold.png",
+      "bytes": 1899,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/small_pack_silver.png": {
+      "file": "assets/4a1f97cd9d589a-small_pack_silver.png",
+      "bytes": 1666,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/small_pack_special.png": {
+      "file": "assets/cee4bdec06fc42-small_pack_special.png",
+      "bytes": 4005,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/statusIcons.png": {
+      "file": "assets/dcd1df54409f76-statusIcons.png",
+      "bytes": 2466,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/stickers/hyper-rare-first-owned.png": {
+      "file": "assets/4f045627197d9d-hyper-rare-first-owned.png",
+      "bytes": 3698,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/stickers/hyper-rare.png": {
+      "file": "assets/f043a227455bf6-hyper-rare.png",
+      "bytes": 5677,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/Items/tactics-frame.png": {
+      "file": "assets/72d65f8c8d9370-tactics-frame.png",
+      "bytes": 465,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/PackAnimation/PackAnimationVignette.png": {
+      "file": "assets/840e0cc404a443-PackAnimationVignette.png",
+      "bytes": 15789,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/PackAnimation/PackAnimationVignetteLandscape.png": {
+      "file": "assets/8f67b00702a98e-PackAnimationVignetteLandscape.png",
+      "bytes": 121107,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/SearchFilters/evolution-status/any.png": {
+      "file": "assets/2efc54e0c82580-any.png",
+      "bytes": 1464,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/SearchFilters/level/any.png": {
+      "file": "assets/a839dc5e5e7f9a-any.png",
+      "bytes": 1236,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/SearchFilters/players_club.png": {
+      "file": "assets/74c65ad5b064ee-players_club.png",
+      "bytes": 1108,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/SearchFilters/rarity/any.png": {
+      "file": "assets/691f4ea570a264-any.png",
+      "bytes": 728,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/arrows.png": {
+      "file": "assets/c1db87a0b42ce4-arrows.png",
+      "bytes": 445,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/BG_Mobile-1242x2208.jpg": {
+      "file": "assets/926fb81a431e7b-BG_Mobile-1242x2208.jpg",
+      "bytes": 50295,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/BG_Mobile-320x568.jpg": {
+      "file": "assets/1a30f8a57ba7b4-BG_Mobile-320x568.jpg",
+      "bytes": 5179,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/BG_Mobile-750x1334.jpg": {
+      "file": "assets/2eea1679a1cac7-BG_Mobile-750x1334.jpg",
+      "bytes": 17534,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/BG_Tablet-Web-1080p.jpg": {
+      "file": "assets/efc286b1a28c52-BG_Tablet-Web-1080p.jpg",
+      "bytes": 46622,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/dreamPitchSnow_1078x1407.jpg": {
+      "file": "assets/158935081164b1-dreamPitchSnow_1078x1407.jpg",
+      "bytes": 178422,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/dreamPitchSnow_1242x1621.jpg": {
+      "file": "assets/52c7d79ea4ed0a-dreamPitchSnow_1242x1621.jpg",
+      "bytes": 212903,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/dreamPitchSnow_1725x1431.jpg": {
+      "file": "assets/cb111a2ccc4143-dreamPitchSnow_1725x1431.jpg",
+      "bytes": 241454,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/dreamPitchSnow_1920x1080.jpg": {
+      "file": "assets/8668ba24d0a679-dreamPitchSnow_1920x1080.jpg",
+      "bytes": 223272,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/dreamPitchSnow_320x382.jpg": {
+      "file": "assets/c3123132116eb3-dreamPitchSnow_320x382.jpg",
+      "bytes": 35683,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/dreamPitch_1078x1407.jpg": {
+      "file": "assets/9f971b01e8a9c9-dreamPitch_1078x1407.jpg",
+      "bytes": 31853,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/dreamPitch_1242x1621.jpg": {
+      "file": "assets/f318b24b21bfd5-dreamPitch_1242x1621.jpg",
+      "bytes": 39687,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/dreamPitch_1725x1431.jpg": {
+      "file": "assets/ee48f2894cabdf-dreamPitch_1725x1431.jpg",
+      "bytes": 49221,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/dreamPitch_1920x1080.jpg": {
+      "file": "assets/442c5f2eabe4c1-dreamPitch_1920x1080.jpg",
+      "bytes": 31182,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/dreamPitch_320x382.jpg": {
+      "file": "assets/8cafa816e5034e-dreamPitch_320x382.jpg",
+      "bytes": 5459,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/pitchSnow_1078x1407.jpg": {
+      "file": "assets/f9b770aa495c75-pitchSnow_1078x1407.jpg",
+      "bytes": 176762,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/pitchSnow_1242x1621.jpg": {
+      "file": "assets/6ee2426ca85a11-pitchSnow_1242x1621.jpg",
+      "bytes": 214555,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/pitchSnow_1725x1431.jpg": {
+      "file": "assets/c4c6576f30aab9-pitchSnow_1725x1431.jpg",
+      "bytes": 243653,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/pitchSnow_1920x1080.jpg": {
+      "file": "assets/8fecd29cbf729f-pitchSnow_1920x1080.jpg",
+      "bytes": 157048,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/pitchSnow_320x382.jpg": {
+      "file": "assets/a0f65d4bef6263-pitchSnow_320x382.jpg",
+      "bytes": 37385,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/pitch_1078x1407.jpg": {
+      "file": "assets/9bc5f8d6030f85-pitch_1078x1407.jpg",
+      "bytes": 14265,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/pitch_1242x1621.jpg": {
+      "file": "assets/0c719eeb0e7f90-pitch_1242x1621.jpg",
+      "bytes": 17988,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/pitch_1725x1431.jpg": {
+      "file": "assets/a9b92fc2d898f9-pitch_1725x1431.jpg",
+      "bytes": 22664,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/pitch_1920x1080.jpg": {
+      "file": "assets/8e77a312d54a1e-pitch_1920x1080.jpg",
+      "bytes": 23491,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/backgrounds/pitch_320x382.jpg": {
+      "file": "assets/8e8dedc9c00419-pitch_320x382.jpg",
+      "bytes": 2940,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/badge.png": {
+      "file": "assets/e9278525fa9ab8-badge.png",
+      "bytes": 2432,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/branding/login.png": {
+      "file": "assets/aefe21e81e3fba-login.png",
+      "bytes": 545915,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/branding/settings.png": {
+      "file": "assets/ecfb2fba74f122-settings.png",
+      "bytes": 278943,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/branding/welcome.png": {
+      "file": "assets/4e4ebd40718d25-welcome.png",
+      "bytes": 135372,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/buttonLoader.png": {
+      "file": "assets/304dc296e4dc4f-buttonLoader.png",
+      "bytes": 1083,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/buttonLoaderDark.png": {
+      "file": "assets/0d56cbf6d55d0e-buttonLoaderDark.png",
+      "bytes": 1083,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/coinBoost.png": {
+      "file": "assets/a4765e6c4f6a6a-coinBoost.png",
+      "bytes": 14838,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/coinIcon.png": {
+      "file": "assets/32136ac915b090-coinIcon.png",
+      "bytes": 880,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/crossPlatformIcons.png": {
+      "file": "assets/753708a0dec9c1-crossPlatformIcons.png",
+      "bytes": 22190,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/entitlements/ClubYear2.png": {
+      "file": "assets/0a509029af30fe-ClubYear2.png",
+      "bytes": 1294,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/gameModes/champions/champions_logo.png": {
+      "file": "assets/2d5124d2140441-champions_logo.png",
+      "bytes": 6876,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/gameModes/champions/champions_tile_background.jpg": {
+      "file": "assets/627e54a4615d23-champions_tile_background.jpg",
+      "bytes": 38940,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/gameModes/champions/weekendLeagueLogo.png": {
+      "file": "assets/f6d544bd489cbd-weekendLeagueLogo.png",
+      "bytes": 20832,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/gameModes/competitions_tile_background.png": {
+      "file": "assets/f114bf83f42f7a-competitions_tile_background.png",
+      "bytes": 33329,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/gameModes/rivals/rivals_logo.png": {
+      "file": "assets/855498d6cc95d4-rivals_logo.png",
+      "bytes": 10024,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/gameModes/rivals/rivals_tile_background.jpg": {
+      "file": "assets/3b532bedc242c7-rivals_tile_background.jpg",
+      "bytes": 26696,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/gameModes/rush/rush_tile_background.jpg": {
+      "file": "assets/114800bc23bcb1-rush_tile_background.jpg",
+      "bytes": 38306,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/gameModes/squadBattles/squad_battles_tile_background.jpg": {
+      "file": "assets/e31189df53ad91-squad_battles_tile_background.jpg",
+      "bytes": 18808,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/leaderboards/leaderboard_ranks.png": {
+      "file": "assets/06239800b0ced1-leaderboard_ranks.png",
+      "bytes": 4144,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/loader-dark.gif": {
+      "file": "assets/75cd40e6b5d420-loader-dark.gif",
+      "bytes": 43314,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/loader.gif": {
+      "file": "assets/f62e9805a308bd-loader.gif",
+      "bytes": 23056,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/lockIcon.png": {
+      "file": "assets/d1049ebba24e9e-lockIcon.png",
+      "bytes": 805,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/logo/Logo@1x.png": {
+      "file": "assets/3f1b8dc21c0989-Logo-1x.png",
+      "bytes": 598,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/logo/Logo@2x.png": {
+      "file": "assets/46ea7ebf11547b-Logo-2x.png",
+      "bytes": 1086,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/logo/Logo@3x.png": {
+      "file": "assets/099b904c07a59f-Logo-3x.png",
+      "bytes": 1791,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/logo/ea_sports_logo.png": {
+      "file": "assets/b82d60bc74cd9e-ea_sports_logo.png",
+      "bytes": 2143,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/logo/easports-logo.png": {
+      "file": "assets/1cb07c7c164fdb-easports-logo.png",
+      "bytes": 1037,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/logo/easports.png": {
+      "file": "assets/356e8363f8d346-easports.png",
+      "bytes": 3301,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/logo/fc_logo.png": {
+      "file": "assets/194bd74cd8a4b5-fc_logo.png",
+      "bytes": 3194,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/logo/logo-companion-en.png": {
+      "file": "assets/c70e4ec439aa9b-logo-companion-en.png",
+      "bytes": 3200,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/logo/logo-companion-fr.png": {
+      "file": "assets/0d087f7ca68820-logo-companion-fr.png",
+      "bytes": 2959,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/objectives/fc_logo.png": {
+      "file": "assets/2e1c4859e55054-fc_logo.png",
+      "bytes": 977,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/packOdds/bronze.png": {
+      "file": "assets/fe91acd9235a93-bronze.png",
+      "bytes": 22606,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/packOdds/gold.png": {
+      "file": "assets/43d54e7c9b5062-gold.png",
+      "bytes": 24059,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/packOdds/silver.png": {
+      "file": "assets/7c1828f56a814c-silver.png",
+      "bytes": 21519,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/packOdds/special.png": {
+      "file": "assets/70237d63320890-special.png",
+      "bytes": 7285,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/platformIcons.png": {
+      "file": "assets/1d5de7acec51ca-platformIcons.png",
+      "bytes": 23440,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/pointsIcon.png": {
+      "file": "assets/b17e09fd96cdb8-pointsIcon.png",
+      "bytes": 819,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/ratingStars.png": {
+      "file": "assets/23abb0de1c96ca-ratingStars.png",
+      "bytes": 1676,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/rewards/bundle.png": {
+      "file": "assets/dedf8325b36a84-bundle.png",
+      "bytes": 51007,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/rewards/champions-stage-entry.png": {
+      "file": "assets/00a42dba29ecab-champions-stage-entry.png",
+      "bytes": 19220,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/rewards/club_coin_icon.png": {
+      "file": "assets/73f8a443ee485b-club_coin_icon.png",
+      "bytes": 4293,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/rewards/club_coins.png": {
+      "file": "assets/2073785b42cd8e-club_coins.png",
+      "bytes": 16099,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/rewards/meta/flat/generic_token.png": {
+      "file": "assets/5ce085ea936782-generic_token.png",
+      "bytes": 3271,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/rewards/meta/notfound.png": {
+      "file": "assets/ee437cb76d1328-notfound.png",
+      "bytes": 3018,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/rewards/meta/rendered/generic_token.png": {
+      "file": "assets/54dcc21cc10535-generic_token.png",
+      "bytes": 20029,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/rewards/season-points.png": {
+      "file": "assets/1410ee11089af7-season-points.png",
+      "bytes": 94531,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/rewards/small/champions-stage-entry.png": {
+      "file": "assets/d5b3b4a1826b66-champions-stage-entry.png",
+      "bytes": 5449,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/rowSelectionSprite.png": {
+      "file": "assets/cfb8b27e70118b-rowSelectionSprite.png",
+      "bytes": 1506,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/sbc/dustpoint.png": {
+      "file": "assets/530d75dae6d013-dustpoint.png",
+      "bytes": 318,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/sbc/ea_logo.png": {
+      "file": "assets/d8a3041cee9aa0-ea_logo.png",
+      "bytes": 8038,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/sbc/logo_SBC_home_tile.png": {
+      "file": "assets/8e5d410277d8ff-logo_SBC_home_tile.png",
+      "bytes": 14403,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/sbc/sbcCheckmark.png": {
+      "file": "assets/b95afff02e01e9-sbcCheckmark.png",
+      "bytes": 329,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/squad/activeSquadTileBackground.png": {
+      "file": "assets/53cffd57f1e1a0-activeSquadTileBackground.png",
+      "bytes": 4763,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/squad/activeSquadTileBackground_mobile.png": {
+      "file": "assets/8ded8367844f6a-activeSquadTileBackground_mobile.png",
+      "bytes": 5917,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/squad/activeSquadTile_squad.png": {
+      "file": "assets/b0930cc464d29e-activeSquadTile_squad.png",
+      "bytes": 54162,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/squad/conceptSquadTile_squad.png": {
+      "file": "assets/c1770b865f3095-conceptSquadTile_squad.png",
+      "bytes": 35777,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/squad/conceptsquadTileBackground.png": {
+      "file": "assets/d166db7d714941-conceptsquadTileBackground.png",
+      "bytes": 4697,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/squad/conceptsquadTileBackground_mobile.png": {
+      "file": "assets/98dc7672ecd335-conceptsquadTileBackground_mobile.png",
+      "bytes": 5942,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/squad/pitchHover.png": {
+      "file": "assets/077a8fdcd0fa7e-pitchHover.png",
+      "bytes": 696,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/squad/pitchSelection.png": {
+      "file": "assets/7e765f158e240d-pitchSelection.png",
+      "bytes": 712,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/star.png": {
+      "file": "assets/fe2edfa21ea344-star.png",
+      "bytes": 538,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/store/fc-points.png": {
+      "file": "assets/13d1dc14986acf-fc-points.png",
+      "bytes": 7715,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/store/preview_sticker.png": {
+      "file": "assets/273bafe51e971d-preview_sticker.png",
+      "bytes": 2486,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/store/store_tag_limited.png": {
+      "file": "assets/e6bf6b5fdbe648-store_tag_limited.png",
+      "bytes": 348,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/store/store_tag_promo.png": {
+      "file": "assets/7acab0da7b128c-store_tag_promo.png",
+      "bytes": 369,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/tile/evolutions_tile.png": {
+      "file": "assets/7d0a273c59a0c1-evolutions_tile.png",
+      "bytes": 12653,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/tile/store-packs.png": {
+      "file": "assets/8cfea80d65aa44-store-packs.png",
+      "bytes": 10162,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/tile/tileClubPlayers.png": {
+      "file": "assets/a8102e6b9df407-tileClubPlayers.png",
+      "bytes": 133953,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/tile/tileFETDefault.png": {
+      "file": "assets/4ab8d0abea3ed6-tileFETDefault.png",
+      "bytes": 136713,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/tile/totw_tile.png": {
+      "file": "assets/8afbad31accc2f-totw_tile.png",
+      "bytes": 13518,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/tile/transferMarketTile.png": {
+      "file": "assets/ab2b13957e71fc-transferMarketTile.png",
+      "bytes": 116228,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/tile/unassignedTile.png": {
+      "file": "assets/cc581fab5d3374-unassignedTile.png",
+      "bytes": 5102,
+      "status": 200
+    },
+    "https://www.ea.com/ea-sports-fc/ultimate-team/web-app/images/transparent.png": {
+      "file": "assets/0e7bc8ee425a50-transparent.png",
+      "bytes": 95,
+      "status": 200
+    }
+  }
+}
