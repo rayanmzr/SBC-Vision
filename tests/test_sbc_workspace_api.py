@@ -67,6 +67,7 @@ def test_dom_scan_saves_observations_then_replaces_only_a_confirmed_local_count(
         == body["capture_id"]
     )
     body["confirmed"] = True
+    body["expected_revision"] = response.json()["expected_revision"]
     assert client.post("/api/v1/sbc/club-scan", json=body).status_code == 200
     assert len(service.snapshot().items) == 2
     assert all(c.protected for c in service.snapshot().items)
@@ -164,6 +165,79 @@ def test_current_sbc_dom_conditions_are_dynamic_and_unknown_rules_block_the_calc
     response = client.post("/api/v1/sbc/read", json=body)
     assert response.json()["ready"] is False
     assert response.json()["challenge"] is None
+
+
+@pytest.mark.parametrize("fault", [None, "stats", "duplicate", "unconfirmed", "catalogue"])
+def test_placement_uses_only_a_unique_confirmed_club_fingerprint(
+    client, service, monkeypatch, fault
+):
+    from sbc_vision.sbc_engine.players import BASE_STATS
+
+    body = dom_scan(service)
+    monkeypatch.setattr(
+        service, "reference_time", lambda _: datetime.fromisoformat("2026-10-30T12:00:00+00:00")
+    )
+    body["pages"] = [body["pages"][0]]
+    body["pages"][0]["has_next"] = False
+    row = body["pages"][0]["cards"][0]
+    row["reading"].update(
+        stats={k: 70 for k in list(BASE_STATS)[:6]}, nation_id=9003, league_id=9004, club_id=9006
+    )
+    with closing(open_database(service.config.database)) as db:
+        card = json.loads(db.execute("SELECT data FROM cards WHERE id=900004").fetchone()[0])
+        row["reading"].update({k: card[k] for k in ("nation_id", "league_id", "club_id")})
+        card["stats"] = {BASE_STATS[k]: n for k, n in row["reading"]["stats"].items()}
+        db.execute("UPDATE cards SET data=? WHERE id=?", (json.dumps(card), card["id"]))
+        db.commit()
+    if fault == "stats":
+        row["reading"].pop("stats")
+    if fault == "duplicate":
+        body["pages"][0]["cards"][1] = {
+            **row,
+            "reading": {**row["reading"], "element_id": "copy-2"},
+        }
+    body.update(confirmed=True, expected_revision=service.snapshot().revision)
+    response = client.post("/api/v1/sbc/club-scan", json=body)
+    assert response.status_code == 200, response.text
+    with closing(open_database(service.config.database)) as db:
+        db.execute("UPDATE club_items SET protected=0")
+        if fault == "catalogue":
+            card["stats"]["BasePace"] = 71
+            db.execute("UPDATE cards SET data=? WHERE id=?", (json.dumps(card), card["id"]))
+        db.commit()
+    if fault == "unconfirmed":
+        body.update(confirmed=False, expected_revision=service.snapshot().revision)
+        assert client.post("/api/v1/sbc/club-scan", json=body).status_code == 200
+    challenge = {"positions": ["ST"], "conditions": [], "budget": 0, "market": "pc"}
+    solved = client.post(
+        "/api/v1/sbc/solve",
+        json={"expected_revision": service.snapshot().revision, "challenge": challenge},
+    )
+    assert solved.status_code == 200, solved.text
+    data = solved.json()
+    assert data["report"]["verification"]["valid"] is True
+    if fault:
+        assert data["placement"]["cards"] == []
+        assert data["placement"]["issues"]
+    else:
+        assert data["placement"]["issues"] == []
+        assert data["placement"]["cards"][0]["reading"]["stats"] == row["reading"]["stats"]
+        assert data["placement"]["cards"][0]["candidate_key"].startswith("club:")
+
+
+def test_a_new_scan_invalidates_an_older_placement_revision(client, service):
+    body = dom_scan(service)
+    previous = body["expected_revision"]
+    assert client.post("/api/v1/sbc/club-scan", json=body).status_code == 200
+    assert service.snapshot().revision != previous
+    response = client.post(
+        "/api/v1/sbc/solve",
+        json={
+            "expected_revision": previous,
+            "challenge": {"positions": ["ST"], "budget": 0, "market": "pc"},
+        },
+    )
+    assert response.status_code == 409
 
 
 FIXTURES = Path(__file__).resolve().parents[1] / "data/fixtures"

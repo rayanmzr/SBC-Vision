@@ -108,7 +108,8 @@ Le service de développement écoute uniquement sur `127.0.0.1`. L'authentificat
 la préparation du partage sont décrites dans le guide de déploiement ; le cloud reste à choisir.
 La note d'équipe et le collectif conservent
 les limites du profil standard documentées par Rayan ; une proposition n'est pas une
-confirmation par EA. Le détecteur alimente l'OCR ; le scan réel et le contrôleur restent à raccorder.
+confirmation par EA. Le détecteur alimente l'OCR ; le scan est raccordé et le placement
+est testé sur des scènes fictives. Sa validation réelle reste ouverte.
 
 ## Scan hybride du club EA
 
@@ -170,3 +171,28 @@ six prêts, sept ambiguïtés et 31 absences restent hors du pool confirmé. Le 
 a reçu les sept conditions et onze postes du SBC courant via `/sbc/read` ; avec un
 budget de 5 000 et un plafond par carte de 1 000, le pool observé ne fournit aucune
 solution. Aucune condition n'est assouplie et aucune carte n'est placée.
+
+## Plan de placement du club
+
+La réponse de `/solve` ajoute `placement`, facultatif. Pour une composition vérifiée,
+ses cartes relient chaque emplacement à la lecture DOM du dernier scan confirmé :
+nom, note, poste, six statistiques et identifiants de pays, championnat et club.
+Le serveur rapproche de nouveau cette lecture du catalogue. Une copie protégée,
+plusieurs copies identiques, une donnée manquante ou un achat nécessaire renvoient
+des `issues` et un plan vide. Aucun plan n'est construit à partir de la démo.
+
+Un nouveau scan change aussi la révision. `/club-scan` renvoie `expected_revision`
+pour la confirmation suivante ; une réponse ancienne ne doit pas réutiliser sa révision.
+
+Dans l'extension, le contrôleur compare l'onglet, le document, le titre, les conditions
+et la composition avant d'agir. Il n'écrase aucune case. Il cherche uniquement dans
+le club, refuse prêts et joueurs de l'équipe active, compare la version complète,
+puis vérifie la note et les trois identifiants dans la case remplie. Chaque mutation
+est tentée une fois ; une divergence arrête le parcours. Les protections et la révision
+sont relues avant chaque carte et juste avant son placement. Un arrêt après un placement
+conserve les cartes déjà posées ; il faut contrôler la composition manuellement.
+
+Les tests de placement sont fictifs. La navigation réelle peut être vérifiée en lecture,
+sans cliquer sur le bouton d'ajout d'un joueur. Le contrôleur ne contient aucune action
+Submit, Exchange, achat ou confirmation finale. Ce parcours DOM ne mesure pas la
+qualité du détecteur ou de l'OCR.

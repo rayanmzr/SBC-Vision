@@ -11,7 +11,27 @@ export type Workspace = {
     challenge: SolverReport['challenge'] | null;
     challenge_issues: string[];
 };
-export type ApiProposal = { mode: 'demo' | 'local'; revision: string; report: SolverReport };
+export type PlacementCard = {
+    slot: number;
+    candidate_key: string;
+    card_id: number;
+    reading: {
+        name: string;
+        rating: number;
+        position: string;
+        stats: Record<string, number>;
+        nation_id: number;
+        league_id: number;
+        club_id: number;
+    };
+};
+export type PlacementPlan = { cards: PlacementCard[]; issues: string[] };
+export type ApiProposal = {
+    mode: 'demo' | 'local';
+    revision: string;
+    report: SolverReport;
+    placement?: PlacementPlan | null;
+};
 
 // L'ordre des clés JSON peut varier entre la capture et la réponse Python.
 function ordered(value: unknown): unknown {

@@ -569,6 +569,7 @@ function ClubScanPanel({
         ocr_readable: number;
         ocr_matched: number;
         inventory_updated: boolean;
+        expected_revision?: string;
         cards: Array<{
             reading: { name: string; element_id: string };
             candidate_ids: number[];
@@ -631,6 +632,7 @@ function ClubScanPanel({
             )
                 throw new Error('Rapport de scan invalide.');
             setReport(value);
+            if (value.expected_revision) setRevision(value.expected_revision);
             setMessage(
                 confirm
                     ? 'Comptage local remplacé ; les cartes importées sont protégées.'

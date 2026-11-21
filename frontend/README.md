@@ -5,16 +5,18 @@ se fait lors de l'action, sans bouton intermédiaire. Options regroupe budget, p
 par carte et configuration du serveur. Le diagnostic ouvre les vues de développement
 décrites ci-dessous ; elles ne sont plus l'accueil de l'extension.
 
-Le bouton SBC lit les conditions courantes dans le DOM puis calcule la proposition ;
-le placement réel reste à raccorder. Aucun achat, échange ou confirmation finale
-n'est exécuté par ce parcours.
+Le bouton SBC lit les conditions courantes dans le DOM puis calcule la proposition.
+Le contrôleur recherche ensuite les cartes du club dans une composition vide, uniquement
+si elles sont déprotégées et identifiées sans ambiguïté. Les achats restent manuels.
+Le placement est testé sur des scènes fictives ; les essais EA restent en lecture.
+Aucun échange ni confirmation finale n'est exécuté par le contrôleur.
 
 Responsable : Samy Allali. Cette version permet de capturer l'onglet actif depuis le popup,
 de joindre l'API, d'envoyer manuellement une image et d'examiner son JSON.
 L'espace **Équipe** charge l'inventaire de
 l'API, enregistre les protections et lance le véritable solveur de Rayan. Il ouvre aussi
-des rapports JSON locaux. Le scan et le placement dans le navigateur restent à raccorder
-avec #16 : **le parcours de l'issue #15 n'est pas encore terminé**.
+des rapports JSON locaux. Le scan est raccordé ; la validation du placement réel avec
+#16 reste ouverte : **le parcours de l'issue #15 n'est pas encore terminé**.
 
 Le contrôleur, accessible depuis **Réglages → Contrôleur local**, prépare le deuxième lot de #16. Il propose observation,
 simulation et clics vérifiés sur une page locale dédiée : [guide du laboratoire](../docs/LOCAL_CONTROLLER.md).
@@ -278,9 +280,10 @@ l'adaptateur et de CP-SAT sur les cartes fictives. Dates et durée sont normalis
 les tests ; ce fichier ne constitue pas une mesure de performance. Les tests vérifient
 aussi les échecs d'enregistrement, les révisions incompatibles et les réponses tardives.
 
-À terminer pour #15 : alimentation par le scan réel, relecture des conditions et
-intégration du parcours avec le contrôleur #16. L'interface n'effectue encore aucun
-clic, achat, placement ou soumission dans la Web App.
+À terminer pour #15 : validation du placement avec le contrôleur #16 sur EA. Le scan
+et les conditions courantes sont raccordés. Le contrôleur DOM n'appelle aucune API
+privée EA et ne contient aucune action d'achat ou de soumission. Les cartes en prêt,
+les copies ambiguës et les cartes de l'équipe active sont refusées.
 
 Références : [réseau des extensions](https://developer.chrome.com/docs/extensions/develop/concepts/network-requests),
 [permissions optionnelles](https://developer.chrome.com/docs/extensions/reference/api/permissions).

@@ -79,6 +79,7 @@ it('lit toutes les conditions du SBC courant une seule fois et sans cliquer sur 
         source: 'dom',
         requirements: 'Rare players: Min. 1\nNumber of Players: 3',
         positions: ['ST', 'CM', 'CAM'],
+        title: '',
     });
     expect(click).not.toHaveBeenCalled();
     document.querySelectorAll('.sbc-requirements-checklist').forEach((e) => e.remove());

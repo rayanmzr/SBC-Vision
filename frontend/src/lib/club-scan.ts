@@ -3,6 +3,7 @@ import { activeContext, captureActiveTab } from './tab-capture';
 import { requestJson } from './api';
 import { solveWorkspace, type Workspace } from './sbc-api';
 import type { SolverReport } from './sbc-report';
+import type { PreparedSbc } from './sbc-fill';
 
 export type DomCard = {
     name: string;
@@ -244,7 +245,12 @@ export function sbcInTab() {
         : '';
     if (!requirements || !positions.length || positions.length > 11)
         throw new Error('Ouvrir l’écran de composition et afficher les conditions du SBC.');
-    return { source: 'dom', requirements, positions };
+    return {
+        source: 'dom',
+        requirements,
+        positions,
+        title: document.querySelector('h1.title')?.textContent?.trim() ?? '',
+    };
 }
 
 export async function prepareSbc(
@@ -254,7 +260,7 @@ export async function prepareSbc(
     cap: number,
     signal: AbortSignal,
     progress: (message: string) => void,
-): Promise<SolverReport> {
+): Promise<PreparedSbc> {
     progress('Lecture des conditions du SBC…');
     const context = await activeContext(signal);
     const results = await chrome.scripting.executeScript({
@@ -269,7 +275,13 @@ export async function prepareSbc(
         {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...observed, budget, market: 'pc' }),
+            body: JSON.stringify({
+                source: observed.source,
+                requirements: observed.requirements,
+                positions: observed.positions,
+                budget,
+                market: 'pc',
+            }),
         },
         signal,
         15000,
@@ -283,5 +295,13 @@ export async function prepareSbc(
         budget,
         signal,
     );
-    return result.report;
+    return {
+        ...result,
+        context,
+        board: {
+            title: observed.title,
+            requirements: observed.requirements,
+            positions: observed.positions,
+        },
+    };
 }

@@ -2,11 +2,11 @@
 
 Assistant visuel de préparation des défis de création d'équipe (SBC) sur la **Web App EA FC 27**. Projet Computer Vision Epitech 2026-2027, sujet 2 : « Vision pour piloter une interface ».
 
-Le client prévu est une **extension Chrome avec interface React**, reliée à l'API Python pour la vision, l'OCR et le solveur.
+Le client est une **extension Chrome avec interface React**, reliée à l'API Python pour la vision, l'OCR et le solveur.
 
 Le modèle transforme une capture en une liste JSON d'éléments et d'actions possibles. Un contrôleur exploite ce résultat pour inventorier le club, préparer une composition et vérifier les écrans. Le solveur cherche à réduire les dépenses et la valeur des cartes sacrifiées, en préservant les cartes protégées.
 
-**Avancement :** l'extension, l'API, le détecteur ONNX, l'OCR, l'inventaire SQLite et le solveur sont raccordés. La cible du parcours est uniquement la vraie Web App EA. Les essais sur les captures EA montrent encore des versions ambiguës et des emplacements manqués : le scan hybride du club est implémenté ; le remplissage réel reste à raccorder. Voir le [guide API](docs/API.md).
+**Avancement :** l'extension, l'API, le détecteur ONNX, l'OCR, l'inventaire SQLite et le solveur sont raccordés. Le scan hybride fonctionne sur la Web App EA. Le contrôleur de remplissage est implémenté et testé sur des scènes fictives ; son placement reste à valider dans EA. Les versions ambiguës et les emplacements manqués limitent encore le parcours. Voir le [guide API](docs/API.md).
 
 ## Équipe
 
@@ -28,8 +28,11 @@ notamment le parcours de démonstration avec cartes fictives et véritable calcu
 
 L'accueil contient deux actions : **Scanner mon club** et **Compléter ce SBC**.
 Le scan combine l'OCR visible et les lignes HTML, puis enregistre les cartes identifiées
-sous protection. L'action SBC lit les conditions de l'écran courant et lance le calcul ;
-le placement automatique reste à raccorder et aucun échange n'est soumis.
+sous protection. L'action SBC lit les conditions courantes et lance le calcul. Si toutes
+les cartes sont disponibles et déprotégées, le contrôleur recherche leurs versions et
+les place dans une composition vide. Un achat nécessaire, un doublon ou une lecture
+incertaine arrête le parcours. Aucun achat ni échange n'est soumis. Le placement est
+testé sur des scènes fictives ; les essais sur le compte EA restent en lecture.
 
 Le budget, le plafond par carte, l'adresse et la clé du serveur sont dans **Options**.
 Le lien « Diagnostic et protections des cartes » ouvre les anciennes vues Analyser,

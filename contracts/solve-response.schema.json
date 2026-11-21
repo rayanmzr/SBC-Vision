@@ -1,4 +1,212 @@
 {
+  "$defs": {
+    "CardObservation": {
+      "additionalProperties": false,
+      "description": "Attributs d'une carte, sans attribuer de confiance OCR au HTML.",
+      "properties": {
+        "capture_id": {
+          "minLength": 1,
+          "title": "Capture Id",
+          "type": "string"
+        },
+        "element_id": {
+          "minLength": 1,
+          "title": "Element Id",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "rating": {
+          "maximum": 99,
+          "minimum": 1,
+          "title": "Rating",
+          "type": "integer"
+        },
+        "position": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Position"
+        },
+        "club_id": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Club Id"
+        },
+        "league_id": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "League Id"
+        },
+        "nation_id": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Nation Id"
+        },
+        "rare_type": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rare Type"
+        },
+        "is_rare": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Rare"
+        },
+        "item_score": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1000000000,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Item Score"
+        },
+        "stats": {
+          "additionalProperties": {
+            "maximum": 99,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "propertyNames": {
+            "enum": [
+              "PAC",
+              "SHO",
+              "PAS",
+              "DRI",
+              "DEF",
+              "PHY",
+              "DIV",
+              "HAN",
+              "KIC",
+              "REF",
+              "SPD",
+              "POS"
+            ]
+          },
+          "title": "Stats",
+          "type": "object"
+        }
+      },
+      "required": [
+        "capture_id",
+        "element_id",
+        "name",
+        "rating"
+      ],
+      "title": "CardObservation",
+      "type": "object"
+    },
+    "PlacementCard": {
+      "properties": {
+        "slot": {
+          "maximum": 10,
+          "minimum": 0,
+          "title": "Slot",
+          "type": "integer"
+        },
+        "candidate_key": {
+          "title": "Candidate Key",
+          "type": "string"
+        },
+        "card_id": {
+          "exclusiveMinimum": 0,
+          "title": "Card Id",
+          "type": "integer"
+        },
+        "reading": {
+          "$ref": "#/$defs/CardObservation"
+        }
+      },
+      "required": [
+        "slot",
+        "candidate_key",
+        "card_id",
+        "reading"
+      ],
+      "title": "PlacementCard",
+      "type": "object"
+    },
+    "PlacementPlan": {
+      "properties": {
+        "cards": {
+          "items": {
+            "$ref": "#/$defs/PlacementCard"
+          },
+          "maxItems": 11,
+          "title": "Cards",
+          "type": "array"
+        },
+        "issues": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Issues",
+          "type": "array"
+        }
+      },
+      "required": [
+        "cards",
+        "issues"
+      ],
+      "title": "PlacementPlan",
+      "type": "object"
+    }
+  },
   "properties": {
     "mode": {
       "enum": [
@@ -16,6 +224,17 @@
       "additionalProperties": true,
       "title": "Report",
       "type": "object"
+    },
+    "placement": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PlacementPlan"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     }
   },
   "required": [

@@ -12,6 +12,7 @@ import { setSessionApiKey, clearSessionApiKey } from './lib/api-key';
 import { scanClub, prepareSbc, type ClubScan } from './lib/club-scan';
 import { loadWorkspace } from './lib/sbc-api';
 import { credits, type SolverReport } from './lib/sbc-report';
+import { fillSbc } from './lib/sbc-fill';
 
 const Diagnostics = lazy(() => import('./Diagnostics'));
 type ScanReport = {
@@ -21,6 +22,7 @@ type ScanReport = {
     loans: number;
     complete: boolean;
     inventory_updated: boolean;
+    expected_revision: string;
 };
 
 export default function App() {
@@ -93,7 +95,11 @@ export default function App() {
                         {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ ...body, confirmed: true }),
+                            body: JSON.stringify({
+                                ...body,
+                                expected_revision: report.expected_revision,
+                                confirmed: true,
+                            }),
                         },
                         controller.signal,
                         15000,
@@ -114,19 +120,24 @@ export default function App() {
                     controller.signal,
                     setMessage,
                 );
-                setProposal(result);
+                setProposal(result.report);
+                if (['optimal', 'feasible'].includes(result.report.solution.status)) {
+                    const count = await fillSbc(base, result, controller.signal, setMessage);
+                    setMessage(
+                        `${count} joueurs placés. Vérifie les conditions dans EA ; la validation reste manuelle.`,
+                    );
+                    return;
+                }
                 setMessage(
-                    ['optimal', 'feasible'].includes(result.solution.status)
-                        ? 'Proposition prête. Le placement automatique reste à raccorder ; aucun joueur n’a été échangé.'
-                        : result.solution.status === 'infeasible'
-                          ? 'Aucune composition ne respecte ces conditions avec les cartes et prix disponibles. Aucun joueur n’a été déplacé.'
-                          : 'Le calcul n’a pas trouvé de composition dans le temps imparti. Aucun joueur n’a été déplacé.',
+                    result.report.solution.status === 'infeasible'
+                        ? 'Aucune composition ne respecte ces conditions avec les cartes et prix disponibles. Aucun joueur n’a été déplacé.'
+                        : 'Le calcul n’a pas trouvé de composition dans le temps imparti. Aucun joueur n’a été déplacé.',
                 );
             }
         } catch (error) {
             setMessage(
                 controller.signal.aborted
-                    ? 'Opération arrêtée.'
+                    ? 'Opération arrêtée. Vérifie les cartes déjà placées dans EA.'
                     : error instanceof Error
                       ? error.message
                       : 'Opération impossible.',

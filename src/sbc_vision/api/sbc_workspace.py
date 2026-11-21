@@ -103,10 +103,23 @@ class ClubScanRequest(BaseModel):
     expected_revision: str = Field(pattern="^[0-9a-f]{64}$")
 
 
+class PlacementCard(BaseModel):
+    slot: int = Field(ge=0, le=10)
+    candidate_key: str
+    card_id: int = Field(gt=0)
+    reading: CardObservation
+
+
+class PlacementPlan(BaseModel):
+    cards: list[PlacementCard] = Field(max_length=11)
+    issues: list[str]
+
+
 class SolveResponse(BaseModel):
     mode: Literal["demo", "local"]
     revision: str
     report: dict
+    placement: PlacementPlan | None = None
 
 
 def fail(status: int, code: str, message: str) -> HTTPException:
@@ -204,10 +217,83 @@ class SbcWorkspace:
                 "items": items,
                 "challenge": document,
                 "values": [(card.key, card.value) for card in pool],
+                "scan": self.scan_document(db),
             },
             sort_keys=True,
         )
         return hashlib.sha256(serialized.encode()).hexdigest(), pool
+
+    @staticmethod
+    def scan_document(db):
+        exists = db.execute("SELECT 1 FROM sqlite_master WHERE name='club_scans'").fetchone()
+        row = (
+            db.execute("SELECT data FROM club_scans ORDER BY rowid DESC LIMIT 1").fetchone()
+            if exists
+            else None
+        )
+        return json.loads(row[0]) if row else None
+
+    def placement_plan(self, db, report):
+        """Fournir les empreintes du dernier scan, jamais une autorisation d'échange."""
+        if report["solution"]["status"] not in {"optimal", "feasible"}:
+            return None
+        if report["challenge"]["mode"] != "squad":
+            return {
+                "cards": [],
+                "issues": ["Le placement prend uniquement en charge une composition d'équipe."],
+            }
+        issues, cards = [], []
+        selected = {c["key"]: c for c in report["selected_candidates"]}
+        scan = self.scan_document(db)
+        if self.config.mode != "local" or not scan or not scan["report"]["inventory_updated"]:
+            return {
+                "cards": [],
+                "issues": ["Scanner et confirmer le club réel avant le placement."],
+            }
+        observed = scan["report"]["cards"]
+        for assignment in report["solution"]["assignments"]:
+            candidate = selected[assignment["candidate_key"]]
+            if not candidate["owned"]:
+                issues.append(f"À acheter manuellement : {candidate['name']}.")
+                continue
+            item = db.execute(
+                "SELECT * FROM club_items WHERE instance_id=?", (candidate["key"][5:],)
+            ).fetchone()
+            copies = db.execute(
+                "SELECT COUNT(*) FROM club_items WHERE card_id=?", (candidate["card_id"],)
+            ).fetchone()[0]
+            match = [
+                c
+                for c in observed
+                if item
+                and item["source_observation"]
+                == f"dom:{scan['observation']['capture_id']}:{c['reading']['element_id']}"
+            ]
+            reading = match[0]["reading"] if len(match) == 1 else None
+            if (
+                not item
+                or item["protected"]
+                or copies != 1
+                or not reading
+                or match[0]["loan"]
+                or match[0]["candidate_ids"] != [candidate["card_id"]]
+                or len(reading.get("stats", {})) != 6
+                or not all(
+                    reading.get(k) for k in ("position", "nation_id", "league_id", "club_id")
+                )
+                or [
+                    c["id"]
+                    for c in self.players.find_candidates(
+                        db, CardObservation.model_validate(reading)
+                    )
+                ]
+                != [candidate["card_id"]]
+            ):
+                issues.append(f"Exemplaire à vérifier : {candidate['name']}.")
+                continue
+            cards.append({**assignment, "card_id": candidate["card_id"], "reading": reading})
+        # Un plan partiel ne démarre jamais un remplissage partiel silencieux.
+        return {"cards": [] if issues else cards, "issues": issues}
 
     @staticmethod
     def require_revision(actual: str, expected: str):
@@ -318,6 +404,7 @@ class SbcWorkspace:
                 )
                 self.require_revision(latest_revision, revision)
                 current = self.players.load_pool(db, challenge.market, now=latest_reference)
+                placement = self.placement_plan(db, report)
             if (
                 outcome.status in {"optimal", "feasible"}
                 and not self.solver.recheck(report, current)["valid"]
@@ -327,7 +414,9 @@ class SbcWorkspace:
                     "proposal_expired",
                     "Les données de la proposition ont expiré pendant le calcul.",
                 )
-            return SolveResponse(mode=self.config.mode, revision=revision, report=report)
+            return SolveResponse(
+                mode=self.config.mode, revision=revision, report=report, placement=placement
+            )
         finally:
             solve_slot.release()
 
@@ -340,13 +429,14 @@ class SbcWorkspace:
             revision, _ = self.read_state(db, document, challenge, self.reference_time(document))
             self.require_revision(revision, request.expected_revision)
             try:
-                return self.players.save_dom_scan(
+                report = self.players.save_dom_scan(
                     db,
                     request.model_dump(exclude={"expected_revision", "confirmed"}),
                     confirmed=request.confirmed,
                 )
             except ValueError as exc:
                 raise fail(422, "invalid_club_scan", str(exc)) from exc
+        return {**report, "expected_revision": self.snapshot().revision}
 
     def latest_scan(self) -> dict:
         revision = self.snapshot().revision
