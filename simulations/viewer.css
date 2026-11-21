@@ -1,0 +1,10 @@
+/* La géométrie EA reste dans assets/ea.css et dans les styles des éléments exportés. */
+*, *::before, *::after { animation-play-state: paused !important; transition: none !important; }
+#simulation-notice {
+    position: fixed; bottom: 8px; left: 50%; transform: translateX(-50%);
+    z-index: 2147483647; display: flex; gap: 16px; max-width: 90vw;
+    padding: 8px 14px; border: 1px solid #687249; border-radius: 8px;
+    background: #141a21ee; color: #e8eed8; font: 13px system-ui;
+}
+#simulation-notice[hidden] { display: none; }
+#simulation-notice a { color: #d8ff39; white-space: nowrap; }

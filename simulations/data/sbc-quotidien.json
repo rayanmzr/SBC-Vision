@@ -1,0 +1,236 @@
+{
+  "title": "Daily Login Upgrade",
+  "viewport": {
+    "width": 1512,
+    "height": 861,
+    "pixelRatio": 2
+  },
+  "bodyClass": "with-fifa-header futweb landscape",
+  "requirements": "Player Quality: Min. BronzeNumber of Players in the Squad: 1",
+  "buttons": [
+    {
+      "text": "",
+      "class": "ut-navigation-button-control",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-iteminfochange-button-control btn-navigation-secondary",
+      "disabled": false
+    },
+    {
+      "text": "Exchange Players",
+      "class": "btn-standard call-to-action disabled",
+      "disabled": true
+    },
+    {
+      "text": "Use Squad Builder",
+      "class": "btn-standard primary",
+      "disabled": false
+    },
+    {
+      "text": "Clear Squad",
+      "class": "btn-standard disabled",
+      "disabled": true
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control chevron-btn",
+      "disabled": false
+    },
+    {
+      "text": "Work Area",
+      "class": "ut-squad-tab-button-control left workTab",
+      "disabled": false
+    },
+    {
+      "text": "Submit",
+      "class": "ut-squad-tab-button-control actionTab right primary disabled",
+      "disabled": true
+    },
+    {
+      "text": "Home",
+      "class": "ut-tab-bar-item icon-home",
+      "disabled": false
+    },
+    {
+      "text": "Squads",
+      "class": "ut-tab-bar-item icon-squad",
+      "disabled": false
+    },
+    {
+      "text": "Transfers",
+      "class": "ut-tab-bar-item icon-transfer",
+      "disabled": false
+    },
+    {
+      "text": "Store",
+      "class": "ut-tab-bar-item icon-store",
+      "disabled": false
+    },
+    {
+      "text": "Club",
+      "class": "ut-tab-bar-item icon-club",
+      "disabled": false
+    },
+    {
+      "text": "SBC",
+      "class": "ut-tab-bar-item icon-sbc selected ut-tab-bar-item--default-to-root",
+      "disabled": false
+    },
+    {
+      "text": "Evolutions",
+      "class": "ut-tab-bar-item icon-evolution",
+      "disabled": false
+    },
+    {
+      "text": "Settings",
+      "class": "ut-tab-bar-item icon-settings",
+      "disabled": false
+    }
+  ],
+  "cards": [],
+  "slots": [
+    {
+      "index": 0,
+      "position": "GK",
+      "locked": false,
+      "class": "ut-squad-slot-view"
+    },
+    {
+      "index": 1,
+      "position": "RB",
+      "locked": true,
+      "class": "ut-squad-slot-view locked"
+    },
+    {
+      "index": 2,
+      "position": "CB",
+      "locked": true,
+      "class": "ut-squad-slot-view locked"
+    },
+    {
+      "index": 3,
+      "position": "CB",
+      "locked": true,
+      "class": "ut-squad-slot-view locked"
+    },
+    {
+      "index": 4,
+      "position": "LB",
+      "locked": true,
+      "class": "ut-squad-slot-view locked"
+    },
+    {
+      "index": 5,
+      "position": "RM",
+      "locked": true,
+      "class": "ut-squad-slot-view locked"
+    },
+    {
+      "index": 6,
+      "position": "CM",
+      "locked": true,
+      "class": "ut-squad-slot-view locked"
+    },
+    {
+      "index": 7,
+      "position": "CM",
+      "locked": true,
+      "class": "ut-squad-slot-view locked"
+    },
+    {
+      "index": 8,
+      "position": "LM",
+      "locked": true,
+      "class": "ut-squad-slot-view locked"
+    },
+    {
+      "index": 9,
+      "position": "ST",
+      "locked": true,
+      "class": "ut-squad-slot-view locked"
+    },
+    {
+      "index": 10,
+      "position": "ST",
+      "locked": true,
+      "class": "ut-squad-slot-view locked"
+    },
+    {
+      "index": 11,
+      "position": "---",
+      "locked": false,
+      "class": "ut-squad-slot-view"
+    },
+    {
+      "index": 12,
+      "position": "---",
+      "locked": false,
+      "class": "ut-squad-slot-view"
+    },
+    {
+      "index": 13,
+      "position": "---",
+      "locked": false,
+      "class": "ut-squad-slot-view"
+    },
+    {
+      "index": 14,
+      "position": "---",
+      "locked": false,
+      "class": "ut-squad-slot-view"
+    },
+    {
+      "index": 15,
+      "position": "---",
+      "locked": false,
+      "class": "ut-squad-slot-view"
+    },
+    {
+      "index": 16,
+      "position": "---",
+      "locked": false,
+      "class": "ut-squad-slot-view"
+    },
+    {
+      "index": 17,
+      "position": "---",
+      "locked": false,
+      "class": "ut-squad-slot-view"
+    },
+    {
+      "index": 18,
+      "position": "---",
+      "locked": false,
+      "class": "ut-squad-slot-view"
+    },
+    {
+      "index": 19,
+      "position": "---",
+      "locked": false,
+      "class": "ut-squad-slot-view"
+    },
+    {
+      "index": 20,
+      "position": "---",
+      "locked": false,
+      "class": "ut-squad-slot-view"
+    },
+    {
+      "index": 21,
+      "position": "---",
+      "locked": false,
+      "class": "ut-squad-slot-view"
+    },
+    {
+      "index": 22,
+      "position": "---",
+      "locked": false,
+      "class": "ut-squad-slot-view"
+    }
+  ],
+  "source": "DOM rendu nettoyé ; ressources graphiques de référence",
+  "account_data": "remplacées ; aucun état actif/instance/session conservé",
+  "screen": "sbc-quotidien"
+}

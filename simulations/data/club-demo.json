@@ -1,0 +1,646 @@
+{
+  "data_kind": "synthetic-scenario",
+  "description": "40 lignes de démonstration ; attributs publics, identifiants et disponibilité fictifs ; aucun lien à des exemplaires EA.",
+  "items": [
+    {
+      "id": "demo-001",
+      "name": "Aitana Bonmatí",
+      "rating": 90,
+      "position": "CM",
+      "stats": {
+        "PAC": 80,
+        "SHO": 85,
+        "PAS": 86,
+        "DRI": 88,
+        "DEF": 75,
+        "PHY": 72
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-002",
+      "name": "Hazard",
+      "rating": 89,
+      "position": "LM",
+      "stats": {
+        "PAC": 91,
+        "SHO": 84,
+        "PAS": 85,
+        "DRI": 93,
+        "DEF": 37,
+        "PHY": 69
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-003",
+      "name": "David Raya",
+      "rating": 88,
+      "position": "GK",
+      "stats": {
+        "DIV": 87,
+        "HAN": 86,
+        "KIC": 88,
+        "REF": 88,
+        "SPD": 58,
+        "POS": 86
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-004",
+      "name": "Hampton",
+      "rating": 87,
+      "position": "GK",
+      "stats": {
+        "DIV": 87,
+        "HAN": 84,
+        "KIC": 89,
+        "REF": 85,
+        "SPD": 60,
+        "POS": 85
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-005",
+      "name": "Marchisio",
+      "rating": 87,
+      "position": "CM",
+      "stats": {
+        "PAC": 82,
+        "SHO": 81,
+        "PAS": 85,
+        "DRI": 86,
+        "DEF": 80,
+        "PHY": 82
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-006",
+      "name": "Barella",
+      "rating": 87,
+      "position": "CM",
+      "stats": {
+        "PAC": 77,
+        "SHO": 78,
+        "PAS": 84,
+        "DRI": 86,
+        "DEF": 81,
+        "PHY": 72
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-007",
+      "name": "Karchaoui",
+      "rating": 87,
+      "position": "CM",
+      "stats": {
+        "PAC": 89,
+        "SHO": 76,
+        "PAS": 87,
+        "DRI": 88,
+        "DEF": 79,
+        "PHY": 72
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-008",
+      "name": "Bacha",
+      "rating": 86,
+      "position": "LB",
+      "stats": {
+        "PAC": 88,
+        "SHO": 73,
+        "PAS": 85,
+        "DRI": 82,
+        "DEF": 79,
+        "PHY": 81
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-009",
+      "name": "Williams",
+      "rating": 86,
+      "position": "CM",
+      "stats": {
+        "PAC": 80,
+        "SHO": 87,
+        "PAS": 87,
+        "DRI": 85,
+        "DEF": 72,
+        "PHY": 75
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-010",
+      "name": "Cambiasso",
+      "rating": 86,
+      "position": "CDM",
+      "stats": {
+        "PAC": 77,
+        "SHO": 79,
+        "PAS": 82,
+        "DRI": 82,
+        "DEF": 84,
+        "PHY": 81
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-011",
+      "name": "Kelly",
+      "rating": 86,
+      "position": "RM",
+      "stats": {
+        "PAC": 89,
+        "SHO": 85,
+        "PAS": 85,
+        "DRI": 84,
+        "DEF": 43,
+        "PHY": 69
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-012",
+      "name": "Ekitiké",
+      "rating": 85,
+      "position": "ST",
+      "stats": {
+        "PAC": 86,
+        "SHO": 83,
+        "PAS": 72,
+        "DRI": 84,
+        "DEF": 33,
+        "PHY": 73
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-013",
+      "name": "Guéhi",
+      "rating": 85,
+      "position": "CB",
+      "stats": {
+        "PAC": 69,
+        "SHO": 46,
+        "PAS": 70,
+        "DRI": 72,
+        "DEF": 85,
+        "PHY": 82
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-014",
+      "name": "Mateus Fernandes",
+      "rating": 85,
+      "position": "CAM",
+      "stats": {
+        "PAC": 79,
+        "SHO": 84,
+        "PAS": 85,
+        "DRI": 86,
+        "DEF": 78,
+        "PHY": 77
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-015",
+      "name": "Hall",
+      "rating": 85,
+      "position": "ST",
+      "stats": {
+        "PAC": 89,
+        "SHO": 83,
+        "PAS": 70,
+        "DRI": 84,
+        "DEF": 44,
+        "PHY": 86
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-016",
+      "name": "Peio Canales",
+      "rating": 85,
+      "position": "CAM",
+      "stats": {
+        "PAC": 80,
+        "SHO": 81,
+        "PAS": 84,
+        "DRI": 84,
+        "DEF": 76,
+        "PHY": 85
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-017",
+      "name": "Silas",
+      "rating": 85,
+      "position": "ST",
+      "stats": {
+        "PAC": 88,
+        "SHO": 81,
+        "PAS": 71,
+        "DRI": 85,
+        "DEF": 56,
+        "PHY": 81
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-018",
+      "name": "Çalhanoğlu",
+      "rating": 85,
+      "position": "CDM",
+      "stats": {
+        "PAC": 68,
+        "SHO": 81,
+        "PAS": 85,
+        "DRI": 82,
+        "DEF": 81,
+        "PHY": 68
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-019",
+      "name": "Fermín",
+      "rating": 85,
+      "position": "CAM",
+      "stats": {
+        "PAC": 81,
+        "SHO": 84,
+        "PAS": 80,
+        "DRI": 84,
+        "DEF": 63,
+        "PHY": 72
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-020",
+      "name": "Barcola",
+      "rating": 85,
+      "position": "LW",
+      "stats": {
+        "PAC": 92,
+        "SHO": 76,
+        "PAS": 78,
+        "DRI": 84,
+        "DEF": 39,
+        "PHY": 67
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-021",
+      "name": "Richards",
+      "rating": 85,
+      "position": "RB",
+      "stats": {
+        "PAC": 86,
+        "SHO": 57,
+        "PAS": 73,
+        "DRI": 76,
+        "DEF": 84,
+        "PHY": 89
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-022",
+      "name": "Dybala",
+      "rating": 85,
+      "position": "CAM",
+      "stats": {
+        "PAC": 77,
+        "SHO": 84,
+        "PAS": 85,
+        "DRI": 86,
+        "DEF": 42,
+        "PHY": 62
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-023",
+      "name": "Dybala",
+      "rating": 85,
+      "position": "CAM",
+      "stats": {
+        "PAC": 77,
+        "SHO": 84,
+        "PAS": 85,
+        "DRI": 86,
+        "DEF": 42,
+        "PHY": 62
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-024",
+      "name": "Tonali",
+      "rating": 85,
+      "position": "CDM",
+      "stats": {
+        "PAC": 79,
+        "SHO": 74,
+        "PAS": 82,
+        "DRI": 80,
+        "DEF": 81,
+        "PHY": 84
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-025",
+      "name": "Bronze",
+      "rating": 85,
+      "position": "RB",
+      "stats": {
+        "PAC": 71,
+        "SHO": 68,
+        "PAS": 81,
+        "DRI": 80,
+        "DEF": 85,
+        "PHY": 87
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-026",
+      "name": "Marcos Llorente",
+      "rating": 85,
+      "position": "RB",
+      "stats": {
+        "PAC": 91,
+        "SHO": 79,
+        "PAS": 80,
+        "DRI": 82,
+        "DEF": 79,
+        "PHY": 83
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-027",
+      "name": "Vicky López",
+      "rating": 84,
+      "position": "RW",
+      "stats": {
+        "PAC": 85,
+        "SHO": 80,
+        "PAS": 81,
+        "DRI": 86,
+        "DEF": 47,
+        "PHY": 60
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-028",
+      "name": "Werner",
+      "rating": 84,
+      "position": "LM",
+      "stats": {
+        "PAC": 92,
+        "SHO": 80,
+        "PAS": 75,
+        "DRI": 84,
+        "DEF": 42,
+        "PHY": 76
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-029",
+      "name": "Lacroix",
+      "rating": 84,
+      "position": "CB",
+      "stats": {
+        "PAC": 87,
+        "SHO": 47,
+        "PAS": 64,
+        "DRI": 70,
+        "DEF": 85,
+        "PHY": 84
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-030",
+      "name": "Yıldız",
+      "rating": 84,
+      "position": "CAM",
+      "stats": {
+        "PAC": 85,
+        "SHO": 81,
+        "PAS": 79,
+        "DRI": 85,
+        "DEF": 59,
+        "PHY": 70
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-031",
+      "name": "Tchouaméni",
+      "rating": 84,
+      "position": "CDM",
+      "stats": {
+        "PAC": 74,
+        "SHO": 70,
+        "PAS": 79,
+        "DRI": 77,
+        "DEF": 83,
+        "PHY": 82
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-032",
+      "name": "Cristiano Ronaldo",
+      "rating": 84,
+      "position": "ST",
+      "stats": {
+        "PAC": 67,
+        "SHO": 88,
+        "PAS": 75,
+        "DRI": 78,
+        "DEF": 33,
+        "PHY": 75
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-033",
+      "name": "Oberdorf",
+      "rating": 84,
+      "position": "CDM",
+      "stats": {
+        "PAC": 60,
+        "SHO": 62,
+        "PAS": 77,
+        "DRI": 74,
+        "DEF": 85,
+        "PHY": 84
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-034",
+      "name": "Lewandowski",
+      "rating": 84,
+      "position": "ST",
+      "stats": {
+        "PAC": 67,
+        "SHO": 85,
+        "PAS": 79,
+        "DRI": 80,
+        "DEF": 44,
+        "PHY": 80
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-035",
+      "name": "Zubimendi",
+      "rating": 84,
+      "position": "CDM",
+      "stats": {
+        "PAC": 65,
+        "SHO": 71,
+        "PAS": 82,
+        "DRI": 80,
+        "DEF": 80,
+        "PHY": 75
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-036",
+      "name": "Anyomi",
+      "rating": 84,
+      "position": "ST",
+      "stats": {
+        "PAC": 90,
+        "SHO": 82,
+        "PAS": 74,
+        "DRI": 84,
+        "DEF": 55,
+        "PHY": 83
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-037",
+      "name": "Anderson",
+      "rating": 84,
+      "position": "CDM",
+      "stats": {
+        "PAC": 68,
+        "SHO": 71,
+        "PAS": 83,
+        "DRI": 82,
+        "DEF": 81,
+        "PHY": 78
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-038",
+      "name": "Malard",
+      "rating": 84,
+      "position": "LM",
+      "stats": {
+        "PAC": 87,
+        "SHO": 82,
+        "PAS": 79,
+        "DRI": 84,
+        "DEF": 41,
+        "PHY": 69
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-039",
+      "name": "Kika Nazareth",
+      "rating": 83,
+      "position": "CM",
+      "stats": {
+        "PAC": 85,
+        "SHO": 82,
+        "PAS": 82,
+        "DRI": 84,
+        "DEF": 60,
+        "PHY": 80
+      },
+      "active": false,
+      "loan": false
+    },
+    {
+      "id": "demo-040",
+      "name": "Rüdiger",
+      "rating": 83,
+      "position": "CB",
+      "stats": {
+        "PAC": 75,
+        "SHO": 54,
+        "PAS": 71,
+        "DRI": 69,
+        "DEF": 83,
+        "PHY": 85
+      },
+      "active": false,
+      "loan": false
+    }
+  ]
+}

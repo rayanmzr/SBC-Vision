@@ -1,0 +1,532 @@
+{
+  "title": "My Club Players",
+  "viewport": {
+    "width": 1512,
+    "height": 861,
+    "pixelRatio": 2
+  },
+  "bodyClass": "with-fifa-header futweb landscape",
+  "buttons": [
+    {
+      "text": "",
+      "class": "ut-navigation-button-control",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-iteminfochange-button-control btn-navigation-secondary",
+      "disabled": false
+    },
+    {
+      "text": "Search",
+      "class": "btn-standard mini primary",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "ut-image-button-control btnAction",
+      "disabled": false
+    },
+    {
+      "text": "Previous",
+      "class": "flat pagination prev",
+      "disabled": false
+    },
+    {
+      "text": "Next",
+      "class": "flat pagination next",
+      "disabled": false
+    },
+    {
+      "text": "Player Bio",
+      "class": "more",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "",
+      "disabled": false
+    },
+    {
+      "text": "Apply Tactical Preset",
+      "class": "",
+      "disabled": false
+    },
+    {
+      "text": "",
+      "class": "",
+      "disabled": false
+    },
+    {
+      "text": "Apply Consumable",
+      "class": "",
+      "disabled": false
+    },
+    {
+      "text": "Make Item Active",
+      "class": "",
+      "disabled": false
+    },
+    {
+      "text": "Deactivate this item",
+      "class": "",
+      "disabled": false
+    },
+    {
+      "text": "Send to My Club",
+      "class": "",
+      "disabled": false
+    },
+    {
+      "text": "Send to Active Squad",
+      "class": "",
+      "disabled": false
+    },
+    {
+      "text": "This item cannot be traded",
+      "class": "disabled",
+      "disabled": true
+    },
+    {
+      "text": "Send to SBC Storage",
+      "class": "",
+      "disabled": false
+    },
+    {
+      "text": "Compare Price",
+      "class": "",
+      "disabled": false
+    },
+    {
+      "text": "Remove Last Evolution",
+      "class": "",
+      "disabled": false
+    },
+    {
+      "text": "Quick Sell0",
+      "class": "",
+      "disabled": false
+    },
+    {
+      "text": "Home",
+      "class": "ut-tab-bar-item icon-home",
+      "disabled": false
+    },
+    {
+      "text": "Squads",
+      "class": "ut-tab-bar-item icon-squad",
+      "disabled": false
+    },
+    {
+      "text": "Transfers",
+      "class": "ut-tab-bar-item icon-transfer",
+      "disabled": false
+    },
+    {
+      "text": "Store",
+      "class": "ut-tab-bar-item icon-store",
+      "disabled": false
+    },
+    {
+      "text": "Club",
+      "class": "ut-tab-bar-item icon-club selected ut-tab-bar-item--default-to-root",
+      "disabled": false
+    },
+    {
+      "text": "SBC",
+      "class": "ut-tab-bar-item icon-sbc",
+      "disabled": false
+    },
+    {
+      "text": "Evolutions",
+      "class": "ut-tab-bar-item icon-evolution",
+      "disabled": false
+    },
+    {
+      "text": "Settings",
+      "class": "ut-tab-bar-item icon-settings",
+      "disabled": false
+    }
+  ],
+  "cards": [
+    {
+      "name": "Richards",
+      "rating": 85,
+      "position": "RB",
+      "class": "small player item specials ut-item-loaded",
+      "stats": {
+        "PAC": 86,
+        "SHO": 57,
+        "PAS": 73,
+        "DRI": 76,
+        "DEF": 84,
+        "PHY": 89
+      }
+    },
+    {
+      "name": "Dybala",
+      "rating": 85,
+      "position": "CAM",
+      "class": "small player item common loan ut-item-loaded",
+      "stats": {
+        "PAC": 77,
+        "SHO": 84,
+        "PAS": 85,
+        "DRI": 86,
+        "DEF": 42,
+        "PHY": 62
+      }
+    },
+    {
+      "name": "Dybala",
+      "rating": 85,
+      "position": "CAM",
+      "class": "small player item common ut-item-loaded",
+      "stats": {
+        "PAC": 77,
+        "SHO": 84,
+        "PAS": 85,
+        "DRI": 86,
+        "DEF": 42,
+        "PHY": 62
+      }
+    },
+    {
+      "name": "Tonali",
+      "rating": 85,
+      "position": "CDM",
+      "class": "small player item common ut-item-loaded",
+      "stats": {
+        "PAC": 79,
+        "SHO": 74,
+        "PAS": 82,
+        "DRI": 80,
+        "DEF": 81,
+        "PHY": 84
+      }
+    },
+    {
+      "name": "Bronze",
+      "rating": 85,
+      "position": "RB",
+      "class": "small player item common ut-item-loaded",
+      "stats": {
+        "PAC": 71,
+        "SHO": 68,
+        "PAS": 81,
+        "DRI": 80,
+        "DEF": 85,
+        "PHY": 87
+      }
+    },
+    {
+      "name": "Marcos Llorente",
+      "rating": 85,
+      "position": "RB",
+      "class": "small player item common ut-item-loaded",
+      "stats": {
+        "PAC": 91,
+        "SHO": 79,
+        "PAS": 80,
+        "DRI": 82,
+        "DEF": 79,
+        "PHY": 83
+      }
+    },
+    {
+      "name": "Vicky López",
+      "rating": 84,
+      "position": "RW",
+      "class": "small player item common ut-item-loaded",
+      "stats": {
+        "PAC": 85,
+        "SHO": 80,
+        "PAS": 81,
+        "DRI": 86,
+        "DEF": 47,
+        "PHY": 60
+      }
+    },
+    {
+      "name": "Werner",
+      "rating": 84,
+      "position": "LM",
+      "class": "small player item specials ut-item-loaded",
+      "stats": {
+        "PAC": 92,
+        "SHO": 80,
+        "PAS": 75,
+        "DRI": 84,
+        "DEF": 42,
+        "PHY": 76
+      }
+    },
+    {
+      "name": "Lacroix",
+      "rating": 84,
+      "position": "CB",
+      "class": "small player item specials ut-item-loaded",
+      "stats": {
+        "PAC": 87,
+        "SHO": 47,
+        "PAS": 64,
+        "DRI": 70,
+        "DEF": 85,
+        "PHY": 84
+      }
+    },
+    {
+      "name": "Yıldız",
+      "rating": 84,
+      "position": "CAM",
+      "class": "small player item common loan ut-item-loaded",
+      "stats": {
+        "PAC": 85,
+        "SHO": 81,
+        "PAS": 79,
+        "DRI": 85,
+        "DEF": 59,
+        "PHY": 70
+      }
+    },
+    {
+      "name": "Tchouaméni",
+      "rating": 84,
+      "position": "CDM",
+      "class": "small player item common ut-item-loaded",
+      "stats": {
+        "PAC": 74,
+        "SHO": 70,
+        "PAS": 79,
+        "DRI": 77,
+        "DEF": 83,
+        "PHY": 82
+      }
+    },
+    {
+      "name": "Cristiano Ronaldo",
+      "rating": 84,
+      "position": "ST",
+      "class": "small player item common ut-item-loaded",
+      "stats": {
+        "PAC": 67,
+        "SHO": 88,
+        "PAS": 75,
+        "DRI": 78,
+        "DEF": 33,
+        "PHY": 75
+      }
+    },
+    {
+      "name": "Oberdorf",
+      "rating": 84,
+      "position": "CDM",
+      "class": "small player item common loan ut-item-loaded",
+      "stats": {
+        "PAC": 60,
+        "SHO": 62,
+        "PAS": 77,
+        "DRI": 74,
+        "DEF": 85,
+        "PHY": 84
+      }
+    },
+    {
+      "name": "Lewandowski",
+      "rating": 84,
+      "position": "ST",
+      "class": "small player item common ut-item-loaded",
+      "stats": {
+        "PAC": 67,
+        "SHO": 85,
+        "PAS": 79,
+        "DRI": 80,
+        "DEF": 44,
+        "PHY": 80
+      }
+    },
+    {
+      "name": "Zubimendi",
+      "rating": 84,
+      "position": "CDM",
+      "class": "small player item common ut-item-loaded",
+      "stats": {
+        "PAC": 65,
+        "SHO": 71,
+        "PAS": 82,
+        "DRI": 80,
+        "DEF": 80,
+        "PHY": 75
+      }
+    },
+    {
+      "name": "Anyomi",
+      "rating": 84,
+      "position": "ST",
+      "class": "small player item common ut-item-loaded",
+      "stats": {
+        "PAC": 90,
+        "SHO": 82,
+        "PAS": 74,
+        "DRI": 84,
+        "DEF": 55,
+        "PHY": 83
+      }
+    },
+    {
+      "name": "Anderson",
+      "rating": 84,
+      "position": "CDM",
+      "class": "small player item common ut-item-loaded",
+      "stats": {
+        "PAC": 68,
+        "SHO": 71,
+        "PAS": 83,
+        "DRI": 82,
+        "DEF": 81,
+        "PHY": 78
+      }
+    },
+    {
+      "name": "Malard",
+      "rating": 84,
+      "position": "LM",
+      "class": "small player item common ut-item-loaded",
+      "stats": {
+        "PAC": 87,
+        "SHO": 82,
+        "PAS": 79,
+        "DRI": 84,
+        "DEF": 41,
+        "PHY": 69
+      }
+    },
+    {
+      "name": "Kika Nazareth",
+      "rating": 83,
+      "position": "CM",
+      "class": "small player item common ut-item-loaded",
+      "stats": {
+        "PAC": 85,
+        "SHO": 82,
+        "PAS": 82,
+        "DRI": 84,
+        "DEF": 60,
+        "PHY": 80
+      }
+    },
+    {
+      "name": "Rüdiger",
+      "rating": 83,
+      "position": "CB",
+      "class": "small player item common ut-item-loaded",
+      "stats": {
+        "PAC": 75,
+        "SHO": 54,
+        "PAS": 71,
+        "DRI": 69,
+        "DEF": 83,
+        "PHY": 85
+      }
+    }
+  ],
+  "slots": [],
+  "source": "DOM rendu nettoyé ; ressources graphiques de référence",
+  "account_data": "remplacées ; aucun état actif/instance/session conservé",
+  "screen": "club-joueurs-page-2"
+}
