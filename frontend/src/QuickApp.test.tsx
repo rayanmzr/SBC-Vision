@@ -85,7 +85,7 @@ it('un clic scanne puis enregistre le club identifié sous protection sans touch
     await vi.waitFor(() => expect((scan as HTMLButtonElement).disabled).toBe(false));
     fireEvent.click(scan);
     await screen.findByText(
-        '20 cartes enregistrées ; 10 identifiées et protégées. 10 restent à vérifier.',
+        '20 cartes enregistrées ; 10 identifiées, dont 10 protégées. 10 restent à vérifier.',
     );
     const calls = vi.mocked(fetch).mock.calls.filter(([u]) => String(u).endsWith('/club-scan'));
     expect(calls).toHaveLength(2);
@@ -222,4 +222,50 @@ it('conserve la proposition si un achat ou une vérification manuelle bloque le 
     await screen.findByText('À acheter manuellement : Exemple.');
     expect(screen.getByText('Composition proposée')).toBeTruthy();
     expect(screen.queryByText(/joueurs placés/)).toBeNull();
+});
+
+it('enchaîne autorisation explicite, nouveau calcul et placement avec la nouvelle révision', async () => {
+    let workspace = {
+        ...fixture.workspace,
+        mode: 'local',
+        items: fixture.workspace.items.map((c) => ({
+            ...c,
+            chemistry_kind: 'standard',
+            protected: true,
+        })),
+    };
+    vi.mocked(fetch).mockImplementation(
+        async (url) =>
+            new Response(
+                JSON.stringify(
+                    String(url).endsWith('/health')
+                        ? { status: 'ok', version: '0.1.0', model_loaded: true }
+                        : String(url).endsWith('/capabilities')
+                          ? { perception: true, ocr: true }
+                          : workspace,
+                ),
+            ),
+    );
+    vi.mocked(updateProtection).mockImplementation(async (_, __, key) => {
+        workspace = {
+            ...workspace,
+            revision: 'b'.repeat(64),
+            items: workspace.items.map((c) => (c.key === key ? { ...c, protected: false } : c)),
+        };
+        return workspace as Awaited<ReturnType<typeof updateProtection>>;
+    });
+    render(<App />);
+    const button = await screen.findByRole('button', { name: 'Compléter ce SBC' });
+    await vi.waitFor(() => expect((button as HTMLButtonElement).disabled).toBe(false));
+    fireEvent.click(button);
+    const authorization = await screen.findByRole('button', {
+        name: /Autoriser mes cartes de base .* et remplir ce SBC/,
+    });
+    expect(fillSbc).not.toHaveBeenCalled();
+    fireEvent.click(authorization);
+    await screen.findByText(/3 joueurs placés/);
+    expect(prepareSbc).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(prepareSbc).mock.calls[1][1].revision).toBe('b'.repeat(64));
+    expect(fillSbc).toHaveBeenCalledOnce();
+    expect(scanClub).not.toHaveBeenCalled();
 });

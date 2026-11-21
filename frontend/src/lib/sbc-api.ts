@@ -111,6 +111,7 @@ export async function solveWorkspace(
     workspace: Workspace,
     budget: number,
     signal: AbortSignal,
+    preferClub = false,
 ): Promise<ApiProposal> {
     if (
         !workspace.challenge ||
@@ -133,6 +134,7 @@ export async function solveWorkspace(
                 expected_revision: workspace.revision,
                 budget,
                 seconds: 20,
+                prefer_club: preferClub,
                 challenge: workspace.challenge,
             }),
         },

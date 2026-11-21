@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from threading import BoundedSemaphore
+from time import monotonic
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -51,6 +52,7 @@ class SolveRequest(BaseModel):
     budget: int | None = Field(default=None, ge=0, le=1_000_000_000)
     max_card_value: int | None = Field(default=None, gt=0, le=1_000_000_000)
     seconds: float = Field(default=3.0, gt=0, le=30)
+    prefer_club: bool = False
     challenge: Challenge | None = None
 
 
@@ -381,7 +383,20 @@ class SbcWorkspace:
                 revision, _ = self.read_state(db, document, configured, reference)
                 self.require_revision(revision, request.expected_revision)
                 pool = self.players.load_pool(db, challenge.market, now=reference)
-            outcome = self.solver.solve(challenge, pool, seconds=request.seconds)
+            started = monotonic()
+            # Chercher d'abord un remplissage sans achat, sous les mêmes limites de valeur.
+            club = [c for c in pool if c.owned and not c.protected]
+            outcome = (
+                self.solver.solve(challenge, club, seconds=request.seconds / 2)
+                if request.prefer_club and club
+                else None
+            )
+            club_only = outcome is not None and outcome.status in {"optimal", "feasible"}
+            if not club_only:
+                outcome = self.solver.solve(
+                    challenge, pool, seconds=max(0.001, request.seconds - (monotonic() - started))
+                )
+            outcome = outcome.model_copy(update={"elapsed_seconds": monotonic() - started})
             report = {
                 "challenge": challenge.model_dump(),
                 "price_reference_at": reference.isoformat(),
@@ -394,6 +409,7 @@ class SbcWorkspace:
                 "verification": self.solver.verification(challenge, pool, outcome),
                 "shopping_list": self.solver.shopping_list(challenge, pool, outcome),
                 "data_kind": "synthetic" if self.config.mode == "demo" else "local",
+                "selection_scope": "club" if club_only else "club_and_market",
             }
             latest_document, latest_challenge, _ = self.challenge_document()
             latest_reference = self.reference_time(latest_document)

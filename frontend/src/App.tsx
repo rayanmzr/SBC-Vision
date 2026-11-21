@@ -22,6 +22,7 @@ type ScanReport = {
     loans: number;
     complete: boolean;
     inventory_updated: boolean;
+    protected?: number;
     expected_revision: string;
     ocr_readable?: number;
 };
@@ -50,7 +51,7 @@ export default function App() {
         };
     }, []);
 
-    async function run(action: 'scan' | 'sbc' | 'basics') {
+    async function run(action: 'scan' | 'sbc' | 'basics' | 'authorize-sbc') {
         if (current.current) return;
         const controller = new AbortController();
         current.current = controller;
@@ -63,13 +64,13 @@ export default function App() {
             setSessionApiKey(base, key);
             await saveApiUrl(base);
             await checkConnection(base, controller.signal);
-            const workspace = await loadWorkspace(base, controller.signal);
+            let workspace = await loadWorkspace(base, controller.signal);
             if (workspace.mode !== 'local')
                 throw new Error('Les actions EA nécessitent un inventaire local réel.');
-            const allProtected =
-                workspace.items.length > 0 && workspace.items.every((c) => c.protected);
-            setAuthorization(allProtected);
-            if (action === 'basics') {
+            setAuthorization(
+                workspace.items.length > 0 && workspace.items.every((c) => c.protected),
+            );
+            if (action === 'basics' || action === 'authorize-sbc') {
                 if (!Number.isSafeInteger(cap) || cap < 1)
                     throw new Error('Choisir un plafond entier positif.');
                 const cards = workspace.items.filter(
@@ -79,13 +80,12 @@ export default function App() {
                         c.value != null &&
                         c.value <= cap,
                 );
-                let updated = workspace;
-                // Ce choix explicite modifie seulement les protections locales ; aucun clic EA.
+                // L'autorisation est explicite ; les cartes spéciales et les prix inconnus restent exclus.
                 for (const [i, card] of cards.entries()) {
                     setMessage(`Autorisation des cartes de base : ${i + 1}/${cards.length}…`);
-                    updated = await updateProtection(
+                    workspace = await updateProtection(
                         base,
-                        updated,
+                        workspace,
                         card.key,
                         false,
                         controller.signal,
@@ -95,7 +95,7 @@ export default function App() {
                     `${cards.length} cartes de base sous ${credits(cap)} autorisées pour les prochains calculs.`,
                 );
                 if (cards.length) setAuthorization(false);
-                return;
+                if (action === 'basics') return;
             }
             if (action === 'scan') {
                 const observation: ClubScan = await scanClub(
@@ -139,10 +139,11 @@ export default function App() {
                     )) as ScanReport;
                 }
                 setScan(report);
-                if (report.inventory_updated && report.identified) setAuthorization(true);
+                if (report.inventory_updated)
+                    setAuthorization((report.protected ?? report.identified) > 0);
                 setMessage(
                     report.inventory_updated
-                        ? `${report.observed} cartes enregistrées ; ${report.identified} identifiées et protégées. ${report.pending} restent à vérifier.${report.ocr_readable === 0 ? ' Aucune carte lue par OCR sur ce passage ; seules les données HTML ont été enregistrées.' : ''}`
+                        ? `${report.observed} cartes enregistrées ; ${report.identified} identifiées, dont ${report.protected ?? report.identified} protégées. ${report.pending} restent à vérifier.${report.ocr_readable === 0 ? ' Aucune carte lue par OCR sur ce passage ; seules les données HTML ont été enregistrées.' : ''}`
                         : `${report.observed} observations sauvegardées ; le club confirmé est conservé.`,
                 );
             } else {
@@ -156,7 +157,7 @@ export default function App() {
                 );
                 setProposal(result.report);
                 if (['optimal', 'feasible'].includes(result.report.solution.status)) {
-                    if (allProtected) {
+                    if (workspace.items.length && workspace.items.every((c) => c.protected)) {
                         setMessage(
                             `Tes ${workspace.items.length} cartes sont bien enregistrées mais protégées. Autorise tes cartes de base ci-dessous pour utiliser le club. La proposition affichée utilise uniquement le marché.`,
                         );
@@ -225,8 +226,12 @@ export default function App() {
                     {message}
                 </p>
                 {authorization && !busy && (
-                    <button className="text-button" onClick={() => run('basics')}>
+                    <button
+                        className="text-button"
+                        onClick={() => run(proposal ? 'authorize-sbc' : 'basics')}
+                    >
                         Autoriser mes cartes de base sous {credits(cap)}
+                        {proposal ? ' et remplir ce SBC' : ''}
                     </button>
                 )}
                 {busy && (
@@ -249,6 +254,7 @@ export default function App() {
                         </h3>
                         {['optimal', 'feasible'].includes(proposal.solution.status) && (
                             <p>
+                                {proposal.selection_scope === 'club' ? 'Club uniquement · ' : ''}
                                 Achats : {credits(proposal.solution.purchase_cost)} · Valeur des
                                 cartes utilisées : {credits(proposal.solution.sacrifice_value)}
                             </p>
@@ -298,8 +304,9 @@ export default function App() {
                         Autoriser les cartes de base sous ce plafond
                     </button>
                     <p className="field-hint">
-                        Cartes de base, rares comprises, avec un prix récent inférieur ou égal au
-                        plafond.
+                        Une carte protégée est exclue du calcul. L’autorisation conserve le plafond
+                        de valeur. Cartes de base, rares comprises, avec un prix récent inférieur ou
+                        égal au plafond.
                     </p>
                     <label>
                         Serveur{' '}

@@ -399,12 +399,13 @@ export async function prepareSbc(
     )) as { ready: boolean; challenge: SolverReport['challenge']; issues: string[] };
     if (!reading.ready || !reading.challenge)
         throw new Error('Conditions à relire : ' + reading.issues.join(' ; '));
-    progress('Recherche de la composition la moins chère…');
+    progress('Recherche avec les cartes du club, puis les achats si nécessaire…');
     const result = await solveWorkspace(
         base,
         { ...workspace, challenge: { ...reading.challenge, max_card_value: cap } },
         budget,
         signal,
+        true,
     );
     return {
         ...result,

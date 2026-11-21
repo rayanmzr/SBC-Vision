@@ -114,6 +114,24 @@ def test_invalid_dom_scan_never_modifies_the_inventory(client, service, fault):
     assert service.snapshot().items == before
 
 
+@pytest.mark.parametrize("duplicate", [False, True])
+def test_rescan_keeps_authorization_only_for_a_unique_version(client, service, duplicate):
+    body = dom_scan(service)
+    body["pages"] = [body["pages"][0]]
+    body["pages"][0]["has_next"] = False
+    body["confirmed"] = True
+    assert client.post("/api/v1/sbc/club-scan", json=body).status_code == 200
+    with closing(open_database(service.config.database)) as db:
+        set_protected(db, "dom:900004:1", False)
+    if duplicate:
+        body["pages"][0]["cards"][1]["loan"] = False
+    body["expected_revision"] = service.snapshot().revision
+    response = client.post("/api/v1/sbc/club-scan", json=body)
+    assert response.status_code == 200, response.text
+    assert response.json()["protected"] == (2 if duplicate else 0)
+    assert all(c.protected == duplicate for c in service.snapshot().items)
+
+
 def test_ocr_dom_agreement_counts_visible_rows_once_and_keeps_the_sources_distinct(client, service):
     body = dom_scan(service)
     page = body["pages"][0]
@@ -187,6 +205,35 @@ def test_single_card_sbc_does_not_require_eleven_players_or_a_goalkeeper(client)
     report = result.json()["report"]
     assert report["solution"]["status"] == "optimal"
     assert len(report["solution"]["assignments"]) == 1
+    assert report["verification"]["valid"]
+
+
+@pytest.mark.parametrize("protect_club", [False, True])
+def test_club_preference_uses_owned_cards_then_market_if_they_are_protected(
+    client, service, protect_club
+):
+    if protect_club:
+        with closing(open_database(service.config.database)) as db:
+            db.execute("UPDATE club_items SET protected=1")
+            db.commit()
+    body = {
+        "expected_revision": service.snapshot().revision,
+        "challenge": {
+            "positions": ["GK"],
+            "position_mode": "any",
+            "budget": 5000,
+            "market": "pc",
+            "max_card_value": 1000,
+        },
+    }
+    economical = client.post("/api/v1/sbc/solve", json=body).json()["report"]
+    assert economical["solution"]["purchase_cost"] == 400
+    result = client.post("/api/v1/sbc/solve", json={**body, "prefer_club": True})
+    assert result.status_code == 200, result.text
+    report = result.json()["report"]
+    assert report["selection_scope"] == ("club_and_market" if protect_club else "club")
+    assert report["solution"]["purchase_cost"] == (400 if protect_club else 0)
+    assert report["solution"]["total_cost"] == (400 if protect_club else 800)
     assert report["verification"]["valid"]
 
 

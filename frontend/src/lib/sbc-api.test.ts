@@ -128,6 +128,7 @@ describe('proposition du véritable solveur', () => {
             expected_revision: fixture.workspace.revision,
             budget: 2000,
             seconds: 20,
+            prefer_club: false,
             challenge: fixture.workspace.challenge,
         });
     });

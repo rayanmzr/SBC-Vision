@@ -695,6 +695,10 @@ def save_dom_scan(db, document, *, confirmed=False):
     ):
         raise ValueError("L'inventaire contient des copies manuelles : rapprochement nécessaire.")
     counts, items = Counter(), []
+    known = list_items(db)
+    previous = {item["card_id"]: item for item in known}
+    previous_counts = Counter(item["card_id"] for item in known)
+    new_counts = Counter(card["candidate_ids"][0] for card in usable)
     for card in usable:
         version = card["candidate_ids"][0]
         counts[version] += 1
@@ -703,7 +707,10 @@ def save_dom_scan(db, document, *, confirmed=False):
             ClubItem(
                 instance_id=f"dom:{version}:{counts[version]}",
                 card_id=version,
-                protected=True,
+                # Une version unique conserve le choix de l'utilisateur après un nouveau scan.
+                protected=previous[version]["protected"]
+                if previous_counts[version] == new_counts[version] == 1
+                else True,
                 source_observation=f"dom:{document['capture_id']}:{card['reading']['element_id']}",
             )
         )
@@ -714,6 +721,7 @@ def save_dom_scan(db, document, *, confirmed=False):
         "pages": len(pages),
         "observed": len(cards),
         "identified": len(usable),
+        "protected": sum(item.protected for item in items),
         "loans": sum(c["loan"] for c in cards),
         "pending": len(cards) - len(usable),
         "ocr_readable": sum(
@@ -738,7 +746,7 @@ def save_dom_scan(db, document, *, confirmed=False):
             ),
         )
         if confirmed:
-            # Seul un parcours complet remplace le précédent comptage DOM ; tout redevient protégé.
+            # Seul un parcours complet remplace le précédent comptage DOM.
             db.execute("DELETE FROM club_items WHERE instance_id LIKE 'dom:%'")
             save_items(db, items, confirmed=True)
     return report

@@ -172,6 +172,18 @@ de collectif, `/read` choisit `position_mode: "any"` : une carte peut être hors
 Avec collectif, le profil reste limité aux postes préférés ; les anciens JSON gardent
 ce comportement par défaut. Le contrôleur retire le filtre de poste pour une recherche libre.
 
+L'accueil demande `prefer_club: true` à `/solve`. Le moteur consacre au plus la moitié du
+temps demandé à une recherche limitée aux cartes autorisées du club, sous le même plafond
+de valeur. Si elle n'aboutit pas, il utilise le temps restant pour le pool avec achats.
+Le champ `report.selection_scope` indique `club` ou `club_and_market` : le statut optimal
+porte sur le pool retenu, pas sur une comparaison globale entre ces deux stratégies.
+Les appels sans cette préférence conservent l'optimisation économique du pool complet.
+
+Le scan conserve la protection d'une version présente en un exemplaire unique avant et
+après le relevé. Les nouvelles versions et les doublons redeviennent protégés, puisque
+le DOM ne fournit pas ici leur identité EA persistante. Le bilan `protected` compte les
+cartes protégées parmi les versions identifiées du nouveau relevé.
+
 L'accueil automatique du scan confirme seulement le comptage local des versions
 uniques d'un parcours complet ; il n'échange aucune carte sur EA. Les prix et
 protections restent ceux du moteur. Le diagnostic conserve le parcours manuel.

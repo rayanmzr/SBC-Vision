@@ -25,6 +25,7 @@ export type Candidate = {
 };
 export type SolverReport = {
     data_kind?: unknown;
+    selection_scope?: 'club' | 'club_and_market';
     challenge: {
         mode?: 'squad' | 'score';
         positions?: string[];

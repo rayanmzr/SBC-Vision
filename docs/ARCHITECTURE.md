@@ -70,7 +70,7 @@ cartes hors poste et le contrôleur efface le filtre de poste avant de chercher 
 
 Les conditions sont transmises dynamiquement par l'OCR au contrat `dynamic-v1`. Le solveur distingue composition et Item Score, traite les contraintes reconnues et vérifie ses résultats séparément. La note d'équipe est limitée à onze emplacements et le collectif à un profil standard sans bonus particuliers. Les autres cas sont rejetés. Le [guide](../src/sbc_vision/sbc_engine/README.md) précise les limites et l'interface entre les membres.
 
-Les contrats `CardReading` et `ClubItem` préparent le raccordement à l'OCR et au contrôleur. Une version candidate reste à confirmer et l'identité des exemplaires entre captures est à gérer côté contrôleur. Le scan DOM compte les lignes par version confirmée avec des identifiants locaux ; il ne retrouve pas l'identité persistante des exemplaires EA. Les copies identiques ne sont pas confondues avec plusieurs observations OCR d'une même ligne. Toutes les cartes réimportées sont protégées.
+Les contrats `CardReading` et `ClubItem` préparent le raccordement à l'OCR et au contrôleur. Une version candidate reste à confirmer et l'identité des exemplaires entre captures est à gérer côté contrôleur. Le scan DOM compte les lignes par version confirmée avec des identifiants locaux ; il ne retrouve pas l'identité persistante des exemplaires EA. Les copies identiques ne sont pas confondues avec plusieurs observations OCR d'une même ligne. Les nouvelles cartes et les doublons sont protégés ; une version unique conserve son autorisation lors du scan suivant.
 
 ## Contrat de perception v0.1
 
