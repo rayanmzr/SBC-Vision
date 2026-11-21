@@ -8,7 +8,7 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytesseract
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageStat
 
 from .models import CardReading, Challenge, Condition, OcrInput
 from .players import BASE_STATS, find_candidates, normalize_name
@@ -29,9 +29,13 @@ POSITIONS = {
 }
 
 
-def ocr_words(image, *, lang, scale, psm=11, x=0, y=0):
+def ocr_words(image, *, lang, scale, psm=11, x=0, y=0, digits=False):
     data = pytesseract.image_to_data(
-        image, lang=lang, config=f"--psm {psm}", output_type=pytesseract.Output.DICT, timeout=20
+        image,
+        lang=lang,
+        config=f"--psm {psm}" + (" -c tessedit_char_whitelist=0123456789" if digits else ""),
+        output_type=pytesseract.Output.DICT,
+        timeout=20,
     )
     return [
         {
@@ -48,17 +52,19 @@ def ocr_words(image, *, lang, scale, psm=11, x=0, y=0):
     ]
 
 
-def read_regions(path, spec: OcrInput, *, lang="eng") -> list[dict]:
+def read_regions(path, spec: OcrInput, *, lang="eng", words=None) -> list[dict]:
     with Image.open(path) as image:
         for region in spec.regions:
             box = region.bbox
             if box.x + box.width > image.width or box.y + box.height > image.height:
                 raise ValueError(f"Région hors de l'image : {region.element_id}/{region.field}.")
         # Premier passage global ; les petits champs incertains sont ensuite relus isolément.
-        prepared = ImageOps.autocontrast(ImageOps.grayscale(image)).resize(
+        original = ImageOps.grayscale(image)
+        prepared = ImageOps.autocontrast(original).resize(
             (image.width * 2, image.height * 2), Image.Resampling.LANCZOS
         )
-        words = ocr_words(prepared, lang=lang, scale=2)
+        if words is None:
+            words = ocr_words(prepared, lang=lang, scale=2)
     results = []
     for region in spec.regions:
         box, lines, selected = region.bbox, defaultdict(list), []
@@ -94,7 +100,18 @@ def read_regions(path, spec: OcrInput, *, lang="eng") -> list[dict]:
             crop = prepared.crop(
                 (box.x * 2, box.y * 2, (box.x + box.width) * 2, (box.y + box.height) * 2)
             ).resize((box.width * scale, box.height * scale), Image.Resampling.LANCZOS)
-            crop = ImageOps.expand(crop, border=margin * scale, fill=0)
+            if region.field == "rating":
+                # Uniformiser la polarité : les notes peuvent être noires ou blanches sur la carte.
+                # Partir des pixels d'origine évite deux rééchantillonnages des petits chiffres.
+                crop = original.crop((box.x, box.y, box.x + box.width, box.y + box.height)).resize(
+                    (box.width * scale, box.height * scale), Image.Resampling.LANCZOS
+                )
+                crop = ImageOps.autocontrast(crop)
+                if ImageStat.Stat(crop).median[0] < 128:
+                    crop = ImageOps.invert(crop)
+            crop = ImageOps.expand(
+                crop, border=margin * scale, fill=255 if region.field == "rating" else 0
+            )
             retry = ocr_words(
                 crop,
                 lang=lang,
@@ -102,6 +119,7 @@ def read_regions(path, spec: OcrInput, *, lang="eng") -> list[dict]:
                 psm=6 if region.field in {"requirements", "stats"} else 7,
                 x=box.x - margin,
                 y=box.y - margin,
+                **({"digits": True} if region.field == "rating" else {}),
             )
             if region.field == "name" and retry and not retry[-1]["text"][-1].isalpha():
                 # Un pictogramme collé au nom peut être relu comme « @ » : rogner ses caractères,

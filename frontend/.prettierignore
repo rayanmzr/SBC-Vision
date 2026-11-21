@@ -2,5 +2,6 @@ src/generated/perception-validator.js
 src/generated/sbc-report-validator.js
 src/generated/workspace-validator.js
 src/generated/solve-response-validator.js
+src/generated/vision-frame-validator.js
 pnpm-lock.yaml
 dist/

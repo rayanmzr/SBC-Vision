@@ -10,8 +10,9 @@ Le 30 octobre, le superviseur a donné son accord pour commencer et demandé de 
 
 ## Produit visé
 
-- Inventorier le club avec un scan hybride : détection/OCR sur les cartes visibles,
-  puis lecture du HTML pour les autres cartes déjà présentes sur la page.
+- Proposer un scan vision seul (captures, détection, OCR et navigation visuelle) pour
+  la démonstration du module, et un scan HTML rapide complété par l'OCR visible.
+  Les preuves vision restent distinctes de l'inventaire confirmé.
 - Lire les conditions et les emplacements du SBC.
 - Protéger les cartes importantes ; comparer valeur sacrifiée et achats nécessaires.
 - Suggérer directement des cartes exactes, avec leur version, prix, plafond d'achat et alternatives.

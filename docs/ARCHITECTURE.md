@@ -74,6 +74,13 @@ Les contrats `CardReading` et `ClubItem` préparent le raccordement à l'OCR et 
 
 ## Contrat de perception v0.1
 
+Le choix de scan distingue maintenant un parcours vision seul et le parcours HTML
+rapide. `/api/v1/perception/club-analyze` produit un `VisionFrame` depuis un PNG ;
+le contrôleur suit ses boîtes et les changements de pixels, sans lecteur HTML de
+joueurs. `/api/v1/sbc/vision-scan` sauvegarde les références des images, leurs lectures
+OCR et les actions dans un relevé privé distinct de l'inventaire confirmé. Les limites
+du format EA et la procédure de preuve sont décrites dans le [guide API](SBC_API.md#scan-vision-uniquement).
+
 Les coordonnées sont des pixels dans la capture d'origine, origine en haut à gauche. La réponse indique la taille de l'image, le modèle et les éléments : identifiant, type, boîte, texte, confiance, actions possibles. Toute boîte doit rester dans l'image ; les identifiants sont uniques.
 
 Le JSON sémantiquement valide ne garantit pas une bonne prédiction. La qualité est évaluée séparément avec les annotations.

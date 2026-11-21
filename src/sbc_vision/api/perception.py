@@ -12,6 +12,7 @@ from PIL import Image, UnidentifiedImageError
 from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
 
+from sbc_vision.contracts.ocr import VisionFrame
 from sbc_vision.contracts.perception import PerceptionResponse
 from sbc_vision.perception.pipeline import (
     Capture,
@@ -105,6 +106,32 @@ async def analyze_capture(
     pipeline: Annotated[PerceptionPipeline | None, Depends(get_perception_pipeline)],
     capture_id: Annotated[str | None, Query(min_length=1, max_length=128)] = None,
 ) -> PerceptionResponse:
+    return await _run_capture(request, limits, pipeline, capture_id)
+
+
+@router.post(
+    "/club-analyze", response_model=VisionFrame, summary="Lire le club depuis les pixels uniquement"
+)
+async def analyze_club_capture(
+    request: Request,
+    limits: Annotated[AnalysisLimits, Depends(get_analysis_limits)],
+    pipeline: Annotated[PerceptionPipeline | None, Depends(get_perception_pipeline)],
+    capture_id: Annotated[str | None, Query(min_length=1, max_length=128)] = None,
+) -> VisionFrame:
+    from sbc_vision.perception.pipeline import DetectorPipeline
+
+    if not isinstance(pipeline, DetectorPipeline) or pipeline.reader is None:
+        raise reject(
+            503, "vision_unavailable", "Configurer le détecteur et l'OCR pour le scan vision."
+        )
+
+    class ClubPipeline:
+        analyze = pipeline.analyze_club
+
+    return await _run_capture(request, limits, ClubPipeline(), capture_id, VisionFrame)
+
+
+async def _run_capture(request, limits, pipeline, capture_id, result_model=PerceptionResponse):
     media_type = request.headers.get("content-type", "").split(";", 1)[0].strip().lower()
     if media_type not in FORMATS:
         raise reject(
@@ -149,8 +176,12 @@ async def analyze_capture(
             ) from exc
         try:
             # Revalider aussi les instances Pydantic éventuellement modifiées par l'adaptateur.
-            payload = result.model_dump() if isinstance(result, PerceptionResponse) else result
-            response = PerceptionResponse.model_validate(payload)
+            payload = (
+                result.model_dump()
+                if isinstance(result, (PerceptionResponse, VisionFrame))
+                else result
+            )
+            response = result_model.model_validate(payload)
             if response.capture_id != identifier:
                 raise ValueError("capture_id mismatch")
             if (response.image.width, response.image.height) != original_size:

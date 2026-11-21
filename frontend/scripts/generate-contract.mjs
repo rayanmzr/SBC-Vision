@@ -8,6 +8,7 @@ for (const [contract, output] of [
     ['sbc-report.schema.json', 'sbc-report-validator.js'],
     ['workspace.schema.json', 'workspace-validator.js'],
     ['solve-response.schema.json', 'solve-response-validator.js'],
+    ['vision-frame.schema.json', 'vision-frame-validator.js'],
 ]) {
     const schema = JSON.parse(
         await readFile(new URL(`../../contracts/${contract}`, import.meta.url)),

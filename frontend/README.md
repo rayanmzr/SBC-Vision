@@ -11,12 +11,19 @@ si elles sont déprotégées et identifiées sans ambiguïté. Les achats resten
 Le placement est testé sur des scènes fictives ; les essais EA restent en lecture.
 Aucun échange ni confirmation finale n'est exécuté par le contrôleur.
 
-Scanner mon club rejoint automatiquement Club → Players depuis l'écran EA courant et
+Le choix **Vision + OCR uniquement** parcourt le club depuis les captures : contrôle
+des boutons lus par OCR, défilement et nouvelles observations. Aucun lecteur HTML
+de joueurs ni secours HTML n'est appelé. Images, régions OCR et actions sont conservées
+côté serveur dans `vision_proof/`, à côté de la base locale ; l'inventaire confirmé
+reste distinct. Ce mode vise la preuve pédagogique, sans prétendre reconnaître les
+exemplaires, prêts ou joueurs actifs qui ne sont pas lisibles sur l'image.
+
+**HTML rapide** rejoint automatiquement Club → Players depuis l'écran EA courant et
 revient à la première page. Utiliser le vrai popup depuis l'icône de l'extension pour la
 capture visuelle. Une capture native bloquée est annulable et expire après huit secondes ;
-le relevé HTML peut continuer, avec l'absence d'OCR indiquée explicitement.
+seul ce mode permet de continuer en HTML, avec l'absence d'OCR indiquée explicitement.
 
-Chaque scan protège les cartes. Options permet d'autoriser explicitement les cartes
+Le scan HTML protège l'équipe active. Options permet d'autoriser explicitement les cartes
 de base, rares comprises, avec un prix récent sous le plafond ; cette action modifie seulement
 les protections locales. Le calcul rappelle les protections et les limites si aucune
 équipe n'est trouvée. Aucun coût « Prix inconnu » n'est affiché pour une équipe inexistante.

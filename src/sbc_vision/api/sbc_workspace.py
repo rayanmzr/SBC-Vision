@@ -16,7 +16,7 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from sbc_vision.contracts.ocr import OcrAnalysisResponse
+from sbc_vision.contracts.ocr import OcrAnalysisResponse, VisionFrame
 from sbc_vision.sbc_engine.models import Candidate, CardObservation, Challenge
 
 router = APIRouter(prefix="/api/v1/sbc", tags=["sbc"])
@@ -108,6 +108,19 @@ class ClubScanRequest(BaseModel):
     confirmed: bool = False
     protection_policy: Literal["preserve", "active_squad"] = "preserve"
     expected_revision: str = Field(pattern="^[0-9a-f]{64}$")
+
+
+class VisionMove(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    capture_id: str = Field(min_length=1, max_length=128)
+    action: Literal["club", "players", "previous", "next", "up", "down"]
+
+
+class VisionScanRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    capture_ids: list[str] = Field(min_length=1, max_length=500)
+    complete: bool
+    actions: list[VisionMove] = Field(default_factory=list, max_length=1000)
 
 
 class PlacementCard(BaseModel):
@@ -490,6 +503,90 @@ class SbcWorkspace:
                 raise fail(422, "invalid_club_scan", str(exc)) from exc
         return {**report, "expected_revision": self.snapshot().revision}
 
+    def record_vision(self, request: VisionScanRequest):
+        if self.config.mode != "local":
+            raise fail(409, "vision_local_only", "Les preuves vision utilisent une base locale.")
+        if len(set(request.capture_ids)) != len(request.capture_ids):
+            raise fail(422, "vision_replayed", "Une capture ne peut pas servir deux fois.")
+        frames, cards, uncertain = {}, {}, 0
+        directory = self.config.database.parent / "vision_proof"
+        for identifier in request.capture_ids:
+            key = hashlib.sha256(identifier.encode()).hexdigest()
+            try:
+                frame = VisionFrame.model_validate_json((directory / f"{key}.json").read_text())
+                data = (directory / f"{key}.png").read_bytes()
+            except (OSError, ValueError) as error:
+                raise fail(
+                    422, "vision_proof_missing", "Une capture vision vérifiable est absente."
+                ) from error
+            if (
+                frame.capture_id != identifier
+                or hashlib.sha256(data).hexdigest() != frame.image_sha256
+            ):
+                raise fail(
+                    422, "vision_proof_changed", "La preuve image ne correspond plus au relevé."
+                )
+            frames[identifier] = frame
+            for card in frame.ocr.cards if frame.ocr else []:
+                if not card.reading or card.issues:
+                    uncertain += 1
+                    continue
+                reading = card.reading.model_dump()
+                # Il s'agit de lectures uniques, pas d'une identité d'exemplaire prouvée.
+                key = json.dumps(
+                    {k: reading.get(k) for k in ("name", "rating", "position", "stats")},
+                    sort_keys=True,
+                )
+                cards[key] = card.model_dump()
+        for action in request.actions:
+            frame = frames.get(action.capture_id)
+            if (
+                not frame
+                or (action.action in {"up", "down"} and not frame.list_bbox)
+                or (action.action not in {"up", "down"} and action.action not in frame.controls)
+            ):
+                raise fail(
+                    422, "vision_action_unproven", "Une action n'est pas justifiée par la capture."
+                )
+        if request.complete:
+            tail = list(frames.values())[-2:]
+            if (
+                len(tail) != 2
+                or any(f.scene != "players" for f in tail)
+                or tail[-1].screen_hash != tail[0].screen_hash
+                or "next" in tail[-1].controls
+                or not request.actions
+                or request.actions[-1].capture_id != tail[0].capture_id
+                or request.actions[-1].action != "down"
+            ):
+                raise fail(
+                    422, "vision_end_unproven", "La fin du parcours vision n'est pas vérifiée."
+                )
+        report = {
+            "source": "vision",
+            "captures": len(frames),
+            "readings": len(cards),
+            "uncertain": uncertain,
+            "identified": sum(len(c["candidate_ids"]) == 1 for c in cards.values()),
+            "complete": request.complete,
+            "inventory_updated": False,
+            "cards": list(cards.values()),
+            "actions": [a.model_dump() for a in request.actions],
+            "capture_ids": request.capture_ids,
+        }
+        with closing(self.players.open_database(self.config.database)) as db, db:
+            db.execute(
+                "CREATE TABLE IF NOT EXISTS vision_scans (id TEXT PRIMARY KEY,data TEXT NOT NULL)"
+            )
+            db.execute(
+                "INSERT OR REPLACE INTO vision_scans VALUES (?,?)",
+                (request.capture_ids[0], json.dumps(report)),
+            )
+        (
+            directory / f"scan-{hashlib.sha256(request.capture_ids[0].encode()).hexdigest()}.json"
+        ).write_text(json.dumps(report, ensure_ascii=False, indent=2))
+        return report
+
     def latest_scan(self) -> dict:
         revision = self.snapshot().revision
         with closing(self.players.open_database(self.config.database)) as db:
@@ -579,6 +676,13 @@ def record_club_scan(
 ):
     """Sauver le scan hybride ; la confirmation remplace seulement le comptage local DOM."""
     return database_call(service.record_scan, body)
+
+
+@router.post("/vision-scan")
+def save_vision_scan(
+    body: VisionScanRequest, service: Annotated[SbcWorkspace, Depends(get_workspace)]
+):
+    return database_call(service.record_vision, body)
 
 
 @router.get("/club-scan")

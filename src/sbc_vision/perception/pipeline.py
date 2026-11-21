@@ -63,6 +63,22 @@ class DetectorPipeline:
             self._analyze, Capture(capture.capture_id, capture.image.copy())
         )
 
+    async def analyze_club(self, capture: Capture):
+        return await run_in_threadpool(
+            self._club, Capture(capture.capture_id, capture.image.copy())
+        )
+
+    def _club(self, capture):
+        from .club_vision import observe_club
+
+        with capture.image:
+            if not self.reader or not self.slot.acquire(blocking=False):
+                raise PipelineBusyError
+            try:
+                return observe_club(capture, self.detector, self.reader, self.database)
+            finally:
+                self.slot.release()
+
     def _analyze(self, capture: Capture) -> PerceptionResponse:
         import numpy as np
 

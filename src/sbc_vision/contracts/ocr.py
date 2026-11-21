@@ -4,7 +4,7 @@ from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from sbc_vision.contracts.geometry import ImageSize
+from sbc_vision.contracts.geometry import BoundingBox, ImageSize
 from sbc_vision.sbc_engine.models import CardReading, Challenge, OcrInput, TextRegion
 
 
@@ -72,3 +72,38 @@ class OcrAnalysisResponse(BaseModel):
     challenge_ready: bool
     challenge: Challenge | None
     challenge_issues: list[str]
+
+
+class VisionRow(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    element_id: str
+    bbox: BoundingBox
+    detector: Literal["yolo", "opencv-ocr"]
+
+
+class VisionFrame(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    source: Literal["vision"] = "vision"
+    capture_id: str
+    image: ImageSize
+    model_name: str
+    image_sha256: str = Field(pattern="^[0-9a-f]{64}$")
+    screen_hash: str = Field(pattern="^[0-9a-f]{64}$")
+    scene: Literal["players", "club", "other"]
+    list_bbox: BoundingBox | None
+    controls: dict[Literal["club", "players", "previous", "next"], BoundingBox]
+    rows: list[VisionRow]
+    ocr: OcrAnalysisResponse | None = None
+
+    @model_validator(mode="after")
+    def bounded_observation(self) -> Self:
+        boxes = [r.bbox for r in self.rows] + list(self.controls.values())
+        if self.list_bbox:
+            boxes.append(self.list_bbox)
+        if any(
+            b.x + b.width > self.image.width or b.y + b.height > self.image.height for b in boxes
+        ):
+            raise ValueError("Une région vision dépasse la capture.")
+        if self.ocr and (self.ocr.capture_id != self.capture_id or self.ocr.image != self.image):
+            raise ValueError("L'OCR ne correspond pas à la capture vision.")
+        return self

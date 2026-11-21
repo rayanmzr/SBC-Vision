@@ -7,7 +7,7 @@ from pathlib import Path
 from pydantic import TypeAdapter
 
 from sbc_vision.api.sbc_workspace import SolveResponse, WorkspaceSnapshot
-from sbc_vision.contracts.ocr import OcrAnalysisRequest, OcrAnalysisResponse
+from sbc_vision.contracts.ocr import OcrAnalysisRequest, OcrAnalysisResponse, VisionFrame
 from sbc_vision.contracts.perception import PerceptionResponse
 from sbc_vision.sbc_engine.models import CardReading, Challenge, ClubItem, OcrInput, SolverResult
 
@@ -24,6 +24,7 @@ def main() -> None:
         "ocr-response": OcrAnalysisResponse.model_json_schema(),
         "workspace": WorkspaceSnapshot.model_json_schema(),
         "solve-response": SolveResponse.model_json_schema(),
+        "vision-frame": VisionFrame.model_json_schema(),
         # Pydantic regroupe les formats SBC et leurs références dans un seul schéma.
         "sbc": TypeAdapter(
             CardReading | ClubItem | Challenge | OcrInput | SolverResult

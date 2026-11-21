@@ -288,7 +288,14 @@ def test_small_rating_retry_keeps_the_threshold_format_and_padding_coordinates(
     spec = OcrInput(capture_id="retry", regions=specification().regions[:2])
     regions = read_regions(path, spec)
     assert reader.call_count == 2
-    assert reader.call_args.kwargs == {"lang": "eng", "scale": 6, "psm": 7, "x": 5, "y": 75}
+    assert reader.call_args.kwargs == {
+        "lang": "eng",
+        "scale": 6,
+        "psm": 7,
+        "x": 5,
+        "y": 75,
+        "digits": True,
+    }
     assert reader.call_args.args[0].size == (4560, 450)
     report = analyze(path, spec, db, regions=regions)
     assert bool(report["cards"][0]["candidate_ids"]) is accepted

@@ -27,8 +27,11 @@ notamment le parcours de démonstration avec cartes fictives et véritable calcu
 ## Extension Chrome
 
 L'accueil contient deux actions : **Scanner mon club** et **Compléter ce SBC**.
-Le scan ouvre automatiquement Club → Players, revient à la première page, combine
-l'OCR visible et les lignes HTML, puis enregistre les cartes identifiées.
+Le sélecteur propose **Vision + OCR uniquement** et **HTML rapide**. Le premier
+parcourt les cartes visibles par captures, OCR et défilement ; les images, lectures
+et actions restent dans un relevé de démonstration distinct de l'inventaire confirmé.
+Le second ouvre Club → Players, revient à la première page, combine l'OCR visible
+et les lignes HTML, puis enregistre les cartes identifiées.
 La protection automatique concerne les joueurs signalés dans l'équipe active.
 Les autres cartes restent soumises au plafond de valeur, à leur identification et à leurs prix.
 Le bilan affiche le total, l'équipe protégée et les types de cartes (prêts, TOTW, Héros,
@@ -84,11 +87,13 @@ La commande lance le lint, les tests hors ligne et la vérification du schéma J
 
 ## Moteur SBC
 
-Le bouton **Scanner mon club** combine OCR des cartes visibles
+En mode **HTML rapide**, le bouton **Scanner mon club** combine OCR des cartes visibles
 et lecture du HTML des autres lignes, puis passe à `Next` sans défiler. Les observations
 sont sauvegardées côté serveur. Un parcours complet importe uniquement
 les versions identifiées, hors prêts, avec protection activée ; les autres restent en
-attente. Voir les limites du comptage local et les essais dans [le guide API SBC](docs/SBC_API.md#scan-hybride-du-club-ea).
+attente. Le mode vision n'utilise aucun secours HTML et ne remplace pas cet inventaire.
+Voir les [preuves vision](docs/SBC_API.md#scan-vision-uniquement) et les
+[limites du comptage HTML](docs/SBC_API.md#scan-hybride-du-club-ea).
 
 
 ### Lecture d'une capture EA dans l'extension

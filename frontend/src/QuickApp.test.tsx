@@ -6,8 +6,10 @@ import fixture from '../../data/fixtures/workspace-api.synthetic.json';
 import { scanClub, prepareSbc } from './lib/club-scan';
 import { fillSbc, type PreparedSbc } from './lib/sbc-fill';
 import { updateProtection } from './lib/sbc-api';
+import { scanVision } from './lib/vision-scan';
 
 vi.mock('./lib/club-scan', () => ({ scanClub: vi.fn(), prepareSbc: vi.fn() }));
+vi.mock('./lib/vision-scan', () => ({ scanVision: vi.fn() }));
 vi.mock('./lib/sbc-fill', () => ({ fillSbc: vi.fn() }));
 vi.mock('./lib/sbc-api', async (original) => ({
     ...(await original<typeof import('./lib/sbc-api')>()),
@@ -20,6 +22,7 @@ vi.mock('./lib/platform', async (original) => ({
     saveApiUrl: vi.fn(async () => {}),
 }));
 beforeEach(() => {
+    vi.mocked(scanVision).mockReset();
     vi.mocked(scanClub)
         .mockReset()
         .mockResolvedValue({ capture_id: 'synthetic-scan', pages: [], complete: true });
@@ -66,6 +69,28 @@ beforeEach(() => {
                 ),
         ),
     );
+});
+
+it('le choix vision ne lance pas le scan HTML et présente les preuves séparément', async () => {
+    vi.mocked(scanVision).mockResolvedValue({
+        source: 'vision',
+        captures: 12,
+        readings: 18,
+        identified: 10,
+        uncertain: 4,
+        complete: true,
+        inventory_updated: false,
+    });
+    render(<App />);
+    const scan = await screen.findByRole('button', { name: 'Scanner mon club' });
+    await vi.waitFor(() => expect((scan as HTMLButtonElement).disabled).toBe(false));
+    fireEvent.change(screen.getByLabelText('Mode de scan'), { target: { value: 'vision' } });
+    fireEvent.click(scan);
+    await screen.findByText(/18 lectures OCR uniques sauvegardées/);
+    expect(screen.getByText(/Source : captures uniquement, sans lecture HTML/)).toBeTruthy();
+    expect(scanClub).not.toHaveBeenCalled();
+    expect(vi.mocked(fetch).mock.calls.some(([u]) => String(u).endsWith('/club-scan'))).toBe(false);
+    expect(fillSbc).not.toHaveBeenCalled();
 });
 afterEach(() => {
     cleanup();

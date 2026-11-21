@@ -13,6 +13,7 @@ import { scanClub, prepareSbc, type ClubScan } from './lib/club-scan';
 import { loadWorkspace, updateProtection } from './lib/sbc-api';
 import { credits, type SolverReport } from './lib/sbc-report';
 import { fillSbc } from './lib/sbc-fill';
+import { scanVision, type VisionReport } from './lib/vision-scan';
 
 const Diagnostics = lazy(() => import('./Diagnostics'));
 type ScanReport = {
@@ -38,6 +39,8 @@ export default function App() {
     const [busy, setBusy] = useState(false),
         [message, setMessage] = useState('Ouvre ton club ou un SBC dans la Web App EA.');
     const [scan, setScan] = useState<ScanReport | null>(null);
+    const [scanMode, setScanMode] = useState<'vision' | 'html'>('html');
+    const [vision, setVision] = useState<VisionReport | null>(null);
     const [authorization, setAuthorization] = useState(false);
     const [proposal, setProposal] = useState<SolverReport | null>(null);
     const [tools, setTools] = useState(false),
@@ -104,6 +107,17 @@ export default function App() {
                 if (action === 'basics') return;
             }
             if (action === 'scan') {
+                setVision(null);
+                setScan(null);
+                if (scanMode === 'vision') {
+                    const report = await scanVision(base, controller.signal, setMessage);
+                    setVision(report);
+                    setAuthorization(false);
+                    setMessage(
+                        `${report.readings} lectures OCR uniques sauvegardées · ${report.captures} captures · ${report.complete ? 'navigation terminée' : 'parcours partiel'}.`,
+                    );
+                    return;
+                }
                 const observation: ClubScan = await scanClub(
                     base,
                     controller.signal,
@@ -217,6 +231,24 @@ export default function App() {
                 <StadiumBrand />
             </header>
             <div className="app-page">
+                <label>
+                    Mode de scan{' '}
+                    <select
+                        aria-label="Mode de scan"
+                        value={scanMode}
+                        disabled={busy}
+                        onChange={(e) => setScanMode(e.target.value as 'vision' | 'html')}
+                    >
+                        <option value="vision">Vision + OCR uniquement</option>
+                        <option value="html">HTML rapide</option>
+                    </select>
+                </label>
+                {scanMode === 'vision' && (
+                    <p className="field-hint">
+                        Démonstration par captures : lectures OCR et preuves séparées de
+                        l’inventaire utilisé pour remplir les SBC.
+                    </p>
+                )}
                 <div className="quick-actions">
                     <button
                         className="primary-button"
@@ -256,6 +288,13 @@ export default function App() {
                         {Object.entries(scan.categories)
                             .map(([type, count]) => `${count} ${type}`)
                             .join(' · ')}
+                    </p>
+                )}
+                {vision && (
+                    <p>
+                        Source : captures uniquement, sans lecture HTML. {vision.identified}{' '}
+                        lectures rapprochées du catalogue. Preuves enregistrées ; l’inventaire SBC
+                        est conservé.
                     </p>
                 )}
                 {proposal && (

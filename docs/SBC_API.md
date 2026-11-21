@@ -112,6 +112,46 @@ les limites du profil standard documentées par Rayan ; une proposition n'est pa
 confirmation par EA. Le détecteur alimente l'OCR ; le scan est raccordé et le placement
 est testé sur des scènes fictives. Sa validation réelle reste ouverte.
 
+## Scan vision uniquement
+
+Le sélecteur de l'accueil propose **Vision + OCR uniquement**. Ce parcours envoie
+exclusivement des PNG à `POST /api/v1/perception/club-analyze?capture_id=...`.
+Le détecteur YOLO et le complément OpenCV/OCR repèrent les cartes ; Tesseract lit
+noms, notes et statistiques, ainsi que les libellés Club, Players, Previous et Next.
+Les lignes non lisibles restent incertaines. Le JSON `vision-frame.schema.json`
+indique les boîtes, la provenance de chaque détection et le résultat OCR brut.
+
+Le contrôleur utilise les coordonnées visuelles, vérifie les pixels avant chaque clic,
+défile dans la liste puis observe à nouveau. L'actionneur emploie `elementFromPoint`
+et la géométrie de défilement ; il ne lit ni sélecteurs, ni textes, ni attributs des
+joueurs. L'algorithme est prévu pour la liste anglaise de la Web App EA sur ordinateur,
+avec des régions proportionnelles à ce format ; il ne constitue pas un parseur
+universel d'interfaces. Un changement d'écran non reconnu arrête le parcours ; aucun
+repli vers le lecteur HTML n'est autorisé. Le budget est de 120 captures par défaut.
+
+L'API conserve les PNG et leurs JSON dans `vision_proof/`, à côté de SQLite. Chaque
+JSON contient le SHA-256 de son image. `POST /api/v1/sbc/vision-scan` accepte uniquement
+les identifiants de ces preuves, les actions et l'état de fin ; il vérifie les fichiers
+et justifie les actions depuis leurs boîtes. La fin du parcours demande deux images
+de liste identiques après un défilement vers le bas, sans bouton Next reconnu.
+La table `vision_scans` et le fichier `scan-*.json` conservent le relevé.
+
+Les lectures dédupliquées ne prouvent pas les quantités d'exemplaires. Ce mode ne
+confirme ni prêt, ni équipe active, ni type spécial depuis une information absente
+des pixels. Il ne remplace pas `club_items` et ne change aucune protection. Pour le
+jury, rapprocher chaque JSON de son PNG local ; distinguer lecture OCR, rapprochement
+au catalogue et identité d'exemplaire. Ces preuves privées sont ignorées par Git.
+Les tests hors ligne utilisent des images et des cartes fictives ; ils ne mesurent
+pas la précision sur un jeu de captures EA indépendant.
+
+Essai de développement du 21 novembre : 81 captures natives, huit pages et sept
+clics Next, 52 lectures OCR uniques sauvegardées dont 38 rapprochées sans ambiguïté
+du catalogue. Des gardes bloquant sélecteurs, textes HTML et attributs étaient
+installées dans le monde d'exécution de l'extension pendant le parcours : aucun
+accès n'a été tenté. L'inventaire confirmé est resté inchangé. Les observations
+incertaines, les chevauchements entre captures et les limites de reconnaissance
+empêchent d'assimiler ces 52 lectures au nombre total de cartes du club.
+
 ## Scan hybride du club EA
 
 L'accueil rejoint automatiquement `Club → Players` (interface anglaise), puis revient

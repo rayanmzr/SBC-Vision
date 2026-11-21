@@ -28,7 +28,7 @@ class RegionOcrReader:
         self.slot = BoundedSemaphore(1)
 
     def analyze(
-        self, data: bytes, request: OcrAnalysisRequest, database: Path | None = None
+        self, data: bytes, request: OcrAnalysisRequest, database: Path | None = None, *, words=None
     ) -> OcrAnalysisResponse:
         # Le verrou appartient au worker : une annulation HTTP ne libère pas un calcul en cours.
         if not self.slot.acquire(blocking=False):
@@ -47,6 +47,11 @@ class RegionOcrReader:
                     db,
                     lang=self.language,
                     minimum=request.minimum_confidence,
+                    regions=self.ocr.read_regions(
+                        BytesIO(data), request.specification, lang=self.language, words=words
+                    )
+                    if words is not None
+                    else None,
                 )
                 challenge = self.ocr.challenge_from_ocr(
                     report,
