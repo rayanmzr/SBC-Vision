@@ -280,6 +280,12 @@
           "title": "Positions",
           "type": "array"
         },
+        "position_mode": {
+          "default": "preferred",
+          "enum": ["preferred", "any"],
+          "title": "Position Mode",
+          "type": "string"
+        },
         "conditions": {
           "items": {
             "$ref": "#/$defs/Condition"

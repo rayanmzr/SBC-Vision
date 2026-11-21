@@ -130,6 +130,7 @@ it('observe sans agir puis teste tout le parcours fictif jusqu’au placement, s
     const p = proposal();
     p.board = {
         positions: p.board.positions,
+        slot_indices: p.board.slot_indices,
         requirements: p.board.requirements,
         title: p.board.title,
     };
@@ -139,6 +140,47 @@ it('observe sans agir puis teste tout le parcours fictif jusqu’au placement, s
     expect(added).toHaveBeenCalledOnce();
     expect(submitted).not.toHaveBeenCalled();
     expect(loadWorkspace).toHaveBeenCalledTimes(2);
+});
+
+it('remplit l’unique case ouverte même si son indice EA est 10, sans cliquer les cadenas', async () => {
+    document.querySelector('.ut-squad-slot-view')!.setAttribute('index', '10');
+    document.body.insertAdjacentHTML(
+        'beforeend',
+        Array.from(
+            { length: 10 },
+            (_, i) =>
+                `<div class="ut-squad-slot-view locked" index="${i}"><div class="ut-squad-slot-pedestal-view"><span class="label">CM</span></div><div class="player item empty"></div></div>`,
+        ).join(''),
+    );
+    const locked = vi.fn();
+    document.querySelectorAll('.locked').forEach((e) => e.addEventListener('mouseup', locked));
+    const p = proposal();
+    expect(p.board.slot_indices).toEqual([10]);
+    await expect(
+        fillSbc('http://localhost', p, new AbortController().signal, vi.fn()),
+    ).resolves.toBe(1);
+    expect(document.querySelector('[index="10"] .player.item.empty')).toBeNull();
+    expect(locked).not.toHaveBeenCalled();
+    expect(submitted).not.toHaveBeenCalled();
+});
+
+it('retire le filtre de poste avant une recherche libre sans cliquer sur le marché', async () => {
+    document.querySelector('.ut-squad-slot-view')!.classList.add('ui-slot-selected');
+    document.querySelector('#panel')!.innerHTML =
+        '<div class="ut-club-search-filters-view sbc"><div class="ut-search-filter-control"><img src="https://example.test/positions/0.png"><span class="label">GK</span><button class="ut-search-filter-control--row-button">×</button></div><button id="search">Search</button></div>';
+    document.querySelector('.ut-search-filter-control button')!.addEventListener('mouseup', () => {
+        document.querySelector('.ut-search-filter-control .label')!.textContent = 'Position';
+    });
+    const search = vi.fn();
+    document.querySelector('#search')!.addEventListener('mouseup', search);
+    const p = proposal();
+    p.report.challenge.position_mode = 'any';
+    let state = placementInTab();
+    placementInTab({ action: 'clear-position', signature: state.signature, card });
+    state = placementInTab();
+    expect(state.position_filter).toBe('Position');
+    expect(search).not.toHaveBeenCalled();
+    expect(submitted).not.toHaveBeenCalled();
 });
 
 it.each(['duplicate', 'stats', 'loan', 'active', 'stale', 'occupied', 'wrong-slot'])(
@@ -164,7 +206,7 @@ it.each(['duplicate', 'stats', 'loan', 'active', 'stale', 'occupied', 'wrong-slo
     },
 );
 
-it.each(['purchase', 'revision', 'challenge', 'abort'])(
+it.each(['purchase', 'revision', 'challenge', 'layout', 'abort'])(
     'arrête le contrôleur avant toute action : %s',
     async (fault) => {
         const p = proposal(),
@@ -177,6 +219,7 @@ it.each(['purchase', 'revision', 'challenge', 'abort'])(
                 revision: 'b'.repeat(64),
             } as Awaited<ReturnType<typeof loadWorkspace>>);
         if (fault === 'challenge') p.board.title = 'Autre SBC';
+        if (fault === 'layout') p.board.slot_indices = [10];
         if (fault === 'abort') controller.abort();
         await expect(fillSbc('http://localhost', p, controller.signal, vi.fn())).rejects.toThrow();
         expect(added).not.toHaveBeenCalled();

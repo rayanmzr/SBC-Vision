@@ -28,6 +28,7 @@ export type SolverReport = {
     challenge: {
         mode?: 'squad' | 'score';
         positions?: string[];
+        position_mode?: 'preferred' | 'any';
         conditions?: Condition[];
         market: 'pc' | 'ps';
         budget: number;
@@ -86,6 +87,11 @@ export function parseSolverReport(value: unknown): ImportedReport {
             'Rapport de résolution attendu : challenge, solution, selected_candidates et price_reference_at.',
         );
     const report = value as SolverReport;
+    if (
+        report.challenge.position_mode === 'any' &&
+        report.challenge.conditions?.some((c) => c.metric === 'chemistry')
+    )
+        throw new Error('Le collectif hors poste n’est pas pris en charge.');
     if (!Number.isFinite(Date.parse(report.price_reference_at)))
         throw new Error('La date de référence des prix est invalide.');
     const byKey = new Map<string, Candidate>();
@@ -140,7 +146,11 @@ export function parseSolverReport(value: unknown): ImportedReport {
         if (!card) throw new Error('Une carte affectée est absente du rapport.');
         if (card.protected || card.value == null)
             throw new Error('Une carte affectée est protégée ou son prix est inconnu.');
-        if (squad && !card.positions.includes(report.challenge.positions![assignment.slot]))
+        if (
+            squad &&
+            report.challenge.position_mode !== 'any' &&
+            !card.positions.includes(report.challenge.positions![assignment.slot])
+        )
             throw new Error('Une carte ne correspond pas au poste annoncé.');
         if (report.challenge.max_card_value != null && card.value > report.challenge.max_card_value)
             throw new Error('Une carte dépasse le plafond de valeur du rapport.');

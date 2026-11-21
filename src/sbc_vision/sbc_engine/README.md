@@ -130,6 +130,12 @@ Samy pourra appeler `players.sync_scan(db, captures, confirmed=False)` pour pré
 
 Le solveur reçoit les conditions de la capture courante. Aucun nom ou identifiant de SBC n'est présent dans son algorithme. Une formation est une liste de postes ; une condition est un type, un opérateur (`min`, `max`, `exact`) et une valeur. Les exemples sont uniquement des fixtures de test.
 
+La formation contient uniquement les emplacements ouverts, même pour un défi à une ou
+cinq cartes. Un nombre de joueurs contradictoire bloque la lecture. Sans collectif,
+le parseur utilise `position_mode: "any"` pour accepter les cartes hors poste ; avec
+collectif, il conserve `preferred`. Les JSON sans ce champ restent en mode `preferred`.
+Le solveur et son vérificateur indépendant appliquent le même choix.
+
 ```bash
 python -m sbc_vision.sbc_engine ocr capture.png regions.json --market pc --budget 2000
 python -m sbc_vision.sbc_engine solve --reading data/processed/ocr.json

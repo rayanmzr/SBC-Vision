@@ -42,6 +42,9 @@ Les cartes sont protégées après chaque scan. Dans Options, **Autoriser les ca
 sous ce plafond** déprotège explicitement les cartes de base, rares comprises, avec un prix
 récent inférieur ou égal au plafond affiché. Les choix individuels restent dans le diagnostic.
 Un budget trop bas peut empêcher toute équipe si le club est entièrement protégé.
+Quand toutes les cartes sont protégées, le bouton d'autorisation apparaît aussi directement
+sous le résultat. Il faut le déclencher explicitement, puis relancer le calcul ; aucune
+protection n'est levée par le scan ou par la résolution.
 
 ## Démarrage local
 

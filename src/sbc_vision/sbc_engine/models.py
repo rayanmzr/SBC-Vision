@@ -113,6 +113,7 @@ class Challenge(StrictModel):
     rules_version: Literal["dynamic-v1"] = "dynamic-v1"
     mode: Literal["squad", "score"] = "squad"
     positions: list[str] = Field(default_factory=list, max_length=11)
+    position_mode: Literal["preferred", "any"] = "preferred"
     conditions: list[Condition] = Field(default_factory=list)
     max_items: int = Field(default=100, ge=1, le=100)
     score_progress: int = Field(default=0, ge=0, le=1_000_000_000)
@@ -125,6 +126,8 @@ class Challenge(StrictModel):
 
     @model_validator(mode="after")
     def check_requirements(self) -> Self:
+        if self.position_mode == "any" and any(c.metric == "chemistry" for c in self.conditions):
+            raise ValueError("Le collectif hors poste n'est pas pris en charge par ce profil.")
         if self.mode == "squad" and not self.positions:
             raise ValueError("Les postes du SBC doivent être lus ou fournis.")
         if self.mode == "score" and (

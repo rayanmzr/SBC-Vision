@@ -165,6 +165,13 @@ les postes, le budget et la série de marché. Le parseur dynamique refuse les r
 non reconnues et ne leur attribue aucune confiance OCR. L'extension envoie ensuite
 le Challenge au solveur. Les valeurs ne sont pas codées pour un nom de défi.
 
+Seuls les emplacements ouverts du terrain sont transmis : les cases verrouillées et
+la zone de travail sont exclues. L'extension conserve leurs indices EA pour le placement.
+Un nombre de cartes incompatible avec les conditions bloque la lecture. Sans condition
+de collectif, `/read` choisit `position_mode: "any"` : une carte peut être hors poste.
+Avec collectif, le profil reste limité aux postes préférés ; les anciens JSON gardent
+ce comportement par défaut. Le contrôleur retire le filtre de poste pour une recherche libre.
+
 L'accueil automatique du scan confirme seulement le comptage local des versions
 uniques d'un parcours complet ; il n'échange aucune carte sur EA. Les prix et
 protections restent ceux du moteur. Le diagnostic conserve le parcours manuel.

@@ -15,6 +15,10 @@ def compare(actual, op, expected):
     return {"min": actual >= expected, "max": actual <= expected, "exact": actual == expected}[op]
 
 
+def matches_position(challenge, card, position):
+    return challenge.position_mode == "any" or position in card.positions
+
+
 def quality_matches(challenge, card):
     if challenge.card_level is None:
         return True
@@ -158,7 +162,9 @@ def validate(challenge: Challenge, pool: list[Candidate], team: list[Assignment]
             and card.value > challenge.max_card_value
         ):
             errors.append(f"Valeur maximale par carte dépassée : {card.key}.")
-        if challenge.mode == "squad" and challenge.positions[assignment.slot] not in card.positions:
+        if challenge.mode == "squad" and not matches_position(
+            challenge, card, challenge.positions[assignment.slot]
+        ):
             errors.append(f"Poste incompatible : {card.key}.")
         if not quality_matches(challenge, card):
             errors.append(f"Qualité incompatible : {card.key}.")
@@ -354,7 +360,7 @@ def solve(challenge: Challenge, pool: list[Candidate], *, seconds=5.0) -> Solver
         by_slot, by_card, by_player = defaultdict(list), [[] for _ in cards], defaultdict(list)
         for i, card in enumerate(cards):
             for slot, position in enumerate(challenge.positions):
-                if position in card.positions:
+                if matches_position(challenge, card, position):
                     variable = model.new_bool_var(f"{i}_{slot}")
                     choices[i, slot] = variable
                     by_slot[slot].append((i, variable))
@@ -365,12 +371,13 @@ def solve(challenge: Challenge, pool: list[Candidate], *, seconds=5.0) -> Solver
             model.add_exactly_one(v for i, v in by_slot[slot])
             ratings.append(sum(cards[i].rating * v for i, v in by_slot[slot]))
             # Deux postes identiques n'ont pas besoin d'explorer toutes les permutations.
-            if position in previous_slot:
-                previous = previous_slot[position]
+            group = "any" if challenge.position_mode == "any" else position
+            if group in previous_slot:
+                previous = previous_slot[group]
                 model.add(
                     sum(i * v for i, v in by_slot[previous]) < sum(i * v for i, v in by_slot[slot])
                 )
-            previous_slot[position] = slot
+            previous_slot[group] = slot
         for variables in by_player.values():
             model.add_at_most_one(variables)
         used = [sum(variables) for variables in by_card]
@@ -456,7 +463,7 @@ def greedy(challenge: Challenge, pool: list[Candidate]) -> SolverResult:
             (
                 c
                 for c in cards
-                if (position is None or position in c.positions)
+                if (position is None or matches_position(challenge, c, position))
                 and (
                     c.base_id not in used
                     if position

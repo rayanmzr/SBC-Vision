@@ -398,6 +398,10 @@ def parse_requirements(text, db, *, positions, market, budget):
             issues.append(str(error))
     if not rules and card_level is None:
         issues.append("Aucune condition exploitable n'a été lue.")
+    if positions and any(
+        r.metric == "players" and r.op == "exact" and r.value != len(positions) for r in rules
+    ):
+        issues.append("Le nombre de cartes demandé ne correspond pas aux emplacements ouverts lus.")
     challenge = None
     if not issues:
         try:
@@ -405,6 +409,10 @@ def parse_requirements(text, db, *, positions, market, budget):
                 rules_version="dynamic-v1",
                 mode="score" if any(r.metric == "item_score" for r in rules) else "squad",
                 positions=positions,
+                # Sans collectif, la carte n'a pas à jouer à son poste habituel.
+                position_mode="any"
+                if positions and not any(r.metric == "chemistry" for r in rules)
+                else "preferred",
                 market=market,
                 budget=budget,
                 conditions=rules,

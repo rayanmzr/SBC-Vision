@@ -167,6 +167,29 @@ def test_current_sbc_dom_conditions_are_dynamic_and_unknown_rules_block_the_calc
     assert response.json()["challenge"] is None
 
 
+def test_single_card_sbc_does_not_require_eleven_players_or_a_goalkeeper(client):
+    reading = client.post(
+        "/api/v1/sbc/read",
+        json={
+            "source": "dom",
+            "requirements": "Player Quality: Min. Bronze\nNumber of Players in the Squad: 1",
+            "positions": ["GK"],
+            "budget": 5000,
+        },
+    ).json()
+    assert reading["ready"] and reading["challenge"]["position_mode"] == "any"
+    workspace = client.get("/api/v1/sbc/workspace").json()
+    result = client.post(
+        "/api/v1/sbc/solve",
+        json={"expected_revision": workspace["revision"], "challenge": reading["challenge"]},
+    )
+    assert result.status_code == 200, result.text
+    report = result.json()["report"]
+    assert report["solution"]["status"] == "optimal"
+    assert len(report["solution"]["assignments"]) == 1
+    assert report["verification"]["valid"]
+
+
 @pytest.mark.parametrize("fault", [None, "stats", "duplicate", "unconfirmed", "catalogue"])
 def test_placement_uses_only_a_unique_confirmed_club_fingerprint(
     client, service, monkeypatch, fault

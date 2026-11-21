@@ -125,38 +125,52 @@ it('ne présente jamais un calcul impossible comme une proposition prête', asyn
     expect(fillSbc).not.toHaveBeenCalled();
 });
 
-it('explique que toutes les cartes protégées sont exclues du calcul', async () => {
-    vi.mocked(prepareSbc).mockResolvedValue({
-        ...fixture.proposal,
-        report: { ...fixture.proposal.report, solution: { status: 'infeasible', assignments: [] } },
-    } as unknown as PreparedSbc);
-    vi.mocked(fetch).mockImplementation(
-        async (url) =>
-            new Response(
-                JSON.stringify(
-                    String(url).endsWith('/health')
-                        ? { status: 'ok', version: '0.1.0', model_loaded: true }
-                        : String(url).endsWith('/capabilities')
-                          ? { perception: true, ocr: true }
-                          : {
-                                ...fixture.workspace,
-                                mode: 'local',
-                                items: fixture.workspace.items.map((c) => ({
-                                    ...c,
-                                    protected: true,
-                                })),
-                            },
+it.each(['infeasible', 'optimal'])(
+    'explique les protections avec un calcul %s sans les lever automatiquement',
+    async (status) => {
+        vi.mocked(prepareSbc).mockResolvedValue({
+            ...fixture.proposal,
+            report: {
+                ...fixture.proposal.report,
+                solution: { ...fixture.proposal.report.solution, status },
+            },
+        } as unknown as PreparedSbc);
+        vi.mocked(fetch).mockImplementation(
+            async (url) =>
+                new Response(
+                    JSON.stringify(
+                        String(url).endsWith('/health')
+                            ? { status: 'ok', version: '0.1.0', model_loaded: true }
+                            : String(url).endsWith('/capabilities')
+                              ? { perception: true, ocr: true }
+                              : {
+                                    ...fixture.workspace,
+                                    mode: 'local',
+                                    items: fixture.workspace.items.map((c) => ({
+                                        ...c,
+                                        protected: true,
+                                    })),
+                                },
+                    ),
                 ),
-            ),
-    );
-    render(<App />);
-    const button = await screen.findByRole('button', { name: 'Compléter ce SBC' });
-    await vi.waitFor(() => expect((button as HTMLButtonElement).disabled).toBe(false));
-    fireEvent.click(button);
-    await screen.findByText(/Tes 3 cartes sont protégées/);
-    expect(fillSbc).not.toHaveBeenCalled();
-    expect(screen.queryByText(/Prix inconnu/)).toBeNull();
-});
+        );
+        render(<App />);
+        const button = await screen.findByRole('button', { name: 'Compléter ce SBC' });
+        await vi.waitFor(() => expect((button as HTMLButtonElement).disabled).toBe(false));
+        fireEvent.click(button);
+        await screen.findByText(
+            status === 'optimal'
+                ? /bien enregistrées mais protégées/
+                : /Tes 3 cartes sont protégées/,
+        );
+        expect(
+            screen.getByRole('button', { name: /Autoriser mes cartes de base sous/ }),
+        ).toBeTruthy();
+        expect(updateProtection).not.toHaveBeenCalled();
+        expect(fillSbc).not.toHaveBeenCalled();
+        expect(screen.queryByText(/Prix inconnu/)).toBeNull();
+    },
+);
 
 it('autorise explicitement les cartes de base protégées sous le plafond sur une action explicite', async () => {
     const items = fixture.workspace.items.map((c) => ({ ...c, chemistry_kind: 'standard' }));

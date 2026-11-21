@@ -361,6 +361,20 @@ def test_duplicate_fields_cannot_silently_overwrite_one_another():
         OcrInput.model_validate(data)
 
 
+@pytest.mark.parametrize("positions", [["GK"], ["RM", "LM", "CAM", "CAM", "ST"]])
+def test_small_sbc_layouts_keep_their_card_count_and_allow_free_positions(db, positions):
+    from sbc_vision.sbc_engine.ocr import parse_requirements
+
+    text = f"Player Quality: Min. Gold\nNumber of Players in the Squad: {len(positions)}"
+    parsed = parse_requirements(text, db, positions=positions, market="pc", budget=5000)
+    assert parsed["ready"], parsed["issues"]
+    assert parsed["challenge"]["position_mode"] == "any"
+    assert len(parsed["challenge"]["positions"]) == len(positions)
+    wrong = parse_requirements(text, db, positions=["CM"] * 11, market="pc", budget=5000)
+    assert not wrong["ready"]
+    assert "emplacements ouverts" in " ".join(wrong["issues"])
+
+
 @pytest.mark.skipif(shutil.which("tesseract") is None, reason="Tesseract doit être installé")
 def test_real_capture_conditions_become_a_dynamic_request(tmp_path, db):
     image = Image.new("RGB", (1000, 300), "white")

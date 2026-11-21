@@ -2,13 +2,13 @@ import { activeContext, type TabContext } from './tab-capture';
 import { loadWorkspace, type ApiProposal, type PlacementCard } from './sbc-api';
 
 type Command = {
-    action: 'open' | 'club' | 'search' | 'next' | 'place';
+    action: 'open' | 'club' | 'clear-position' | 'search' | 'next' | 'place';
     signature: string;
     card: PlacementCard;
 };
 export type PreparedSbc = ApiProposal & {
     context: TabContext;
-    board: { title: string; requirements: string; positions: string[] };
+    board: { title: string; requirements: string; positions: string[]; slot_indices: number[] };
 };
 
 // Fonction autonome injectée dans EA. La liste des actions ne contient aucun échange.
@@ -36,10 +36,15 @@ export function placementInTab(command?: Command) {
         getComputedStyle(e).visibility !== 'hidden' &&
         e.getBoundingClientRect().width > 0;
     const roots = Array.from(document.querySelectorAll<HTMLElement>('.ut-squad-slot-view')).filter(
-        (e) => /^[A-Z]{2,3}$/.test(text(e, '.ut-squad-slot-pedestal-view .label')),
+        (e) =>
+            !e.classList.contains('locked') &&
+            e.getBoundingClientRect().width > 0 &&
+            /^(?:\d|10)$/.test(e.getAttribute('index') ?? '') &&
+            /^[A-Z]{2,3}$/.test(text(e, '.ut-squad-slot-pedestal-view .label')),
     );
-    const slots = roots.map((e) => ({
-        index: Number(e.getAttribute('index')),
+    const slots = roots.map((e, index) => ({
+        index,
+        ea_index: Number(e.getAttribute('index')),
         position: text(e, '.ut-squad-slot-pedestal-view .label'),
         card: e.querySelector('.player.item.empty')
             ? null
@@ -61,13 +66,15 @@ export function placementInTab(command?: Command) {
                   .join('\n')
             : '',
         positions: slots.map((s) => s.position),
+        slot_indices: slots.map((s) => s.ea_index),
     };
     if (
         !board.title ||
         !board.requirements ||
         !slots.length ||
         slots.length > 11 ||
-        slots.some((s, i) => s.index !== i)
+        slots.some((s) => !Number.isInteger(s.ea_index) || s.ea_index < 0 || s.ea_index > 10) ||
+        new Set(board.slot_indices).size !== slots.length
     )
         throw new Error('Composition ou conditions illisibles ; aucun placement.');
     const panel = document.querySelector('.ut-club-search-results-view.sbc');
@@ -92,6 +99,12 @@ export function placementInTab(command?: Command) {
         add: available(e.querySelector('button.btnAction.add')),
     }));
     const filters = document.querySelector('.ut-club-search-filters-view.sbc');
+    const positionFilter = Array.from(
+        filters?.querySelectorAll('.ut-search-filter-control') ?? [],
+    ).find(
+        (e) =>
+            e.querySelector('img')?.src.includes('/positions/') || text(e, '.label') === 'Position',
+    );
     const addButtons = Array.from(document.querySelectorAll('button')).filter(
         (b) => b.textContent?.trim() === 'Add Player' && available(b),
     );
@@ -104,7 +117,15 @@ export function placementInTab(command?: Command) {
             : 'squad';
     const selected = roots.findIndex((e) => e.classList.contains('ui-slot-selected'));
     const next = panel?.querySelector('button.pagination.next') ?? null;
-    const state = { board, slots, rows, stage, selected, hasNext: available(next) };
+    const state = {
+        board,
+        slots,
+        rows,
+        stage,
+        selected,
+        hasNext: available(next),
+        position_filter: positionFilter ? text(positionFilter, '.label') : null,
+    };
     const signature = JSON.stringify(state);
     if (!command) return { ...state, signature };
     if (command.signature !== signature) throw new Error('L’écran a changé ; arrêt du placement.');
@@ -116,6 +137,14 @@ export function placementInTab(command?: Command) {
     else {
         if (selected !== card.slot) throw new Error('La case sélectionnée a changé.');
         if (action === 'club' && stage === 'details') button = addButtons[0];
+        if (
+            action === 'clear-position' &&
+            stage === 'filters' &&
+            state.position_filter !== 'Position'
+        )
+            button =
+                positionFilter?.querySelector('button.ut-search-filter-control--row-button') ??
+                null;
         if (action === 'search' && stage === 'filters')
             button =
                 Array.from(filters!.querySelectorAll('button')).find(
@@ -232,7 +261,7 @@ export async function fillSbc(
     let state = await observe();
     // Chrome peut réordonner les clés des objets renvoyés par executeScript.
     const boardKey = (b: PreparedSbc['board']) =>
-        JSON.stringify([b.title, b.requirements, b.positions]);
+        JSON.stringify([b.title, b.requirements, b.positions, b.slot_indices]);
     const board = boardKey(proposal.board);
     if (boardKey(state.board) !== board) throw new Error('Le SBC a changé depuis le calcul.');
     if (
@@ -266,17 +295,19 @@ export async function fillSbc(
                       !!state.slots[card.slot]?.card?.nation_id
                     : action === 'open'
                       ? state.selected === card.slot && state.stage !== 'squad'
-                      : action === 'club'
-                        ? state.stage === 'filters'
-                        : state.stage === 'results' &&
-                          state.rows.length > 0 &&
-                          state.rows.every(
-                              (r) =>
-                                  r.name &&
-                                  r.rating > 0 &&
-                                  Object.keys(r.stats).length === 6 &&
-                                  Object.values(r.stats).every(Number.isInteger),
-                          );
+                      : action === 'clear-position'
+                        ? state.stage === 'filters' && state.position_filter === 'Position'
+                        : action === 'club'
+                          ? state.stage === 'filters'
+                          : state.stage === 'results' &&
+                            state.rows.length > 0 &&
+                            state.rows.every(
+                                (r) =>
+                                    r.name &&
+                                    r.rating > 0 &&
+                                    Object.keys(r.stats).length === 6 &&
+                                    Object.values(r.stats).every(Number.isInteger),
+                            );
             if (state.signature !== previous && ready) return;
         } while (Date.now() < deadline);
         throw new Error('Écran inchangé après action ; arrêt sans répétition.');
@@ -289,6 +320,11 @@ export async function fillSbc(
             progress(`Placement ${filled.size + 1}/${assignments.length} : ${card.reading.name}…`);
             if (state.selected !== card.slot || state.stage === 'squad') await step('open', card);
             if (state.stage === 'details') await step('club', card);
+            if (state.stage === 'filters' && report.challenge.position_mode === 'any') {
+                if (state.position_filter === null)
+                    throw new Error('Filtre de poste illisible ; arrêt.');
+                if (state.position_filter !== 'Position') await step('clear-position', card);
+            }
             if (state.stage === 'filters') await step('search', card);
             if (state.stage !== 'results') throw new Error('Recherche du club indisponible.');
             const seen = new Set<string>();

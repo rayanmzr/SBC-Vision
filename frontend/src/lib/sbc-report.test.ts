@@ -98,6 +98,19 @@ describe('rapports du moteur SBC', () => {
         });
     });
 
+    it('accepte les cartes hors poste uniquement avec le mode libre explicite et sans collectif', () => {
+        const report = structuredClone(fixture);
+        report.challenge.positions = ['GK', 'GK', 'GK'];
+        expect(() => parseSolverReport(report)).toThrow('poste');
+        Object.assign(report.challenge, { position_mode: 'any' });
+        expect(parseSolverReport(report).kind).toBe('solver');
+        report.challenge.conditions.push({
+            metric: 'chemistry',
+            value: 1,
+        });
+        expect(() => parseSolverReport(report)).toThrow('collectif hors poste');
+    });
+
     it('importe un fichier local et refuse un JSON invalide ou trop volumineux', async () => {
         const file = new File([JSON.stringify(fixture)], 'solution.json', {
             type: 'application/json',

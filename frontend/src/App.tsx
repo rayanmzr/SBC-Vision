@@ -34,6 +34,7 @@ export default function App() {
     const [busy, setBusy] = useState(false),
         [message, setMessage] = useState('Ouvre ton club ou un SBC dans la Web App EA.');
     const [scan, setScan] = useState<ScanReport | null>(null);
+    const [authorization, setAuthorization] = useState(false);
     const [proposal, setProposal] = useState<SolverReport | null>(null);
     const [tools, setTools] = useState(false),
         [ready, setReady] = useState(false);
@@ -65,6 +66,9 @@ export default function App() {
             const workspace = await loadWorkspace(base, controller.signal);
             if (workspace.mode !== 'local')
                 throw new Error('Les actions EA nécessitent un inventaire local réel.');
+            const allProtected =
+                workspace.items.length > 0 && workspace.items.every((c) => c.protected);
+            setAuthorization(allProtected);
             if (action === 'basics') {
                 if (!Number.isSafeInteger(cap) || cap < 1)
                     throw new Error('Choisir un plafond entier positif.');
@@ -90,6 +94,7 @@ export default function App() {
                 setMessage(
                     `${cards.length} cartes de base sous ${credits(cap)} autorisées pour les prochains calculs.`,
                 );
+                if (cards.length) setAuthorization(false);
                 return;
             }
             if (action === 'scan') {
@@ -134,6 +139,7 @@ export default function App() {
                     )) as ScanReport;
                 }
                 setScan(report);
+                if (report.inventory_updated && report.identified) setAuthorization(true);
                 setMessage(
                     report.inventory_updated
                         ? `${report.observed} cartes enregistrées ; ${report.identified} identifiées et protégées. ${report.pending} restent à vérifier.${report.ocr_readable === 0 ? ' Aucune carte lue par OCR sur ce passage ; seules les données HTML ont été enregistrées.' : ''}`
@@ -150,6 +156,12 @@ export default function App() {
                 );
                 setProposal(result.report);
                 if (['optimal', 'feasible'].includes(result.report.solution.status)) {
+                    if (allProtected) {
+                        setMessage(
+                            `Tes ${workspace.items.length} cartes sont bien enregistrées mais protégées. Autorise tes cartes de base ci-dessous pour utiliser le club. La proposition affichée utilise uniquement le marché.`,
+                        );
+                        return;
+                    }
                     const count = await fillSbc(base, result, controller.signal, setMessage);
                     setMessage(
                         `${count} joueurs placés. Vérifie les conditions dans EA ; la validation reste manuelle.`,
@@ -159,7 +171,7 @@ export default function App() {
                 setMessage(
                     result.report.solution.status === 'infeasible'
                         ? workspace.items.length && workspace.items.every((c) => c.protected)
-                            ? `Tes ${workspace.items.length} cartes sont protégées : le calcul utilise seulement des achats. Aucune équipe trouvée dans le catalogue actuel avec ${credits(budget)} de budget et ${credits(cap)} par carte. Autorise des cartes dans Options → Diagnostic et protections, ou ajuste les limites.`
+                            ? `Tes ${workspace.items.length} cartes sont protégées : le calcul utilise seulement des achats. Aucune équipe trouvée dans le catalogue actuel avec ${credits(budget)} de budget et ${credits(cap)} par carte. Autorise tes cartes de base ci-dessous, ou ajuste les limites.`
                             : `Aucune équipe trouvée dans le catalogue actuel avec ${credits(budget)} de budget et ${credits(cap)} par carte. Vérifie les protections et les prix disponibles.`
                         : 'Le calcul n’a pas trouvé de composition dans le temps imparti. Aucun joueur n’a été déplacé.',
                 );
@@ -212,6 +224,11 @@ export default function App() {
                 <p role="status" className="quick-status">
                     {message}
                 </p>
+                {authorization && !busy && (
+                    <button className="text-button" onClick={() => run('basics')}>
+                        Autoriser mes cartes de base sous {credits(cap)}
+                    </button>
+                )}
                 {busy && (
                     <button className="text-button" onClick={() => current.current?.abort()}>
                         Arrêter

@@ -68,6 +68,50 @@ def test_saved_proposal_is_checked_without_requiring_identical_quote_timestamps(
     assert checked["shopping_list"]["estimated_cost"] == 1300
 
 
+@pytest.mark.parametrize("positions", [["GK"], ["RM", "LM", "CAM", "CAM", "ST"]])
+def test_challenges_without_chemistry_accept_owned_cards_out_of_position(setup, positions):
+    _, pool, _, _ = setup
+    template = next(c for c in pool if c.owned)
+    cards = [
+        template.model_copy(
+            update={
+                "key": f"club:free-{i}",
+                "card_id": 920000 + i,
+                "base_id": 920000 + i,
+                "positions": ["CB"],
+                "protected": False,
+                "value": 100,
+            }
+        )
+        for i in range(len(positions))
+    ]
+    challenge = Challenge(
+        positions=positions,
+        position_mode="any",
+        market="pc",
+        budget=0,
+        conditions=[Condition(metric="players", op="exact", value=len(positions))],
+    )
+    result = solve(challenge, cards)
+    assert result.status == "optimal" and result.purchase_cost == 0
+    assert result.total_cost == len(positions) * 100
+    assert verification(challenge, cards, result)["valid"]
+    assert greedy(challenge, cards).status == "feasible"
+    strict = challenge.model_copy(update={"position_mode": "preferred"})
+    assert solve(strict, cards).status == "infeasible"
+
+
+def test_free_positions_cannot_silently_bypass_a_chemistry_requirement():
+    with pytest.raises(ValidationError, match="collectif hors poste"):
+        Challenge(
+            positions=["GK"],
+            position_mode="any",
+            market="pc",
+            budget=0,
+            conditions=[Condition(metric="chemistry", value=1)],
+        )
+
+
 @pytest.mark.parametrize(
     "change", ["protected", "price", "missing", "position", "version", "unknown", "quantity"]
 )

@@ -329,20 +329,36 @@ export function sbcInTab() {
     const checklist = Array.from(document.querySelectorAll('.sbc-requirements-checklist')).find(
         (e) => e.children.length > 0,
     );
-    const positions = Array.from(document.querySelectorAll('.ut-squad-slot-pedestal-view .label'))
-        .filter((e) => e.getBoundingClientRect().width > 0)
-        .map((e) => e.textContent?.trim() ?? '');
+    const slots = Array.from(document.querySelectorAll('.ut-squad-slot-view')).filter(
+        (e) =>
+            !e.classList.contains('locked') &&
+            e.getBoundingClientRect().width > 0 &&
+            /^(?:\d|10)$/.test(e.getAttribute('index') ?? '') &&
+            /^[A-Z]{2,3}$/.test(
+                e.querySelector('.ut-squad-slot-pedestal-view .label')?.textContent?.trim() ?? '',
+            ),
+    );
+    const positions = slots.map((e) =>
+        e.querySelector('.ut-squad-slot-pedestal-view .label')!.textContent!.trim(),
+    );
+    const slot_indices = slots.map((e) => Number(e.getAttribute('index')));
     const requirements = checklist
         ? Array.from(checklist.children)
               .map((e) => e.textContent?.trim())
               .join('\n')
         : '';
-    if (!requirements || !positions.length || positions.length > 11)
+    if (
+        !requirements ||
+        !positions.length ||
+        positions.length > 11 ||
+        new Set(slot_indices).size !== positions.length
+    )
         return { error: 'Ouvrir l’écran de composition et afficher les conditions du SBC.' };
     return {
         source: 'dom',
         requirements,
         positions,
+        slot_indices,
         title: document.querySelector('h1.title')?.textContent?.trim() ?? '',
     };
 }
@@ -397,6 +413,7 @@ export async function prepareSbc(
             title: observed.title,
             requirements: observed.requirements,
             positions: observed.positions,
+            slot_indices: observed.slot_indices,
         },
     };
 }

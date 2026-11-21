@@ -72,19 +72,30 @@ it('refuse les autres écrans et une ligne encore incomplète', () => {
 
 it('lit toutes les conditions du SBC courant une seule fois et sans cliquer sur un échange', () => {
     const rules = '<li>Rare players: Min. 1</li><li>Number of Players: 3</li>';
-    document.body.innerHTML = `<ul class="sbc-requirements-checklist"></ul><ul class="sbc-requirements-checklist">${rules}</ul><ul class="sbc-requirements-checklist">${rules}</ul>${['ST', 'CM', 'CAM'].map((p) => `<div class="ut-squad-slot-pedestal-view"><span class="label">${p}</span></div>`).join('')}<button>Submit</button>`;
+    document.body.innerHTML = `<ul class="sbc-requirements-checklist"></ul><ul class="sbc-requirements-checklist">${rules}</ul><ul class="sbc-requirements-checklist">${rules}</ul>${['ST', 'CM', 'CAM'].map((p, i) => `<div class="ut-squad-slot-view" index="${i}"><div class="ut-squad-slot-pedestal-view"><span class="label">${p}</span></div></div>`).join('')}<button>Submit</button>`;
     const click = vi.fn();
     document.querySelector('button')!.addEventListener('click', click);
     expect(sbcInTab()).toEqual({
         source: 'dom',
         requirements: 'Rare players: Min. 1\nNumber of Players: 3',
         positions: ['ST', 'CM', 'CAM'],
+        slot_indices: [0, 1, 2],
         title: '',
     });
     expect(click).not.toHaveBeenCalled();
     document.querySelectorAll('.sbc-requirements-checklist').forEach((e) => e.remove());
     expect(sbcInTab().error).toContain('conditions');
 });
+
+it.each([{ open: [0] }, { open: [5, 7, 8, 9, 10] }])(
+    'ne lit que les emplacements ouverts, indices EA $open',
+    ({ open }) => {
+        document.body.innerHTML = `<h1 class="title">Défi fictif</h1><ul class="sbc-requirements-checklist"><li>Number of Players: ${open.length}</li></ul>${Array.from({ length: 11 }, (_, i) => `<div class="ut-squad-slot-view ${open.includes(i) ? '' : 'locked'}" index="${i}"><div class="ut-squad-slot-pedestal-view"><span class="label">CM</span></div><div class="player item empty"></div></div>`).join('')}<div class="ut-squad-slot-view" index="11"><div class="ut-squad-slot-pedestal-view"><span class="label">ST</span></div></div>`;
+        const result = sbcInTab();
+        expect(result.slot_indices).toEqual(open);
+        expect(result.positions).toHaveLength(open.length);
+    },
+);
 
 function controller() {
     const first = clubPageInTab(),
