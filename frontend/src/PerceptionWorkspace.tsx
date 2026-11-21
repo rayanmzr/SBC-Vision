@@ -620,6 +620,11 @@ function ClubScanPanel({
                         ...observation,
                         expected_revision: expected,
                         confirmed: confirm,
+                        protection_policy: observation?.pages.every((p) =>
+                            p.cards.every((c) => typeof c.active === 'boolean'),
+                        )
+                            ? 'active_squad'
+                            : 'preserve',
                     }),
                 },
                 controller.signal,
@@ -635,7 +640,7 @@ function ClubScanPanel({
             if (value.expected_revision) setRevision(value.expected_revision);
             setMessage(
                 confirm
-                    ? 'Comptage local remplacé ; les cartes importées sont protégées.'
+                    ? 'Comptage local remplacé ; protection de l’équipe active appliquée selon le relevé.'
                     : 'Observations enregistrées sur le serveur.',
             );
         } catch (error) {
@@ -679,7 +684,8 @@ function ClubScanPanel({
             <h3>Scanner le club EA</h3>
             <p>
                 Ouvrir la première page de « Club → Players ». Chaque page est capturée pour l’OCR,
-                puis ses lignes HTML sont lues sans défilement. Seul le bouton « Next » est utilisé.
+                puis ses lignes HTML sont lues sans défilement. Les fiches « Player Bio » donnent la
+                rareté des cartes spéciales ; « Next » passe à la page suivante.
             </p>
             <label>
                 Nombre maximal de pages{' '}
@@ -723,9 +729,9 @@ function ClubScanPanel({
                     </p>
                     <p>
                         La confirmation remplace le précédent comptage DOM. Les identifiants sont
-                        locaux ; les copies identiques sont comptées par version. Toutes les cartes
-                        importées sont protégées. Les copies saisies manuellement doivent être
-                        rapprochées séparément.
+                        locaux ; les copies identiques sont comptées par version. Les joueurs de
+                        l’équipe active sont protégés quand leur état est disponible. Les copies
+                        saisies manuellement doivent être rapprochées séparément.
                     </p>
                     <button
                         disabled={

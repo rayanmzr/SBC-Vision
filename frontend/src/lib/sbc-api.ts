@@ -10,6 +10,8 @@ export type Workspace = {
     items: Candidate[];
     challenge: SolverReport['challenge'] | null;
     challenge_issues: string[];
+    protection_policy?: 'preserve' | 'active_squad';
+    active_squad_keys?: string[];
 };
 export type PlacementCard = {
     slot: number;

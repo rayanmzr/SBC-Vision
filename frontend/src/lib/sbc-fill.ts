@@ -95,7 +95,7 @@ export function placementInTab(command?: Command) {
         league_id: logo(e, 'leagues'),
         club_id: logo(e, 'clubs'),
         loan: !!e.querySelector('.player.item.loan'),
-        active: e.classList.contains('is-active'),
+        active: e.classList.contains('is-active') || !!e.querySelector('.ut-list-active-tag-view'),
         add: available(e.querySelector('button.btnAction.add')),
     }));
     const filters = document.querySelector('.ut-club-search-filters-view.sbc');

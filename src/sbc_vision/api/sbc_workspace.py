@@ -37,6 +37,8 @@ class WorkspaceSnapshot(BaseModel):
     items: list[Candidate]
     challenge: Challenge | None
     challenge_issues: list[str]
+    protection_policy: Literal["preserve", "active_squad"] = "preserve"
+    active_squad_keys: list[str] = Field(default_factory=list)
 
 
 class ProtectionRequest(BaseModel):
@@ -85,6 +87,8 @@ class DomCard(BaseModel):
     reading: CardObservation
     visible: bool
     loan: bool
+    active: bool | None = None
+    rarity: str | None = Field(default=None, max_length=100)
 
 
 class ClubPage(BaseModel):
@@ -102,6 +106,7 @@ class ClubScanRequest(BaseModel):
     pages: list[ClubPage] = Field(min_length=1, max_length=500)
     complete: bool
     confirmed: bool = False
+    protection_policy: Literal["preserve", "active_squad"] = "preserve"
     expected_revision: str = Field(pattern="^[0-9a-f]{64}$")
 
 
@@ -275,6 +280,7 @@ class SbcWorkspace:
             if (
                 not item
                 or item["protected"]
+                or (match and match[0].get("active"))
                 or copies != 1
                 or not reading
                 or match[0]["loan"]
@@ -312,6 +318,13 @@ class SbcWorkspace:
         with closing(self.players.open_database(self.config.database)) as db:
             db.execute("BEGIN")
             revision, pool = self.read_state(db, document, challenge, reference)
+            scan = self.scan_document(db)
+        active_versions = {
+            version
+            for c in (scan or {}).get("report", {}).get("cards", [])
+            if c.get("active")
+            for version in c["candidate_ids"]
+        }
         return WorkspaceSnapshot(
             mode=self.config.mode,
             revision=revision,
@@ -319,6 +332,8 @@ class SbcWorkspace:
             items=[card for card in pool if card.owned],
             challenge=challenge,
             challenge_issues=issues,
+            protection_policy=(scan or {}).get("report", {}).get("protection_policy", "preserve"),
+            active_squad_keys=[c.key for c in pool if c.owned and c.card_id in active_versions],
         )
 
     def protect(self, request: ProtectionRequest) -> WorkspaceSnapshot:
@@ -328,6 +343,22 @@ class SbcWorkspace:
             db.execute("BEGIN IMMEDIATE")
             revision, _ = self.read_state(db, document, challenge, reference)
             self.require_revision(revision, request.expected_revision)
+            scan = self.scan_document(db)
+            active_versions = {
+                version
+                for c in (scan or {}).get("report", {}).get("cards", [])
+                if c.get("active")
+                for version in c["candidate_ids"]
+            }
+            item = db.execute(
+                "SELECT card_id FROM club_items WHERE instance_id=?", (request.instance_id,)
+            ).fetchone()
+            if not request.protected and item and item["card_id"] in active_versions:
+                raise fail(
+                    409,
+                    "active_squad_card",
+                    "Ce joueur appartient à ton équipe active ; il reste protégé.",
+                )
             if not db.execute(
                 "SELECT 1 FROM club_items WHERE instance_id=?", (request.instance_id,)
             ).fetchone():

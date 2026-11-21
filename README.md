@@ -28,9 +28,12 @@ notamment le parcours de démonstration avec cartes fictives et véritable calcu
 
 L'accueil contient deux actions : **Scanner mon club** et **Compléter ce SBC**.
 Le scan ouvre automatiquement Club → Players, revient à la première page, combine
-l'OCR visible et les lignes HTML, puis enregistre les cartes identifiées
-sous protection lors de leur première identification. Les autorisations des versions uniques
-sont conservées aux scans suivants ; les doublons restent à vérifier. L'action SBC lit les
+l'OCR visible et les lignes HTML, puis enregistre les cartes identifiées.
+La protection automatique concerne les joueurs signalés dans l'équipe active.
+Les autres cartes restent soumises au plafond de valeur, à leur identification et à leurs prix.
+Le bilan affiche le total, l'équipe protégée et les types de cartes (prêts, TOTW, Héros,
+Icônes, autres raretés et qualités de base). La rareté des cartes spéciales est lue dans
+leur fiche « Player Bio ». L'action SBC lit les
 conditions courantes et cherche d'abord une composition avec le club, sous le plafond de valeur.
 Si cette recherche n'aboutit pas, le moteur examine aussi les achats possibles. Si toutes
 les cartes sont disponibles et déprotégées, le contrôleur recherche leurs versions et
@@ -42,14 +45,17 @@ Le budget, le plafond par carte, l'adresse et la clé du serveur sont dans **Opt
 Le lien « Diagnostic et protections des cartes » ouvre les anciennes vues Analyser,
 Équipe et Réglages, utiles pour les lectures incertaines et les tests de l'équipe.
 Une carte protégée est exclue du solveur ; c'est un choix local, sans lien avec son état
-échangeable dans EA. Les nouvelles cartes sont protégées au premier scan. Dans Options, **Autoriser les cartes de base
+échangeable dans EA. Le scan de l'accueil applique la protection de l'équipe active.
+Les anciennes bases gardent leur politique jusqu'au prochain scan. Dans Options, **Autoriser les cartes de base
 sous ce plafond** déprotège explicitement les cartes de base, rares comprises, avec un prix
 récent inférieur ou égal au plafond affiché. Les choix individuels restent dans le diagnostic.
 Un budget trop bas peut empêcher toute équipe si le club est entièrement protégé.
 Quand toutes les cartes sont protégées, le bouton d'autorisation apparaît aussi directement
 sous le résultat. Depuis un SBC, **Autoriser… et remplir ce SBC** enchaîne l'autorisation,
 un nouveau calcul puis le placement. Cette action ne soumet jamais le défi. Aucun scan
-ni calcul seul ne retire les protections. Le diagnostic permet de garder une carte exclue.
+ni calcul seul ne retire les protections de l'équipe active. Les prêts, versions absentes
+ou ambiguës sont détaillés dans le diagnostic et restent exclus ; ils ne sont pas
+présentés comme des cartes de l'équipe protégée.
 
 ## Démarrage local
 

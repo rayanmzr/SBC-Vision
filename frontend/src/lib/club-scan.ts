@@ -15,6 +15,8 @@ export type DomCard = {
     club_id: number | null;
     visible: boolean;
     loan: boolean;
+    active: boolean;
+    rarity: string;
 };
 type Page = { cards: DomCard[]; has_previous: boolean; has_next: boolean; signature: string };
 export type ClubScan = {
@@ -22,9 +24,14 @@ export type ClubScan = {
     complete: boolean;
     pages: Array<{
         cards: Array<{
-            reading: Omit<DomCard, 'visible' | 'loan'> & { capture_id: string; element_id: string };
+            reading: Omit<DomCard, 'visible' | 'loan' | 'active' | 'rarity'> & {
+                capture_id: string;
+                element_id: string;
+            };
             visible: boolean;
             loan: boolean;
+            active?: boolean;
+            rarity?: string;
         }>;
         has_previous: boolean;
         has_next: boolean;
@@ -160,6 +167,10 @@ export function clubPageInTab(advanceFrom?: string): Page {
                 box.top >= Math.max(0, clip.top) &&
                 box.bottom <= Math.min(innerHeight, clip.bottom),
             loan: !!row.querySelector('.player.item.loan'),
+            active:
+                row.classList.contains('is-active') ||
+                !!row.querySelector('.ut-list-active-tag-view'),
+            rarity: row.querySelector('.player.item.specials') ? 'Spéciales (type non lu)' : 'Base',
         };
     });
     const available = (selector: string) => {
@@ -197,6 +208,55 @@ export function clubPageInTab(advanceFrom?: string): Page {
             );
     }
     return page;
+}
+
+// Lire la rareté dans la fiche affichée : sélection, fiche, retour, aucun transfert.
+export function clubBioInTab(command?: string) {
+    if (
+        !['ea.com', 'www.ea.com'].includes(location.hostname) ||
+        !location.pathname.includes('/ultimate-team/web-app/')
+    )
+        throw new Error('Ouvrir le club EA.');
+    const rows = Array.from(document.querySelectorAll<HTMLElement>('ul.paginated>li.listFUTItem'));
+    const bio = document.querySelector('.ut-player-bio-view');
+    const rarity =
+        Array.from(bio?.querySelectorAll('.ut-item-bio-row-view') ?? [])
+            .find((e) => e.querySelector('h1')?.textContent?.trim() === 'Rarity')
+            ?.querySelector('h2')
+            ?.textContent?.trim() ?? '';
+    const selected = rows.findIndex((e) => e.classList.contains('selected'));
+    const state = { bio: !!bio, rarity, selected };
+    const signature = JSON.stringify([
+        state,
+        rows.map((e) => e.querySelector('.entityContainer>.name')?.textContent),
+    ]);
+    if (command) {
+        const { action, index, expected } = JSON.parse(command);
+        if (expected !== signature) throw new Error('Le club a changé pendant la lecture du type.');
+        const button =
+            action === 'select' && !bio
+                ? rows[index]
+                : action === 'open' && !bio && selected === index
+                  ? Array.from(document.querySelectorAll('button')).find(
+                        (b) => b.textContent?.trim() === 'Player Bio',
+                    )
+                  : action === 'close' && bio
+                    ? bio.closest('section')?.querySelector('button.ut-navigation-button-control')
+                    : null;
+        if (!button || button.getBoundingClientRect().width === 0)
+            throw new Error('Fiche de rareté indisponible.');
+        const box = button.getBoundingClientRect();
+        for (const type of ['mousedown', 'mouseup', 'click'])
+            button.dispatchEvent(
+                new MouseEvent(type, {
+                    bubbles: true,
+                    button: 0,
+                    clientX: box.x + box.width / 2,
+                    clientY: box.y + box.height / 2,
+                }),
+            );
+    }
+    return { ...state, signature };
 }
 
 export async function scanClub(
@@ -280,8 +340,40 @@ export async function scanClub(
         }
         if ((await read()).signature !== page.signature)
             throw new Error('Le club a changé pendant la capture.');
+        const rarities = page.cards.map((c) => c.rarity);
+        let bio = await execute(clubBioInTab);
+        async function bioStep(action: string, index: number) {
+            await execute(clubBioInTab, [
+                JSON.stringify({ action, index, expected: bio.signature }),
+            ]);
+            const until = Date.now() + 3000;
+            do {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+                bio = await execute(clubBioInTab);
+                if (
+                    action === 'select'
+                        ? bio.selected === index
+                        : action === 'open'
+                          ? bio.bio && !!bio.rarity
+                          : !bio.bio
+                )
+                    return;
+            } while (Date.now() < until);
+            throw new Error('La fiche du joueur ne se charge pas.');
+        }
+        if (bio.bio) await bioStep('close', 0);
+        for (const [i, card] of page.cards.entries()) {
+            if (card.loan || card.rarity === 'Base') continue;
+            progress(`Page ${n} : lecture du type de ${card.name}…`);
+            await bioStep('select', i);
+            await bioStep('open', i);
+            rarities[i] = bio.rarity.slice(0, 100);
+            await bioStep('close', i);
+        }
+        if ((await read()).signature !== page.signature)
+            throw new Error('Le club a changé pendant la lecture des types.');
         scan.pages.push({
-            cards: page.cards.map(({ visible, loan, ...reading }, i) => ({
+            cards: page.cards.map(({ visible, loan, active, rarity: _, ...reading }, i) => ({
                 reading: {
                     ...reading,
                     capture_id: scan.capture_id,
@@ -289,6 +381,8 @@ export async function scanClub(
                 },
                 visible,
                 loan,
+                active,
+                rarity: rarities[i],
             })),
             has_previous: page.has_previous,
             has_next: page.has_next,

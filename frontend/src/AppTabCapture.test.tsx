@@ -135,7 +135,7 @@ it.each([true, false])(
         if (complete) {
             fireEvent.click(confirm);
             await screen.findByText(
-                'Comptage local remplacé ; les cartes importées sont protégées.',
+                'Comptage local remplacé ; protection de l’équipe active appliquée selon le relevé.',
             );
             expect(JSON.parse(String(calls()[1][1]?.body))).toMatchObject({
                 confirmed: true,

@@ -53,6 +53,9 @@ beforeEach(() => {
                                       identified: 10,
                                       pending: 10,
                                       loans: 2,
+                                      active_squad: 3,
+                                      protection_policy: 'active_squad',
+                                      categories: { prêts: 2, TOTW: 4, Héros: 1, or: 13 },
                                       complete: true,
                                       expected_revision: fixture.workspace.revision,
                                       inventory_updated: options?.body
@@ -84,13 +87,14 @@ it('un clic scanne puis enregistre le club identifié sous protection sans touch
     const scan = await screen.findByRole('button', { name: 'Scanner mon club' });
     await vi.waitFor(() => expect((scan as HTMLButtonElement).disabled).toBe(false));
     fireEvent.click(scan);
-    await screen.findByText(
-        '20 cartes enregistrées ; 10 identifiées, dont 10 protégées. 10 restent à vérifier.',
-    );
+    await screen.findByText('20 cartes enregistrées · 3 joueurs de ton équipe protégés.');
     const calls = vi.mocked(fetch).mock.calls.filter(([u]) => String(u).endsWith('/club-scan'));
     expect(calls).toHaveLength(2);
     expect(JSON.parse(String(calls[0][1]?.body)).confirmed).toBe(false);
     expect(JSON.parse(String(calls[1][1]?.body)).confirmed).toBe(true);
+    expect(JSON.parse(String(calls[1][1]?.body)).protection_policy).toBe('active_squad');
+    expect(screen.getByText('2 prêts · 4 TOTW · 1 Héros · 13 or')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Autoriser mes cartes/ })).toBeNull();
     expect(prepareSbc).not.toHaveBeenCalled();
 });
 

@@ -23,6 +23,9 @@ type ScanReport = {
     complete: boolean;
     inventory_updated: boolean;
     protected?: number;
+    active_squad?: number;
+    protection_policy?: 'preserve' | 'active_squad';
+    categories?: Record<string, number>;
     expected_revision: string;
     ocr_readable?: number;
 };
@@ -68,7 +71,9 @@ export default function App() {
             if (workspace.mode !== 'local')
                 throw new Error('Les actions EA nécessitent un inventaire local réel.');
             setAuthorization(
-                workspace.items.length > 0 && workspace.items.every((c) => c.protected),
+                workspace.protection_policy !== 'active_squad' &&
+                    workspace.items.length > 0 &&
+                    workspace.items.every((c) => c.protected),
             );
             if (action === 'basics' || action === 'authorize-sbc') {
                 if (!Number.isSafeInteger(cap) || cap < 1)
@@ -76,6 +81,7 @@ export default function App() {
                 const cards = workspace.items.filter(
                     (c) =>
                         c.protected &&
+                        !workspace.active_squad_keys?.includes(c.key) &&
                         c.chemistry_kind === 'standard' &&
                         c.value != null &&
                         c.value <= cap,
@@ -108,6 +114,7 @@ export default function App() {
                     ...observation,
                     expected_revision: workspace.revision,
                     confirmed: false,
+                    protection_policy: 'active_squad',
                 };
                 let report = (await requestJson(
                     base,
@@ -140,10 +147,13 @@ export default function App() {
                 }
                 setScan(report);
                 if (report.inventory_updated)
-                    setAuthorization((report.protected ?? report.identified) > 0);
+                    setAuthorization(
+                        report.protection_policy !== 'active_squad' &&
+                            (report.protected ?? report.identified) > 0,
+                    );
                 setMessage(
                     report.inventory_updated
-                        ? `${report.observed} cartes enregistrées ; ${report.identified} identifiées, dont ${report.protected ?? report.identified} protégées. ${report.pending} restent à vérifier.${report.ocr_readable === 0 ? ' Aucune carte lue par OCR sur ce passage ; seules les données HTML ont été enregistrées.' : ''}`
+                        ? `${report.observed} cartes enregistrées · ${report.active_squad ?? 0} joueurs de ton équipe protégés.`
                         : `${report.observed} observations sauvegardées ; le club confirmé est conservé.`,
                 );
             } else {
@@ -159,7 +169,9 @@ export default function App() {
                 if (['optimal', 'feasible'].includes(result.report.solution.status)) {
                     if (workspace.items.length && workspace.items.every((c) => c.protected)) {
                         setMessage(
-                            `Tes ${workspace.items.length} cartes sont bien enregistrées mais protégées. Autorise tes cartes de base ci-dessous pour utiliser le club. La proposition affichée utilise uniquement le marché.`,
+                            workspace.protection_policy === 'active_squad'
+                                ? 'Les cartes identifiées appartiennent à ton équipe active et restent protégées. Les achats proposés sont manuels.'
+                                : `Tes ${workspace.items.length} cartes sont bien enregistrées mais protégées. Autorise tes cartes de base ci-dessous pour utiliser le club. La proposition affichée utilise uniquement le marché.`,
                         );
                         return;
                     }
@@ -239,10 +251,11 @@ export default function App() {
                         Arrêter
                     </button>
                 )}
-                {scan && (
+                {scan?.categories && (
                     <p>
-                        {scan.complete ? 'Club parcouru.' : 'Relevé partiel.'} {scan.loans} cartes
-                        en prêt exclues.
+                        {Object.entries(scan.categories)
+                            .map(([type, count]) => `${count} ${type}`)
+                            .join(' · ')}
                     </p>
                 )}
                 {proposal && (
@@ -279,6 +292,16 @@ export default function App() {
                 )}
                 <details className="quick-options">
                     <summary>Options</summary>
+                    {scan && (
+                        <p>
+                            {scan.loans} prêts exclus · {Math.max(0, scan.pending - scan.loans)}{' '}
+                            versions absentes ou ambiguës dans le catalogue, exclues du calcul.{' '}
+                            {scan.identified} cartes identifiées.{' '}
+                            {scan.ocr_readable === 0
+                                ? 'Aucune carte lue par OCR sur ce passage ; données HTML uniquement.'
+                                : ''}
+                        </p>
+                    )}
                     <label>
                         Budget d’achat{' '}
                         <input

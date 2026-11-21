@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { clubPageInTab, clubNavigationInTab, scanClub, sbcInTab } from './club-scan';
+import { clubPageInTab, clubNavigationInTab, clubBioInTab, scanClub, sbcInTab } from './club-scan';
 import { activeContext, captureActiveTab } from './tab-capture';
 import { analyzeImage } from './api';
 
@@ -46,6 +46,7 @@ it('lit toutes les lignes HTML, sépare visibilité/prêts et ne déduit aucun i
         loan: false,
     });
     expect(page.cards[1].loan).toBe(true);
+    expect(page.cards.every((c) => c.active === false)).toBe(true);
     expect(page.cards[0]).not.toHaveProperty('confidence');
     expect(page.cards[0]).not.toHaveProperty('instance_id');
 });
@@ -59,6 +60,43 @@ it('ne clique que Suivant et refuse une page modifiée', () => {
     expect(next).not.toHaveBeenCalled();
     clubPageInTab(clubPageInTab().signature);
     expect(next).toHaveBeenCalledOnce();
+    expect(submit).not.toHaveBeenCalled();
+});
+
+it('distingue sélection visuelle et appartenance à l’équipe active, même hors écran', () => {
+    const rows = document.querySelectorAll('li.listFUTItem');
+    rows[0].classList.add('selected');
+    rows[3].classList.add('is-active');
+    rows[5].insertAdjacentHTML('beforeend', '<div class="ut-list-active-tag-view"></div>');
+    const page = clubPageInTab();
+    expect(page.cards.filter((c) => c.active)).toHaveLength(2);
+    expect(page.cards[0].active).toBe(false);
+    expect(page.cards[5]).toMatchObject({ active: true, visible: false });
+});
+
+it('lit le libellé de rareté via la fiche et n’actionne que sélection, ouverture et retour', () => {
+    const row = document.querySelector('li.listFUTItem')!;
+    row.addEventListener('mouseup', () => row.classList.add('selected'));
+    document.body.insertAdjacentHTML('beforeend', '<button id="bio">Player Bio</button>');
+    document.querySelector('#bio')!.addEventListener('mouseup', () => {
+        document.body.insertAdjacentHTML(
+            'beforeend',
+            '<section id="bio-pane"><button class="ut-navigation-button-control">Retour</button><article class="ut-player-bio-view"><li class="ut-item-bio-row-view"><h1>Rarity</h1><h2>Team of the Week</h2></li></article></section>',
+        );
+        document
+            .querySelector('#bio-pane button')!
+            .addEventListener('mouseup', () => document.querySelector('#bio-pane')!.remove());
+    });
+    const submit = vi.fn();
+    document.querySelector('#submit')!.addEventListener('mouseup', submit);
+    for (const action of ['select', 'open'])
+        clubBioInTab(JSON.stringify({ action, index: 0, expected: clubBioInTab().signature }));
+    expect(clubBioInTab()).toMatchObject({ bio: true, rarity: 'Team of the Week', selected: 0 });
+    expect(() => clubBioInTab(JSON.stringify({ action: 'close', expected: 'stale' }))).toThrow(
+        'changé',
+    );
+    clubBioInTab(JSON.stringify({ action: 'close', index: 0, expected: clubBioInTab().signature }));
+    expect(clubBioInTab().bio).toBe(false);
     expect(submit).not.toHaveBeenCalled();
 });
 
@@ -121,6 +159,14 @@ function controller() {
     >);
     URL.revokeObjectURL = vi.fn();
     const execute = vi.fn(async (options: { args: string[]; func: unknown }) => {
+        if (options.func === clubBioInTab)
+            return [
+                {
+                    frameId: 0,
+                    documentId: 'document-ea',
+                    result: { bio: false, rarity: '', selected: -1, signature: 'no-bio' },
+                },
+            ];
         if (options.func === clubNavigationInTab)
             return [
                 {

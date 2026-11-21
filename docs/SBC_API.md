@@ -116,7 +116,8 @@ est testé sur des scènes fictives. Sa validation réelle reste ouverte.
 
 L'accueil rejoint automatiquement `Club → Players` (interface anglaise), puis revient
 à la première page. Le diagnostic conserve aussi son bouton de scan. L'extension capture la zone visible pour l'OCR, lit les
-lignes HTML déjà rendues, puis utilise seulement `Next`. Le parcours est borné entre
+lignes HTML déjà rendues et la rareté des cartes spéciales dans leur fiche, puis utilise
+`Next` pour changer de page. Le parcours est borné entre
 1 et 500 pages (100 par défaut), s'arrête sur page répétée ou changement d'onglet et
 peut être interrompu. Aucune requête vers une API privée EA n'est effectuée.
 Une capture native expire après huit secondes et l'annulation n'attend pas son retour.
@@ -186,10 +187,19 @@ totale égale. Le plafond par carte et toutes les conditions restent appliqués.
 reste `feasible`. `selection_priority: "rating_then_value"` indique cette préférence.
 Avec collectif ou dans le pool incluant les achats, la priorité reste le coût.
 
-Le scan conserve la protection d'une version présente en un exemplaire unique avant et
-après le relevé. Les nouvelles versions et les doublons redeviennent protégés, puisque
-le DOM ne fournit pas ici leur identité EA persistante. Le bilan `protected` compte les
-cartes protégées parmi les versions identifiées du nouveau relevé.
+L'accueil utilise `protection_policy: "active_squad"` et fournit `active` pour chaque
+ligne. Le marqueur d'équipe est distinct de la sélection visuelle. Seuls les joueurs
+de l'équipe active sont protégés automatiquement ; si plusieurs versions correspondent
+à un joueur actif, leurs copies connues sont également exclues par prudence. Le serveur
+refuse de déprotéger une carte identifiée dans cette équipe. Une ligne sans état d'équipe
+bloque cette politique. Les anciens appels sans politique restent en mode `preserve`.
+
+Le bilan distingue `active_squad` (joueurs de l'équipe observés), `protected` (copies
+identifiées protégées), `loans` et `pending` (prêts et versions non rapprochées).
+`categories` compte une seule catégorie par observation : un prêt, sinon une rareté
+spéciale lue dans la fiche, sinon or/argent/bronze. Les TOTW, Icônes et Héros sont
+normalisés depuis leur libellé explicite ; aucune couleur ni aucun nom ne sert à deviner
+la rareté. L'appartenance à l'équipe peut recouper ces catégories.
 
 L'accueil automatique du scan confirme seulement le comptage local des versions
 uniques d'un parcours complet ; il n'échange aucune carte sur EA. Les prix et

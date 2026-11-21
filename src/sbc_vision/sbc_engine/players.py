@@ -647,6 +647,7 @@ def save_dom_scan(db, document, *, confirmed=False):
     """Conserver les observations HTML et, après confirmation, leur comptage local."""
     pages = document["pages"]
     complete = document["complete"]
+    active_policy = document.get("protection_policy") == "active_squad"
     if pages[0]["has_previous"] or (complete and pages[-1]["has_next"]):
         raise ValueError("Le scan doit partir de la première page et atteindre la dernière.")
     if any(not p["has_next"] for p in pages[:-1]) or any(not p["has_previous"] for p in pages[1:]):
@@ -661,6 +662,8 @@ def save_dom_scan(db, document, *, confirmed=False):
             raise ValueError("Page répétée : le scan n'est pas complet.")
         signatures.add(signature)
         for card in page["cards"]:
+            if active_policy and type(card.get("active")) is not bool:
+                raise ValueError("Relancer le scan pour lire l'appartenance à l'équipe active.")
             reading = CardObservation.model_validate(card["reading"])
             if reading.capture_id != document["capture_id"] or reading.element_id in ids:
                 raise ValueError("Identifiant d'observation incohérent ou répété.")
@@ -707,8 +710,10 @@ def save_dom_scan(db, document, *, confirmed=False):
             ClubItem(
                 instance_id=f"dom:{version}:{counts[version]}",
                 card_id=version,
-                # Une version unique conserve le choix de l'utilisateur après un nouveau scan.
-                protected=previous[version]["protected"]
+                # L'accueil protège l'équipe active ; les anciens imports gardent leur politique.
+                protected=any(c.get("active") and version in c["candidate_ids"] for c in cards)
+                if active_policy
+                else previous[version]["protected"]
                 if previous_counts[version] == new_counts[version] == 1
                 else True,
                 source_observation=f"dom:{document['capture_id']}:{card['reading']['element_id']}",
@@ -722,6 +727,9 @@ def save_dom_scan(db, document, *, confirmed=False):
         "observed": len(cards),
         "identified": len(usable),
         "protected": sum(item.protected for item in items),
+        "protection_policy": "active_squad" if active_policy else "preserve",
+        "active_squad": sum(c.get("active") is True for c in cards),
+        "categories": dict(Counter(card_category(c) for c in cards)),
         "loans": sum(c["loan"] for c in cards),
         "pending": len(cards) - len(usable),
         "ocr_readable": sum(
@@ -750,6 +758,29 @@ def save_dom_scan(db, document, *, confirmed=False):
             db.execute("DELETE FROM club_items WHERE instance_id LIKE 'dom:%'")
             save_items(db, items, confirmed=True)
     return report
+
+
+def card_category(card):
+    """Le type vient du libellé de rareté affiché, jamais d'une couleur devinée."""
+    if card["loan"]:
+        return "prêts"
+    label = card.get("rarity") or "Type non lu"
+    key = normalize_name(label)
+    if key in {"base", "or", "argent", "bronze"}:
+        return (
+            "or"
+            if card["reading"]["rating"] >= 75
+            else "argent"
+            if card["reading"]["rating"] >= 65
+            else "bronze"
+        )
+    if "teamoftheweek" in key or "totw" in key:
+        return "TOTW"
+    if "icon" in key:
+        return "Icônes"
+    if "hero" in key:
+        return "Héros"
+    return label
 
 
 def set_protected(db: sqlite3.Connection, instance_id: str, protected: bool):

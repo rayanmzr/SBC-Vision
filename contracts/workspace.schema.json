@@ -392,6 +392,22 @@
       },
       "title": "Challenge Issues",
       "type": "array"
+    },
+    "protection_policy": {
+      "default": "preserve",
+      "enum": [
+        "preserve",
+        "active_squad"
+      ],
+      "title": "Protection Policy",
+      "type": "string"
+    },
+    "active_squad_keys": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Active Squad Keys",
+      "type": "array"
     }
   },
   "required": [

@@ -132,6 +132,46 @@ def test_rescan_keeps_authorization_only_for_a_unique_version(client, service, d
     assert all(c.protected == duplicate for c in service.snapshot().items)
 
 
+def test_active_squad_policy_protects_team_only_and_names_card_categories(client, service):
+    body = dom_scan(service)
+    body.update(confirmed=True, protection_policy="active_squad")
+    for page in body["pages"]:
+        for card in page["cards"]:
+            card.update(active=False, rarity="Base")
+    body["pages"][0]["cards"][0].update(active=True, rarity="Team of the Week")
+    other = body["pages"][1]["cards"][0]
+    other["reading"].update(name="Mina Test", rating=84, position="ST")
+    other["rarity"] = "Base Hero"
+    response = client.post("/api/v1/sbc/club-scan", json=body)
+    assert response.status_code == 200, response.text
+    assert response.json()["categories"] == {"TOTW": 1, "prêts": 1, "Héros": 1}
+    assert response.json()["active_squad"] == response.json()["protected"] == 1
+    state = client.get("/api/v1/sbc/workspace").json()
+    assert state["protection_policy"] == "active_squad"
+    assert state["active_squad_keys"] == ["club:dom:900004:1"]
+    assert {c["card_id"]: c["protected"] for c in state["items"]} == {900004: True, 900003: False}
+    change = client.put(
+        "/api/v1/sbc/protections",
+        json={
+            "instance_id": "dom:900004:1",
+            "protected": False,
+            "expected_revision": state["revision"],
+        },
+    )
+    assert change.status_code == 409
+    assert change.json()["detail"]["code"] == "active_squad_card"
+    assert service.snapshot().revision == state["revision"]
+
+
+def test_active_policy_requires_observed_team_status_before_any_inventory_update(client, service):
+    body = dom_scan(service)
+    body.update(confirmed=True, protection_policy="active_squad")
+    before = service.snapshot().revision
+    response = client.post("/api/v1/sbc/club-scan", json=body)
+    assert response.status_code == 422
+    assert service.snapshot().revision == before
+
+
 def test_ocr_dom_agreement_counts_visible_rows_once_and_keeps_the_sources_distinct(client, service):
     body = dom_scan(service)
     page = body["pages"][0]
